@@ -92,7 +92,7 @@ const addBlock = (block: Block) => {
 }
 
 let ws: WebSocket | null = null
-let reconnectTimeout: NodeJS.Timeout | null = null
+//let reconnectTimeout: any = null
 
 const subscribeToNewBlocks = () => {
     try {
@@ -156,10 +156,13 @@ const subscribeToNewBlocks = () => {
             isConnected.value = false
 
             // Attempt to reconnect after 5 seconds
+            /*
             reconnectTimeout = setTimeout(() => {
                 console.log('Attempting to reconnect...')
                 subscribeToNewBlocks()
             }, 5000)
+
+             */
         }
     } catch (error) {
         console.error('Error setting up WebSocket:', error)
@@ -217,10 +220,13 @@ onUnmounted(() => {
     }
 
     // Clear reconnection timeout
+    /*
     if (reconnectTimeout) {
         clearTimeout(reconnectTimeout)
         reconnectTimeout = null
     }
+
+     */
 
     // Disconnect Tendermint client
     if (client) {
