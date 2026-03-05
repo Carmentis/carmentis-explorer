@@ -16,6 +16,14 @@
                 <h3>Public Key</h3>
                 <p class="mono">{{ account.pk }}</p>
             </div>
+            <div class="detail-section">
+                <h3>Spendable</h3>
+                <p class="mono">{{ account.spendable }}</p>
+            </div>
+            <div class="detail-section">
+                <h3>Staked</h3>
+                <p class="mono">{{ account.staked }}</p>
+            </div>
         </div>
 
         <p v-else-if="!loading" class="empty">Account not found.</p>
@@ -25,13 +33,13 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
-import { CryptoEncoderFactory, Hash } from '@cmts-dev/carmentis-sdk/client'
+import { BalanceAvailability, CryptoEncoderFactory, Hash } from '@cmts-dev/carmentis-sdk/client'
 import { useBlockchainStore } from '@/stores/blockchain'
 
 const route = useRoute()
 const blockchainStore = useBlockchainStore()
 const loading = ref(true)
-const account = ref<{ hash: string; pk: string } | null>(null)
+const account = ref<{ hash: string; pk: string; spendable: string; staked: string } | null>(null)
 
 onMounted(async () => {
     try {
@@ -41,10 +49,16 @@ onMounted(async () => {
         const vb = await blockchain.loadAccountVirtualBlockchain(accountId)
         const encoder = CryptoEncoderFactory.defaultStringSignatureEncoder()
         const pk = await encoder.encodePublicKey(await vb.getPublicKey())
+        const accountState = await blockchain.getAccountState(accountId.toBytes())
+        const tokenState = BalanceAvailability.createFromAccountStateAbciResponse(accountState)
+        const spendable = tokenState.getSpendable()
+        const staked = tokenState.getStaked()
 
         account.value = {
             hash: accountHash,
             pk,
+            staked: staked.toString(),
+            spendable: spendable.toString(),
         }
     } catch (error) {
         console.error('Error fetching account:', error)
@@ -53,4 +67,3 @@ onMounted(async () => {
     }
 })
 </script>
-
