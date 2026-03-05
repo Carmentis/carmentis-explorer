@@ -7,6 +7,7 @@ import ApplicationList from '../components/applications/ApplicationList.vue'
 import ApplicationDescription from '../components/applications/ApplicationDescription.vue'
 import AccountList from '../components/accounts/AccountList.vue'
 import AccountDescription from '../components/accounts/AccountDescription.vue'
+import BlockDescription from '../components/blocks/BlockDescription.vue'
 
 const router = createRouter({
     history: createWebHistory(import.meta.env.BASE_URL),
@@ -50,6 +51,16 @@ const router = createRouter({
             path: '/accounts/:accountId',
             component: AccountDescription,
             name: 'AccountDescription',
+        },
+        {
+            path: '/block/hash/:blockHash',
+            component: BlockDescription,
+            name: 'BlockDescriptionByHash',
+        },
+        {
+            path: '/block/height/:blockHeight',
+            component: BlockDescription,
+            name: 'BlockDescriptionByHeight',
         },
     ],
 })

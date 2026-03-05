@@ -51,7 +51,7 @@
 
         <div class="search-content">
             <p class="search-description">
-                Search for accounts, applications, organizations, or nodes by their hash
+                Search for accounts, applications, organizations, nodes, or blocks
             </p>
 
             <div class="search-input-container">
@@ -146,7 +146,9 @@ const searchTypes = [
     { label: 'Accounts', value: 'accounts' },
     { label: 'Applications', value: 'applications' },
     { label: 'Organizations', value: 'organizations' },
-    { label: 'Nodes', value: 'nodes' }
+    { label: 'Nodes', value: 'nodes' },
+    { label: 'Block by Height', value: 'blockHeight' },
+    { label: 'Block by Hash', value: 'blockHash' }
 ]
 
 const closeSidebarOnMobile = () => {
@@ -171,6 +173,29 @@ const performSearch = async () => {
     searchResult.value = false
 
     try {
+        // Handle block searches separately (before creating Hash)
+        if (searchType.value === 'blockHeight') {
+            const height = parseInt(searchQuery.value.trim())
+            if (isNaN(height)) {
+                searchError.value = 'Invalid block height. Please enter a number.'
+                searching.value = false
+                return
+            }
+            searchResult.value = true
+            setTimeout(() => {
+                router.push(`/block/height/${height}`)
+                closeSearchDialog()
+            }, 500)
+            return
+        } else if (searchType.value === 'blockHash') {
+            searchResult.value = true
+            setTimeout(() => {
+                router.push(`/block/hash/${searchQuery.value.trim()}`)
+                closeSearchDialog()
+            }, 500)
+            return
+        }
+
         const blockchain = blockchainStore.getProvider
         const hash = Hash.from(searchQuery.value.trim())
 

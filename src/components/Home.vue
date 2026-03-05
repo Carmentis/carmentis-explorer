@@ -16,7 +16,9 @@
             :loading="loading"
             stripedRows
             showGridlines
-            class="blocks-table"
+            selectionMode="single"
+            @row-click="onRowClick"
+            class="blocks-table clickable-table"
         >
             <template #empty>
                 <div class="empty-state">No blocks found.</div>
@@ -55,6 +57,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue'
+import { useRouter } from 'vue-router'
 import { Tendermint37Client } from '@cosmjs/tendermint-rpc'
 import { useBlockchainStore } from '@/stores/blockchain'
 import DataTable from 'primevue/datatable'
@@ -71,6 +74,7 @@ interface Block {
     proposer: string
 }
 
+const router = useRouter()
 const blockchainStore = useBlockchainStore()
 const loading = ref(true)
 const blocks = ref<Block[]>([])
@@ -80,6 +84,10 @@ let client: Tendermint37Client | null = null
 
 const formatTime = (date: Date): string => {
     return new Date(date).toLocaleString()
+}
+
+const onRowClick = (event: any) => {
+    router.push(`/block/height/${event.data.height}`)
 }
 
 const addBlock = (block: Block) => {
