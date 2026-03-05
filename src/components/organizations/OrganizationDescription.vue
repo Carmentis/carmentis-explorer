@@ -26,7 +26,11 @@
             </div>
             <div class="detail-section">
                 <h3>Account</h3>
-                <p><a :href="`/accounts/${organization.accountId}`">{{ organization.accountId }}</a></p>
+                <p>
+                    <a @click="() => goToAccount(organization.accountId)">{{
+                        organization.accountId
+                    }}</a>
+                </p>
             </div>
         </div>
 
@@ -36,10 +40,11 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { Hash } from '@cmts-dev/carmentis-sdk/client'
 import { useBlockchainStore } from '@/stores/blockchain'
 
+const router = useRouter();
 const route = useRoute()
 const blockchainStore = useBlockchainStore()
 const loading = ref(true)
@@ -50,6 +55,11 @@ const organization = ref<{
     website: string
     accountId: string
 } | null>(null)
+
+
+function goToAccount(accountId: string) {
+    router.push(`/accounts/${accountId}`)
+}
 
 onMounted(async () => {
     try {

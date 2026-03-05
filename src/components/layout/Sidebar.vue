@@ -2,14 +2,15 @@
     <aside :class="['sidebar', { open: isOpen }]">
         <nav class="sidebar-nav">
             <template v-for="item in menuItems" :key="item.path || item.label">
-                <a
+                <button
                     v-if="item.command"
                     class="nav-item"
                     @click="item.command"
+                    type="button"
                 >
                     <i :class="item.icon" class="nav-icon"></i>
                     <span class="nav-label">{{ item.label }}</span>
-                </a>
+                </button>
                 <router-link
                     v-else
                     :to="item.path"

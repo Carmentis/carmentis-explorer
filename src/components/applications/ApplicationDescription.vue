@@ -22,7 +22,12 @@
             </div>
             <div class="detail-section">
                 <h3>Owner</h3>
-                <p>{{ application.orgName }} (<a :href="`/organizations/${application.orgId}`">{{application.orgId}}</a>)</p>
+                <p>
+                    {{ application.orgName }} (<a @click="() => goToOrganization(application.orgId)">{{
+                        application.orgId
+                    }}</a
+                    >)
+                </p>
             </div>
         </div>
 
@@ -32,10 +37,11 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { Hash } from '@cmts-dev/carmentis-sdk/client'
 import { useBlockchainStore } from '@/stores/blockchain'
 
+const router = useRouter()
 const route = useRoute()
 const blockchainStore = useBlockchainStore()
 const loading = ref(true)
@@ -46,6 +52,10 @@ const application = ref<{
     orgId: string
     orgName: string
 } | null>(null)
+
+function goToOrganization(orgId: string) {
+    router.push(`/organizations/${orgId}`)
+}
 
 onMounted(async () => {
     try {
