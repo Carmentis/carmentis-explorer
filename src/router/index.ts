@@ -69,7 +69,7 @@ const router = createRouter({
             component: VirtualBlockchain,
         },
         {
-            path: '/vb/:vbId/microblock/:mbHash',
+            path: '/vb/:vbId/mb/:mbHash',
             component: MicroblockInVirtualBlockchain,
         },
     ],

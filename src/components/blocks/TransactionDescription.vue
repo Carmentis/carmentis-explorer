@@ -17,7 +17,7 @@ async function visitMicroblock(microblockHash: string) {
     const vbId = await blockchainStore.getProvider.getVirtualBlockchainIdContainingMicroblock(
         Hash.from(microblockHashBytes)
     );
-    return router.push(`/vb/${vbId.encode()}/microblock/${microblockHash}`)
+    return router.push(`/vb/${vbId.encode()}/mb/${microblockHash}`)
 }
 
 const tx = props.tx
