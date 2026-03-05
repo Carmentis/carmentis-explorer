@@ -3,6 +3,14 @@
         <h1>Latest Blocks</h1>
         <p>Real-time blockchain activity</p>
 
+        <div v-if="connectionStatus" class="connection-status">
+            <Tag
+                :value="connectionStatus"
+                :severity="isConnected ? 'success' : 'danger'"
+                icon="pi pi-circle-fill"
+            />
+        </div>
+
         <DataTable
             :value="blocks"
             :loading="loading"
@@ -42,14 +50,6 @@
                 </template>
             </Column>
         </DataTable>
-
-        <div v-if="connectionStatus" class="connection-status">
-            <Tag
-                :value="connectionStatus"
-                :severity="isConnected ? 'success' : 'danger'"
-                icon="pi pi-circle-fill"
-            />
-        </div>
     </div>
 </template>
 
@@ -248,11 +248,7 @@ h1 {
     font-size: 0.875rem;
 }
 
-.connection-status {
-    margin-top: var(--spacing-lg);
-    display: flex;
-    justify-content: center;
-}
+
 
 .empty-state {
     text-align: center;
