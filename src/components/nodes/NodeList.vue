@@ -24,6 +24,11 @@
                     <span class="mono-cell">{{ data.url }}</span>
                 </template>
             </Column>
+            <Column field="validator" header="Validator">
+                <template #body="{ data }">
+                    <span class="mono-cell">{{ data.isValidator ? 'Validator' : 'Replicator' }}</span>
+                </template>
+            </Column>
         </DataTable>
     </div>
 </template>
@@ -43,6 +48,7 @@ export interface Node {
     hash: string
     publicKey: string
     url: string
+    isValidator: boolean
 }
 
 onMounted(async () => {
@@ -54,10 +60,12 @@ onMounted(async () => {
             const vb = await blockchain.loadValidatorNodeVirtualBlockchain(node)
             const rpcEndpoint = await vb.getRpcEndpointDeclaration()
             const pk = await vb.getCometbftPublicKeyDeclaration()
+            const isValidator = (await vb.getInternalState()).getLastKnownApprovalStatus()
             nodes.value.push({
                 hash: node.encode(),
                 publicKey: pk.cometbftPublicKey,
                 url: rpcEndpoint,
+                isValidator: isValidator,
             })
         }
     } catch (error) {
