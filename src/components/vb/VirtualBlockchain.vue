@@ -79,7 +79,7 @@ onMounted(async () => {
                 </div>
                 <div class="detail-section">
                     <h4>Type</h4>
-                    <p class="mono">{{ VirtualBlockchainLabel.getVirtualBlockchainLabelFromVirtualBlockchainType(vbData.type).replaceAll('_', ' ') }}</p>
+                    <p class="mono">{{ VirtualBlockchainLabel.getVirtualBlockchainLabelFromVirtualBlockchainType(vbData.type) }}</p>
                 </div>
                 <div class="detail-section">
                     <h4>Expiration Day</h4>
