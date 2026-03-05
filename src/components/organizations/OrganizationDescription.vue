@@ -16,6 +16,18 @@
                 <h3>Name</h3>
                 <p>{{ organization.name }}</p>
             </div>
+            <div class="detail-section">
+                <h3>Localisation</h3>
+                <p>{{ organization.localisation }}</p>
+            </div>
+            <div class="detail-section">
+                <h3>Website</h3>
+                <p>{{ organization.website }}</p>
+            </div>
+            <div class="detail-section">
+                <h3>Account</h3>
+                <p><a :href="`/accounts/${organization.accountId}`">{{ organization.accountId }}</a></p>
+            </div>
         </div>
 
         <p v-else-if="!loading" class="empty">Organization not found.</p>
@@ -31,7 +43,13 @@ import { useBlockchainStore } from '@/stores/blockchain'
 const route = useRoute()
 const blockchainStore = useBlockchainStore()
 const loading = ref(true)
-const organization = ref<{ hash: string; name: string } | null>(null)
+const organization = ref<{
+    hash: string
+    name: string
+    localisation: string
+    website: string
+    accountId: string
+} | null>(null)
 
 onMounted(async () => {
     try {
@@ -40,10 +58,17 @@ onMounted(async () => {
         const orgId = Hash.from(orgHash)
         const vb = await blockchain.loadOrganizationVirtualBlockchain(orgId)
         const nameDeclaration = await vb.getDescription()
+        const localisation = `${nameDeclaration.city} (${nameDeclaration.countryCode.toUpperCase()})`
+        const website = nameDeclaration.website
+        const accountId = await vb.getAccountId()
+        const accountVb = await blockchain.loadAccountVirtualBlockchain(accountId)
 
         organization.value = {
             hash: orgHash,
             name: nameDeclaration.name,
+            localisation,
+            website,
+            accountId: accountId.encode(),
         }
     } catch (error) {
         console.error('Error fetching organization:', error)
@@ -52,4 +77,3 @@ onMounted(async () => {
     }
 })
 </script>
-
