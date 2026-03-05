@@ -23,9 +23,9 @@
             <div class="detail-section">
                 <h3>Owner</h3>
                 <p>
-                    {{ application.orgName }} (<a @click="() => goToOrganization(application.orgId)">{{
+                    {{ application.orgName }} (<button @click="() => goToOrganization(application!.orgId)" type="button" class="link-button">{{
                         application.orgId
-                    }}</a
+                    }}</button
                     >)
                 </p>
             </div>

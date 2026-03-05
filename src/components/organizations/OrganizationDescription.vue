@@ -7,7 +7,7 @@
             <p>Loading organization details...</p>
         </div>
 
-        <div v-if="organization && !loading" class="details-card">
+        <div v-if="organization !== null && !loading" class="details-card">
             <div class="detail-section">
                 <h3>Hash</h3>
                 <p class="mono">{{ organization.hash }}</p>
@@ -27,9 +27,9 @@
             <div class="detail-section">
                 <h3>Account</h3>
                 <p>
-                    <a @click="() => goToAccount(organization.accountId)">{{
+                    <button @click="() => goToAccount(organization!.accountId)" type="button" class="link-button">{{
                         organization.accountId
-                    }}</a>
+                    }}</button>
                 </p>
             </div>
         </div>
