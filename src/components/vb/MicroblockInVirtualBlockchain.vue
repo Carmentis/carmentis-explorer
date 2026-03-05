@@ -1,6 +1,9 @@
 <template>
     <div class="page">
-        <h2>Microblock Details</h2>
+        <div class="flex flex-row justify-between items-center">
+            <h2>Microblock Details</h2>
+            <Button @click="visitVB">Explore Virtual Blockchain</Button>
+        </div>
 
         <div v-if="loading" class="loading">
             <ProgressSpinner />
@@ -55,10 +58,11 @@
 
 <script setup lang="ts">
 import { useBlockchainStore } from '@/stores/blockchain.ts'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { onMounted, ref } from 'vue'
 import { Hash } from '@cmts-dev/carmentis-sdk/client'
 import ProgressSpinner from 'primevue/progressspinner'
+import Button from 'primevue/button'
 
 interface MicroblockData {
     header: {
@@ -71,13 +75,17 @@ interface MicroblockData {
         transactions: string[]
     }
 }
-
+const router = useRouter();
 const route = useRoute()
 const blockchainStore = useBlockchainStore()
 const provider = blockchainStore.getProvider
 const mbHash = ref(route.params.mbHash as string)
 const loading = ref(true)
 const microblock = ref<MicroblockData | null>(null)
+
+function visitVB() {
+    router.push(`/vb/${route.params.vbId}`)
+}
 
 const formatTime = (timestamp: number): string => {
     return new Date(timestamp).toLocaleString()
