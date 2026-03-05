@@ -228,10 +228,7 @@ onMounted(async () => {
         let blockResponse
 
         // Check if we're searching by hash or height
-        if (route.params.blockHash) {
-            const hashBytes = Utils.hexaToBinary(route.params.blockHash as string)
-            blockResponse = await client.blockByHash(hashBytes)
-        } else if (route.params.blockHeight) {
+        if (route.params.blockHeight) {
             const height = parseInt(route.params.blockHeight as string)
             blockResponse = await client.block(height)
         } else {
@@ -275,7 +272,7 @@ onMounted(async () => {
                 evidenceHash: Utils.binaryToHexa(blockHeader.evidenceHash),
                 proposerAddress: Utils.binaryToHexa(blockHeader.proposerAddress),
             },
-            txs: blockResponse.block.txs.map((tx) => Utils.binaryToHexa(tx)),
+            txs: blockResponse.block.txs.map((tx: any) => Utils.binaryToHexa(tx)),
             lastCommit: blockResponse.block.lastCommit
                 ? {
                       height: blockResponse.block.lastCommit.height,
@@ -287,7 +284,7 @@ onMounted(async () => {
                               hash: Utils.binaryToHexa(blockResponse.block.lastCommit.blockId.parts.hash),
                           },
                       },
-                      signatures: blockResponse.block.lastCommit.signatures.map((sig) => ({
+                      signatures: blockResponse.block.lastCommit.signatures.map((sig: any) => ({
                           blockIdFlag: sig.blockIdFlag,
                           validatorAddress: Utils.binaryToHexa(sig.validatorAddress),
                           timestamp: sig.timestamp,
