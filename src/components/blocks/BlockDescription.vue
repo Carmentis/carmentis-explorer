@@ -100,15 +100,10 @@
 
             <!-- Transactions -->
             <div class="details-card">
-                <h3>Transactions</h3>
-                <div class="detail-section">
-                    <h4>Count</h4>
-                    <p>{{ block.txs.length }}</p>
-                </div>
+                <h3>Transactions ({{ block.txs.length }})</h3>
                 <div v-if="block.txs.length > 0" class="transactions-list">
                     <div v-for="(tx, index) in block.txs" :key="index" class="transaction-item">
-                        <h5>Transaction {{ index + 1 }}</h5>
-                        <p class="mono">{{ tx }}</p>
+                        <TransactionDescription :index="index" :tx="tx" />
                     </div>
                 </div>
                 <p v-else class="empty">No transactions in this block</p>
@@ -134,11 +129,17 @@
                     <p>{{ block.lastCommit.signatures.length }} signatures</p>
                 </div>
                 <div v-if="block.lastCommit.signatures.length > 0" class="signatures-list">
-                    <div v-for="(sig, index) in block.lastCommit.signatures" :key="index" class="signature-item">
+                    <div
+                        v-for="(sig, index) in block.lastCommit.signatures"
+                        :key="index"
+                        class="signature-item"
+                    >
                         <h5>Signature {{ index + 1 }}</h5>
                         <p class="mono"><strong>Type:</strong> {{ sig.blockIdFlag }}</p>
                         <p class="mono"><strong>Validator:</strong> {{ sig.validatorAddress }}</p>
-                        <p class="mono"><strong>Timestamp:</strong> {{ formatTime(sig.timestamp) }}</p>
+                        <p class="mono">
+                            <strong>Timestamp:</strong> {{ formatTime(sig.timestamp) }}
+                        </p>
                         <p class="mono"><strong>Signature:</strong> {{ sig.signature }}</p>
                     </div>
                 </div>
@@ -156,6 +157,7 @@ import { Tendermint37Client } from '@cosmjs/tendermint-rpc'
 import { useBlockchainStore } from '@/stores/blockchain'
 import { Utils } from '@cmts-dev/carmentis-sdk/client'
 import ProgressSpinner from 'primevue/progressspinner'
+import TransactionDescription from '@/components/blocks/TransactionDescription.vue'
 
 interface BlockData {
     blockHash: string
@@ -281,7 +283,9 @@ onMounted(async () => {
                           hash: Utils.binaryToHexa(blockResponse.block.lastCommit.blockId.hash),
                           parts: {
                               total: blockResponse.block.lastCommit.blockId.parts.total,
-                              hash: Utils.binaryToHexa(blockResponse.block.lastCommit.blockId.parts.hash),
+                              hash: Utils.binaryToHexa(
+                                  blockResponse.block.lastCommit.blockId.parts.hash,
+                              ),
                           },
                       },
                       signatures: blockResponse.block.lastCommit.signatures.map((sig: any) => ({

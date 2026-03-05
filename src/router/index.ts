@@ -8,6 +8,8 @@ import ApplicationDescription from '../components/applications/ApplicationDescri
 import AccountList from '../components/accounts/AccountList.vue'
 import AccountDescription from '../components/accounts/AccountDescription.vue'
 import BlockDescription from '../components/blocks/BlockDescription.vue'
+import VirtualBlockchain from '@/components/vb/VirtualBlockchain.vue'
+import MicroblockInVirtualBlockchain from '@/components/vb/MicroblockInVirtualBlockchain.vue'
 
 const router = createRouter({
     history: createWebHistory(import.meta.env.BASE_URL),
@@ -61,6 +63,14 @@ const router = createRouter({
             path: '/block/height/:blockHeight',
             component: BlockDescription,
             name: 'BlockDescriptionByHeight',
+        },
+        {
+            path: '/vb/:vbId',
+            component: VirtualBlockchain,
+        },
+        {
+            path: '/vb/:vbId/microblock/:mbHash',
+            component: MicroblockInVirtualBlockchain,
         },
     ],
 })
