@@ -18,6 +18,7 @@
     "@cosmjs/tendermint-rpc": "^0.38.1",
     "@primeuix/themes": "^2.0.3",
     "@tailwindcss/vite": "^4.2.1",
+    "@tanstack/vue-query": "^5.92.9",
     "pinia": "^3.0.4",
     "primeicons": "^7.0.0",
     "primevue": "^4.2.6",
