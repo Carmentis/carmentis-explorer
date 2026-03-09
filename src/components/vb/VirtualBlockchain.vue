@@ -32,6 +32,15 @@ const formatDate = (dayNumber: number): string => {
     return date.toLocaleDateString()
 }
 
+const getDaysRemaining = (dayNumber: number): number | null => {
+    if (dayNumber === 0) return null
+    const expirationDate = new Date(dayNumber * 1000)
+    const now = new Date()
+    const diffTime = expirationDate.getTime() - now.getTime()
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+    return diffDays
+}
+
 const navigateToMicroblock = (mbHash: string) => {
     router.push(`/vb/${vbId.value}/mb/${mbHash}`)
 }
@@ -84,6 +93,11 @@ onMounted(async () => {
                 <div class="detail-section">
                     <h4>Expiration Day</h4>
                     <p>{{ formatDate(vbData.expirationDay) }}</p>
+                    <p v-if="getDaysRemaining(vbData.expirationDay) !== null" class="days-remaining">
+                        {{ getDaysRemaining(vbData.expirationDay)! > 0
+                            ? `${getDaysRemaining(vbData.expirationDay)} days remaining`
+                            : 'Expired' }}
+                    </p>
                 </div>
             </div>
 
@@ -157,5 +171,11 @@ onMounted(async () => {
     align-items: center;
     gap: var(--spacing-md);
     padding: var(--spacing-2xl);
+}
+
+.days-remaining {
+    margin-top: var(--spacing-xs);
+    font-style: italic;
+    color: var(--p-text-muted-color);
 }
 </style>
