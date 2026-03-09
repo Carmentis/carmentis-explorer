@@ -30,6 +30,16 @@
                     <h4>Timestamp</h4>
                     <p>{{ formatTime(microblock.header.timestamp) }}</p>
                 </div>
+                <div class="detail-section">
+                    <h4>Signer</h4>
+                    <a :href="`/accounts/${microblock.header.signer}`">{{
+                        microblock.header.signer
+                    }}</a>
+                </div>
+                <div class="detail-section">
+                    <h4>Signature</h4>
+                    <p>{{ microblock.header.signature }}</p>
+                </div>
             </div>
 
             <!-- Microblock Body -->
@@ -60,7 +70,7 @@
 import { useBlockchainStore } from '@/stores/blockchain.ts'
 import { useRoute, useRouter } from 'vue-router'
 import { onMounted, ref } from 'vue'
-import { Hash } from '@cmts-dev/carmentis-sdk/client'
+import { Hash, Utils } from '@cmts-dev/carmentis-sdk/client'
 import ProgressSpinner from 'primevue/progressspinner'
 import Button from 'primevue/button'
 
@@ -70,12 +80,14 @@ interface MicroblockData {
         previousHash: string
         height: number
         timestamp: number
+        signature: string
+        signer: string
     }
     body: {
         transactions: string[]
     }
 }
-const router = useRouter();
+const router = useRouter()
 const route = useRoute()
 const blockchainStore = useBlockchainStore()
 const provider = blockchainStore.getProvider
@@ -94,6 +106,8 @@ const formatTime = (timestamp: number): string => {
 onMounted(async () => {
     try {
         const mb = await provider.loadMicroblockByMicroblockHash(Hash.fromHex(mbHash.value))
+        const signature = Utils.binaryToHexa(mb.getLastSignatureSection().signature)
+        const signerAccount = mb.getFeesPayerAccount()
 
         microblock.value = {
             header: {
@@ -101,6 +115,8 @@ onMounted(async () => {
                 previousHash: mb.getPreviousHash().encode(),
                 height: mb.getHeight(),
                 timestamp: mb.getTimestampAsDate().getTime(),
+                signature,
+                signer: Utils.binaryToHexa(signerAccount),
             },
             body: {
                 transactions: mb.getAllSections().map((tx) => JSON.stringify(tx)),
