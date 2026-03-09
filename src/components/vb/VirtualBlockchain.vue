@@ -28,7 +28,7 @@ const blockchainStore = useBlockchainStore()
 const formatDate = (dayNumber: number): string => {
     if (dayNumber === 0) return 'No expiration'
     // Assuming day 0 is epoch start (1970-01-01)
-    const date = new Date(dayNumber * 24 * 60 * 60 * 1000)
+    const date = new Date(dayNumber * 1000)
     return date.toLocaleDateString()
 }
 
