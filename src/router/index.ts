@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import Home from '../components/Home.vue'
 import NodeList from '../components/nodes/NodeList.vue'
+import NodeDescription from '../components/nodes/NodeDescription.vue'
 import OrganizationList from '../components/organizations/OrganizationList.vue'
 import OrganizationDescription from '../components/organizations/OrganizationDescription.vue'
 import ApplicationList from '../components/applications/ApplicationList.vue'
@@ -23,6 +24,11 @@ const router = createRouter({
             path: '/nodes',
             component: NodeList,
             name: 'NodeList',
+        },
+        {
+            path: '/nodes/:nodeId',
+            component: NodeDescription,
+            name: 'NodeDescription',
         },
         {
             path: '/organizations',

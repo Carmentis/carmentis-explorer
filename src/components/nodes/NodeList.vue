@@ -2,7 +2,7 @@
     <div class="page">
         <h2>Validator Nodes</h2>
 
-        <DataTable :value="nodes" :loading="loading" stripedRows showGridlines>
+        <DataTable :value="nodes" :loading="loading" stripedRows showGridlines @row-click="onRowClick">
             <template #empty>
                 <div class="empty-state">No nodes found.</div>
             </template>
@@ -35,11 +35,13 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import { useBlockchainStore } from '@/stores/blockchain'
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
 import ProgressSpinner from 'primevue/progressspinner'
 
+const router = useRouter()
 const blockchainStore = useBlockchainStore()
 const loading = ref(true)
 const nodes = ref<Node[]>([])
@@ -49,6 +51,10 @@ export interface Node {
     publicKey: string
     url: string
     isValidator: boolean
+}
+
+function onRowClick(event: any) {
+    router.push(`/nodes/${event.data.hash}`)
 }
 
 onMounted(async () => {
