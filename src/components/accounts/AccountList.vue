@@ -27,6 +27,11 @@
                     <span class="mono-cell" :title="data.pk">{{ data.pk }}</span>
                 </template>
             </Column>
+            <Column field="balance" header="Balance">
+                <template #body="{ data }">
+                    <span class="mono-cell" :title="data.spendable">{{ data.spendable }}</span>
+                </template>
+            </Column>
         </DataTable>
     </div>
 </template>
@@ -34,7 +39,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { CryptoEncoderFactory } from '@cmts-dev/carmentis-sdk/client'
+import { BalanceAvailability, CryptoEncoderFactory } from '@cmts-dev/carmentis-sdk/client'
 import { useBlockchainStore } from '@/stores/blockchain'
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
@@ -48,6 +53,7 @@ const accounts = ref<Account[]>([])
 export interface Account {
     hash: string
     pk: string
+    spendable: string
 }
 
 const onRowClick = (event: any) => {
@@ -63,9 +69,12 @@ onMounted(async () => {
             const vb = await blockchain.loadAccountVirtualBlockchain(account)
             const encoder = CryptoEncoderFactory.defaultStringSignatureEncoder()
             const pk = await encoder.encodePublicKey(await vb.getPublicKey())
+            const accounsState = await blockchain.getAccountState(account.toBytes())
+            const balance = BalanceAvailability.createFromAccountStateAbciResponse(accounsState)
             accounts.value.push({
                 hash: account.encode(),
                 pk,
+                spendable: balance.getSpendable().toString(),
             })
         }
     } catch (error) {
@@ -75,4 +84,3 @@ onMounted(async () => {
     }
 })
 </script>
-
