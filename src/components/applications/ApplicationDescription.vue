@@ -21,11 +21,18 @@
                 <p>{{ application.description ?? 'No description provided' }}</p>
             </div>
             <div class="detail-section">
+                <h3>Website</h3>
+                <p>{{ application.website ?? 'No website provided' }}</p>
+            </div>
+            <div class="detail-section">
                 <h3>Owner</h3>
                 <p>
-                    {{ application.orgName }} (<button @click="() => goToOrganization(application!.orgId)" type="button" class="link-button">{{
-                        application.orgId
-                    }}</button
+                    {{ application.orgName }} (<button
+                        @click="() => goToOrganization(application!.orgId)"
+                        type="button"
+                        class="link-button"
+                    >
+                        {{ application.orgId }}</button
                     >)
                 </p>
             </div>
@@ -50,7 +57,8 @@ const application = ref<{
     name: string
     description: string
     orgId: string
-    orgName: string
+    orgName: string,
+    website: string,
 } | null>(null)
 
 function goToOrganization(orgId: string) {
@@ -68,6 +76,7 @@ onMounted(async () => {
         const orgVb = await blockchain.loadOrganizationVirtualBlockchain(orgId)
         const orgDesc = await orgVb.getDescription()
         const orgName = orgDesc.name
+        const orgWebsite = orgDesc.website
 
         application.value = {
             hash: appHash,
@@ -75,6 +84,7 @@ onMounted(async () => {
             description: nameDeclaration.description,
             orgId: orgId.encode(),
             orgName: orgName,
+            website: orgWebsite,
         }
     } catch (error) {
         console.error('Error fetching application:', error)
