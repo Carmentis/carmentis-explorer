@@ -76,7 +76,7 @@ onMounted(async () => {
         const orgVb = await blockchain.loadOrganizationVirtualBlockchain(orgId)
         const orgDesc = await orgVb.getDescription()
         const orgName = orgDesc.name
-        const orgWebsite = nameDeclaration.homepageUrl
+        const appWebsite = nameDeclaration.homepageUrl
 
         application.value = {
             hash: appHash,
@@ -84,7 +84,7 @@ onMounted(async () => {
             description: nameDeclaration.description,
             orgId: orgId.encode(),
             orgName: orgName,
-            website: orgWebsite,
+            website: appWebsite,
         }
     } catch (error) {
         console.error('Error fetching application:', error)
