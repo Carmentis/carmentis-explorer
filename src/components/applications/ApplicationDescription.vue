@@ -76,7 +76,7 @@ onMounted(async () => {
         const orgVb = await blockchain.loadOrganizationVirtualBlockchain(orgId)
         const orgDesc = await orgVb.getDescription()
         const orgName = orgDesc.name
-        const orgWebsite = orgDesc.website
+        const orgWebsite = nameDeclaration.homepageUrl
 
         application.value = {
             hash: appHash,
