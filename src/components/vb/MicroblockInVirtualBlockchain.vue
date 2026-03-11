@@ -19,6 +19,18 @@
                     <p class="mono">{{ microblock.header.hash }}</p>
                 </div>
                 <div class="detail-section">
+                    <h4>Gas Price</h4>
+                    <p class="mono">
+                        {{ microblock.header.gasPrice }}
+                    </p>
+                </div>
+                <div class="detail-section">
+                    <h4>Paid fees</h4>
+                    <p class="mono">
+                        {{ microblock.header.paidFees }}
+                    </p>
+                </div>
+                <div class="detail-section">
                     <h4>Previous Hash</h4>
                     <p class="mono">{{ microblock.header.previousHash }}</p>
                 </div>
@@ -73,7 +85,7 @@
 import { useBlockchainStore } from '@/stores/blockchain.ts'
 import { useRoute, useRouter } from 'vue-router'
 import { onMounted, ref } from 'vue'
-import { Hash,  Utils } from '@cmts-dev/carmentis-sdk/client'
+import { CMTSToken, Hash, Utils } from '@cmts-dev/carmentis-sdk/client'
 import ProgressSpinner from 'primevue/progressspinner'
 import Button from 'primevue/button'
 import MicroblockInVirtualBlockchainSection from '@/components/vb/MicroblockInVirtualBlockchainSection.vue'
@@ -81,6 +93,8 @@ import MicroblockInVirtualBlockchainSection from '@/components/vb/MicroblockInVi
 interface MicroblockData {
     serializedMb: Uint8Array
     header: {
+        gasPrice: string
+        paidFees: string
         hash: string
         previousHash: string
         height: number
@@ -111,6 +125,8 @@ const formatTime = (timestamp: number): string => {
 onMounted(async () => {
     try {
         const mb = await provider.loadMicroblockByMicroblockHash(Hash.fromHex(mbHash.value))
+        const gasPrice = mb.getGasPrice().toString()
+        const paidFees = mb.getMaxFees().toString()
 
         const signature = Utils.binaryToHexa(mb.getLastSignatureSection().signature)
         const signerAccount = mb.getFeesPayerAccount()
@@ -118,6 +134,8 @@ onMounted(async () => {
         microblock.value = {
             serializedMb: mb.serialize().microblockData,
             header: {
+                gasPrice,
+                paidFees,
                 hash: mb.getHash().encode(),
                 previousHash: mb.getPreviousHash().encode(),
                 height: mb.getHeight(),
