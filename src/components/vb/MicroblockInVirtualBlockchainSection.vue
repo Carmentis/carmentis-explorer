@@ -8,13 +8,13 @@ import {
     SectionLabel,
     SectionType,
     type Section,
-    type Microblock,
+    Microblock,
     CryptoEncoderFactory,
 } from '@cmts-dev/carmentis-sdk/client'
 
-const props = defineProps<{ mb: Microblock; section: Section; sectionIndex: number }>()
+const props = defineProps<{ serializedMb: Uint8Array; section: Section; sectionIndex: number }>()
 const section = props.section
-const mb = props.mb
+const mb = Microblock.loadFromSerializedMicroblock(props.serializedMb)
 const stringifiedSection = JSON.stringify(section)
 
 const showVerifyDialog = ref(false)
@@ -82,7 +82,7 @@ function closeVerifyDialog() {
     <div class="flex flex-row items-center justify-between mb-2">
         <h5>{{ SectionLabel.getSectionLabelFromSection(section) }}</h5>
         <div v-if="section.type === SectionType.SIGNATURE">
-            <Button label="Verify Signature" icon="pi pi-check-circle" @click="verifySignature" />
+            <Button label="Verify Signature" icon="pi pi-check-circle" @click="verifySignature" size="small" />
         </div>
     </div>
 

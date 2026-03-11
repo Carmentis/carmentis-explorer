@@ -54,7 +54,7 @@
                             class="transaction-item"
                         >
                             <MicroblockInVirtualBlockchainSection
-                                :mb="microblock.mb"
+                                :serializedMb="microblock.serializedMb"
                                 :section-index="index"
                                 :section="JSON.parse(tx)"
                             />
@@ -73,13 +73,13 @@
 import { useBlockchainStore } from '@/stores/blockchain.ts'
 import { useRoute, useRouter } from 'vue-router'
 import { onMounted, ref } from 'vue'
-import { Hash, type Microblock, Utils } from '@cmts-dev/carmentis-sdk/client'
+import { Hash,  Utils } from '@cmts-dev/carmentis-sdk/client'
 import ProgressSpinner from 'primevue/progressspinner'
 import Button from 'primevue/button'
 import MicroblockInVirtualBlockchainSection from '@/components/vb/MicroblockInVirtualBlockchainSection.vue'
 
 interface MicroblockData {
-    mb: Microblock,
+    serializedMb: Uint8Array
     header: {
         hash: string
         previousHash: string
@@ -116,7 +116,7 @@ onMounted(async () => {
         const signerAccount = mb.getFeesPayerAccount()
 
         microblock.value = {
-            mb,
+            serializedMb: mb.serialize().microblockData,
             header: {
                 hash: mb.getHash().encode(),
                 previousHash: mb.getPreviousHash().encode(),
