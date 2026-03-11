@@ -25,7 +25,8 @@
             </div>
             <div class="detail-section">
                 <h3>Website</h3>
-                <p>{{ application.website ?? 'No website provided' }}</p>
+                <p v-if="!application.website">{{ 'No website provided' }}</p>
+                <a v-else :href="application.website" target="_blank">{{ application.website  }}</a>
             </div>
             <div class="detail-section">
                 <h3>Owner</h3>

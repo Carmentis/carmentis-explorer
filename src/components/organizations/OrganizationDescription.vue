@@ -29,7 +29,10 @@
             </div>
             <div class="detail-section">
                 <h3>Website</h3>
-                <p>{{ organization.website }}</p>
+                <p v-if="!organization.website">{{ 'No website provided' }}</p>
+                <a v-else :href="organization.website" target="_blank">{{
+                    organization.website
+                }}</a>
             </div>
             <div class="detail-section">
                 <h3>Account</h3>
