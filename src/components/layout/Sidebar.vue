@@ -127,7 +127,7 @@ const searchResults = ref<
         route: string
     }>
 >([])
-let searchTimeout: NodeJS.Timeout | null = null
+let searchTimeout = null
 
 const router = useRouter()
 const route = useRoute()

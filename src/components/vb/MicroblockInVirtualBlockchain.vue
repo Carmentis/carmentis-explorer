@@ -46,15 +46,18 @@
             <div class="details-card">
                 <h3>Microblock Body</h3>
                 <div class="detail-section">
-                    <h4>Transactions ({{ microblock.body.transactions.length }})</h4>
+                    <h4>Sections ({{ microblock.body.transactions.length }})</h4>
                     <div v-if="microblock.body.transactions.length > 0" class="transactions-list">
                         <div
                             v-for="(tx, index) in microblock.body.transactions"
                             :key="index"
                             class="transaction-item"
                         >
-                            <h5>Transaction {{ index + 1 }}</h5>
-                            <p class="mono">{{ tx }}</p>
+                            <MicroblockInVirtualBlockchainSection
+                                :mb="microblock.mb"
+                                :section-index="index"
+                                :section="JSON.parse(tx)"
+                            />
                         </div>
                     </div>
                     <p v-else class="empty">No transactions in this microblock</p>
@@ -70,11 +73,13 @@
 import { useBlockchainStore } from '@/stores/blockchain.ts'
 import { useRoute, useRouter } from 'vue-router'
 import { onMounted, ref } from 'vue'
-import { Hash, Utils } from '@cmts-dev/carmentis-sdk/client'
+import { Hash, type Microblock, Utils } from '@cmts-dev/carmentis-sdk/client'
 import ProgressSpinner from 'primevue/progressspinner'
 import Button from 'primevue/button'
+import MicroblockInVirtualBlockchainSection from '@/components/vb/MicroblockInVirtualBlockchainSection.vue'
 
 interface MicroblockData {
+    mb: Microblock,
     header: {
         hash: string
         previousHash: string
@@ -106,10 +111,12 @@ const formatTime = (timestamp: number): string => {
 onMounted(async () => {
     try {
         const mb = await provider.loadMicroblockByMicroblockHash(Hash.fromHex(mbHash.value))
+
         const signature = Utils.binaryToHexa(mb.getLastSignatureSection().signature)
         const signerAccount = mb.getFeesPayerAccount()
 
         microblock.value = {
+            mb,
             header: {
                 hash: mb.getHash().encode(),
                 previousHash: mb.getPreviousHash().encode(),
