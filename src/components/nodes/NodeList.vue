@@ -14,11 +14,6 @@
                     <span class="mono-cell" :title="data.hash">{{ data.hash }}</span>
                 </template>
             </Column>
-            <Column field="publicKey" header="Public Key">
-                <template #body="{ data }">
-                    <span class="mono-cell" :title="data.publicKey">{{ data.publicKey }}</span>
-                </template>
-            </Column>
             <Column field="url" header="RPC URL">
                 <template #body="{ data }">
                     <span class="mono-cell">{{ data.url }}</span>

@@ -17,6 +17,7 @@ type NodeInfo = {
     rpc: string
     nodeOwnerName: string
     nodeOwnerOrgId: string
+    publicKey: string
 }
 
 type StakeInfo = {
@@ -61,6 +62,7 @@ onMounted(async () => {
             rpc: rpcEndpoint,
             nodeOwnerName: (await orgVb.getDescription()).name,
             nodeOwnerOrgId: orgId.encode(),
+            publicKey: cometbft.cometbftPublicKey,
         }
 
         if (nodeStakingLock) {
@@ -115,6 +117,11 @@ onMounted(async () => {
             </div>
 
             <div class="detail-section">
+                <h3>CometBFT Public Key</h3>
+                <p class="mono">{{ node.publicKey }}</p>
+            </div>
+
+            <div class="detail-section">
                 <h3>RPC Endpoint</h3>
                 <p class="mono">{{ node.rpc }}</p>
             </div>
@@ -122,6 +129,10 @@ onMounted(async () => {
             <div class="detail-section">
                 <h3>Node Owner</h3>
                 <p class="mono">{{ node.nodeOwnerName }} ({{ node.nodeOwnerOrgId }})</p>
+                <Button
+                    label="Explore organization"
+                    @click="router.push(`/organizations/${node.nodeOwnerOrgId}`)"
+                />
             </div>
 
             <div v-if="stake !== null" class="flex flex-col gap-8">
