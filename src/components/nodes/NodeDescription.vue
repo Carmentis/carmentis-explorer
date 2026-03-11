@@ -3,6 +3,8 @@ import { ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { BalanceAvailability, CMTSToken, Hash } from '@cmts-dev/carmentis-sdk/client'
 import { useBlockchainStore } from '@/stores/blockchain'
+import Button from 'primevue/button'
+import router from '@/router'
 
 const route = useRoute()
 const blockchainStore = useBlockchainStore()
@@ -26,12 +28,16 @@ type StakeInfo = {
           }
         | undefined
 }
+
+const nodeHash = route.params.nodeId as string
 const node = ref<NodeInfo | null>(null)
 const stake = ref<StakeInfo | null>(null)
+function visitVb() {
+    router.push(`/vb/${nodeHash}`)
+}
 
 onMounted(async () => {
     try {
-        const nodeHash = route.params.nodeId as string
         const blockchain = blockchainStore.getProvider
         const nodeId = Hash.from(nodeHash)
         const vb = await blockchain.loadValidatorNodeVirtualBlockchain(nodeId)
@@ -83,7 +89,14 @@ onMounted(async () => {
 
 <template>
     <div class="page">
-        <h2>Node Details</h2>
+        <div class="flex items-center justify-between">
+            <h2>Node Details</h2>
+            <Button
+                label="Explore Virtual Blockchain"
+                icon="pi pi-external-link"
+                @click="visitVb"
+            />
+        </div>
 
         <div v-if="loading" class="loading">
             <div class="spinner"></div>
@@ -110,8 +123,6 @@ onMounted(async () => {
                 <h3>Node Owner</h3>
                 <p class="mono">{{ node.nodeOwnerName }} ({{ node.nodeOwnerOrgId }})</p>
             </div>
-
-
 
             <div v-if="stake !== null" class="flex flex-col gap-8">
                 <div class="detail-section">

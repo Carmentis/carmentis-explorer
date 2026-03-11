@@ -1,6 +1,13 @@
 <template>
     <div class="page">
-        <h2>Organization Details</h2>
+        <div class="flex justify-between items-center">
+            <h2>Organization Details</h2>
+            <Button
+                label="Explore Virtual Blockchain"
+                icon="pi pi-external-link"
+                @click="visitVb"
+            />
+        </div>
 
         <div v-if="loading" class="loading">
             <div class="spinner"></div>
@@ -27,9 +34,13 @@
             <div class="detail-section">
                 <h3>Account</h3>
                 <p>
-                    <button @click="() => goToAccount(organization!.accountId)" type="button" class="link-button">{{
-                        organization.accountId
-                    }}</button>
+                    <button
+                        @click="() => goToAccount(organization!.accountId)"
+                        type="button"
+                        class="link-button"
+                    >
+                        {{ organization.accountId }}
+                    </button>
                 </p>
             </div>
         </div>
@@ -43,9 +54,11 @@ import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { Hash } from '@cmts-dev/carmentis-sdk/client'
 import { useBlockchainStore } from '@/stores/blockchain'
+import Button from 'primevue/button'
 
-const router = useRouter();
+const router = useRouter()
 const route = useRoute()
+const orgHash = route.params.organizationId as string
 const blockchainStore = useBlockchainStore()
 const loading = ref(true)
 const organization = ref<{
@@ -56,6 +69,9 @@ const organization = ref<{
     accountId: string
 } | null>(null)
 
+function visitVb() {
+    router.push(`/vb/${orgHash}`)
+}
 
 function goToAccount(accountId: string) {
     router.push(`/accounts/${accountId}`)
@@ -63,7 +79,6 @@ function goToAccount(accountId: string) {
 
 onMounted(async () => {
     try {
-        const orgHash = route.params.organizationId as string
         const blockchain = blockchainStore.getProvider
         const orgId = Hash.from(orgHash)
         const vb = await blockchain.loadOrganizationVirtualBlockchain(orgId)

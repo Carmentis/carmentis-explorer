@@ -1,6 +1,9 @@
 <template>
     <div class="page">
-        <h2>Application Details</h2>
+        <div class="flex justify-between items-center">
+            <h2>Application Details</h2>
+            <Button label="Explore Virtual Blockchain" @click="visitVb" />
+        </div>
 
         <div v-if="loading" class="loading">
             <div class="spinner"></div>
@@ -47,9 +50,10 @@ import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { Hash } from '@cmts-dev/carmentis-sdk/client'
 import { useBlockchainStore } from '@/stores/blockchain'
-
+import Button from 'primevue/button'
 const router = useRouter()
 const route = useRoute()
+const appHash = route.params.applicationId as string
 const blockchainStore = useBlockchainStore()
 const loading = ref(true)
 const application = ref<{
@@ -57,17 +61,20 @@ const application = ref<{
     name: string
     description: string
     orgId: string
-    orgName: string,
-    website: string,
+    orgName: string
+    website: string
 } | null>(null)
 
 function goToOrganization(orgId: string) {
     router.push(`/organizations/${orgId}`)
 }
 
+function visitVb() {
+    router.push(`/vb/${appHash}`)
+}
+
 onMounted(async () => {
     try {
-        const appHash = route.params.applicationId as string
         const blockchain = blockchainStore.getProvider
         const appId = Hash.from(appHash)
         const vb = await blockchain.loadApplicationVirtualBlockchain(appId)
