@@ -2,12 +2,7 @@
     <aside :class="['sidebar', { open: isOpen }]">
         <nav class="sidebar-nav">
             <template v-for="item in menuItems" :key="item.path || item.label">
-                <button
-                    v-if="item.command"
-                    class="nav-item"
-                    @click="item.command"
-                    type="button"
-                >
+                <button v-if="item.command" class="nav-item" @click="item.command" type="button">
                     <i :class="item.icon" class="nav-icon"></i>
                     <span class="nav-label">{{ item.label }}</span>
                 </button>
@@ -51,7 +46,8 @@
 
         <div class="search-content">
             <p class="search-description">
-                Search for accounts, applications, organizations, nodes, or blocks
+                Search for accounts, applications, organizations, nodes, microblocks or blocks by
+                height
             </p>
 
             <div class="search-input-container">
@@ -59,22 +55,13 @@
                     <InputIcon class="pi pi-search" />
                     <InputText
                         v-model="searchQuery"
-                        placeholder="Enter hash to search..."
+                        placeholder="Enter hash or block height..."
                         class="search-input"
-                        @keyup.enter="performSearch"
+                        @input="onSearchInput"
+                        @keyup.enter="navigateToFirstResult"
                         autofocus
                     />
                 </IconField>
-            </div>
-
-            <div class="search-type-selector">
-                <label class="search-type-label">Search in:</label>
-                <SelectButton
-                    v-model="searchType"
-                    :options="searchTypes"
-                    optionLabel="label"
-                    optionValue="value"
-                />
             </div>
 
             <Message v-if="searchError" severity="error" :closable="false">
@@ -86,28 +73,29 @@
                 <p>Searching...</p>
             </div>
 
-            <div v-if="searchResult" class="search-result">
-                <Message severity="success" :closable="false">
-                    Found! Redirecting...
-                </Message>
+            <div v-if="searchResults.length > 0" class="search-results">
+                <h4 class="results-title">Results found:</h4>
+                <div class="results-list">
+                    <div
+                        v-for="(result, index) in searchResults"
+                        :key="index"
+                        class="result-item"
+                        @click="navigateToResult(result)"
+                    >
+                        <i :class="result.icon" class="result-icon"></i>
+                        <div class="result-info">
+                            <span class="result-type">{{ result.type }}</span>
+                            <span class="result-hash">{{ result.hash }}</span>
+                        </div>
+                        <i class="pi pi-chevron-right"></i>
+                    </div>
+                </div>
             </div>
         </div>
 
         <template #footer>
             <div class="search-footer">
-                <Button
-                    label="Cancel"
-                    severity="secondary"
-                    @click="closeSearchDialog"
-                    :disabled="searching"
-                />
-                <Button
-                    label="Search"
-                    icon="pi pi-search"
-                    @click="performSearch"
-                    :loading="searching"
-                    :disabled="!searchQuery.trim()"
-                />
+                <Button label="Close" severity="secondary" @click="closeSearchDialog" />
             </div>
         </template>
     </Dialog>
@@ -116,13 +104,12 @@
 <script setup lang="ts">
 import { inject, ref } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import { Hash } from '@cmts-dev/carmentis-sdk/client'
+import { Hash, VirtualBlockchainType } from '@cmts-dev/carmentis-sdk/client'
 import { useBlockchainStore } from '@/stores/blockchain'
 import Divider from 'primevue/divider'
 import Dialog from 'primevue/dialog'
 import InputText from 'primevue/inputtext'
 import Button from 'primevue/button'
-import SelectButton from 'primevue/selectbutton'
 import Message from 'primevue/message'
 import ProgressSpinner from 'primevue/progressspinner'
 import IconField from 'primevue/iconfield'
@@ -130,26 +117,23 @@ import InputIcon from 'primevue/inputicon'
 
 const showSearchDialog = ref(false)
 const searchQuery = ref('')
-const searchType = ref('all')
 const searching = ref(false)
 const searchError = ref('')
-const searchResult = ref(false)
+const searchResults = ref<
+    Array<{
+        type: string
+        hash: string
+        icon: string
+        route: string
+    }>
+>([])
+let searchTimeout: NodeJS.Timeout | null = null
 
 const router = useRouter()
 const route = useRoute()
 const blockchainStore = useBlockchainStore()
 const isOpen = inject<{ value: boolean }>('sidebarOpen')
 const closeSidebar = inject<() => void>('closeSidebar')
-
-const searchTypes = [
-    { label: 'All', value: 'all' },
-    { label: 'Accounts', value: 'accounts' },
-    { label: 'Applications', value: 'applications' },
-    { label: 'Organizations', value: 'organizations' },
-    { label: 'Nodes', value: 'nodes' },
-    { label: 'Block by Height', value: 'blockHeight' },
-    { label: 'Block by Hash', value: 'blockHash' }
-]
 
 const closeSidebarOnMobile = () => {
     if (window.innerWidth <= 1024) {
@@ -161,8 +145,27 @@ const closeSearchDialog = () => {
     showSearchDialog.value = false
     searchQuery.value = ''
     searchError.value = ''
-    searchResult.value = false
-    searchType.value = 'all'
+    searchResults.value = []
+    if (searchTimeout) {
+        clearTimeout(searchTimeout)
+        searchTimeout = null
+    }
+}
+
+const onSearchInput = () => {
+    if (searchTimeout) {
+        clearTimeout(searchTimeout)
+    }
+
+    if (!searchQuery.value.trim()) {
+        searchResults.value = []
+        searchError.value = ''
+        return
+    }
+
+    searchTimeout = setTimeout(() => {
+        performSearch()
+    }, 300)
 }
 
 const performSearch = async () => {
@@ -170,88 +173,182 @@ const performSearch = async () => {
 
     searching.value = true
     searchError.value = ''
-    searchResult.value = false
+    searchResults.value = []
 
     try {
-        // Handle block searches separately (before creating Hash)
-        if (searchType.value === 'blockHeight') {
-            const height = parseInt(searchQuery.value.trim())
-            if (isNaN(height)) {
-                searchError.value = 'Invalid block height. Please enter a number.'
-                searching.value = false
-                return
-            }
-            searchResult.value = true
-            setTimeout(() => {
-                router.push(`/block/height/${height}`)
-                closeSearchDialog()
-            }, 500)
-            return
-        } else if (searchType.value === 'blockHash') {
-            searchResult.value = true
-            setTimeout(() => {
-                router.push(`/block/hash/${searchQuery.value.trim()}`)
-                closeSearchDialog()
-            }, 500)
-            return
+        const query = searchQuery.value.trim()
+        const blockchain = blockchainStore.getProvider
+        const results: Array<{
+            type: string
+            hash: string
+            icon: string
+            route: string
+        }> = []
+
+        // Check if it's a number (block height)
+        const heightNum = parseInt(query)
+        if (!isNaN(heightNum) && heightNum.toString() === query) {
+            results.push({
+                type: 'Block by Height',
+                hash: query,
+                icon: 'pi pi-box',
+                route: `/block/height/${heightNum}`,
+            })
         }
 
-        const blockchain = blockchainStore.getProvider
-        const hash = Hash.from(searchQuery.value.trim())
+        // Try to parse as hash
+        try {
+            const hash = Hash.from(query)
 
-        // Try to find in different collections based on search type
-        const searchIn = searchType.value === 'all'
-            ? ['accounts', 'applications', 'organizations', 'nodes']
-            : [searchType.value]
-
-        for (const type of searchIn) {
+            // Search in accounts
             try {
-                if (type === 'accounts') {
-                    await blockchain.loadAccountVirtualBlockchain(hash)
-                    searchResult.value = true
-                    setTimeout(() => {
-                        router.push(`/accounts/${searchQuery.value.trim()}`)
-                        closeSearchDialog()
-                    }, 500)
-                    return
-                } else if (type === 'applications') {
-                    await blockchain.loadApplicationVirtualBlockchain(hash)
-                    searchResult.value = true
-                    setTimeout(() => {
-                        router.push(`/applications/${searchQuery.value.trim()}`)
-                        closeSearchDialog()
-                    }, 500)
-                    return
-                } else if (type === 'organizations') {
-                    await blockchain.loadOrganizationVirtualBlockchain(hash)
-                    searchResult.value = true
-                    setTimeout(() => {
-                        router.push(`/organizations/${searchQuery.value.trim()}`)
-                        closeSearchDialog()
-                    }, 500)
-                    return
-                } else if (type === 'nodes') {
-                    await blockchain.loadValidatorNodeVirtualBlockchain(hash)
-                    searchResult.value = true
-                    setTimeout(() => {
-                        router.push(`/nodes/${searchQuery.value.trim()}`)
-                        closeSearchDialog()
-                    }, 500)
-                    return
+                await blockchain.loadAccountVirtualBlockchain(hash)
+                results.push({
+                    type: 'Account',
+                    hash: query,
+                    icon: 'pi pi-user',
+                    route: `/accounts/${query}`,
+                })
+            } catch (e) {
+                // Not found in accounts
+            }
+
+            // Search in applications
+            try {
+                await blockchain.loadApplicationVirtualBlockchain(hash)
+                results.push({
+                    type: 'Application',
+                    hash: query,
+                    icon: 'pi pi-mobile',
+                    route: `/applications/${query}`,
+                })
+            } catch (e) {
+                // Not found in applications
+            }
+
+            // Search in organizations
+            try {
+                await blockchain.loadOrganizationVirtualBlockchain(hash)
+                results.push({
+                    type: 'Organization',
+                    hash: query,
+                    icon: 'pi pi-building',
+                    route: `/organizations/${query}`,
+                })
+            } catch (e) {
+                // Not found in organizations
+            }
+
+            // Search by vb
+            try {
+                const vb = await blockchain.loadVirtualBlockchain(hash)
+                const vbType = vb.getType()
+                switch (vbType) {
+                    case VirtualBlockchainType.ACCOUNT_VIRTUAL_BLOCKCHAIN: {
+                        results.push({
+                            type: 'Account',
+                            hash: query,
+                            icon: 'pi pi-user',
+                            route: `/accounts/${query}`,
+                        })
+                        break
+                    }
+                    case VirtualBlockchainType.APPLICATION_VIRTUAL_BLOCKCHAIN: {
+                        results.push({
+                            type: 'Application',
+                            hash: query,
+                            icon: 'pi pi-mobile',
+                            route: `/applications/${query}`,
+                        })
+                        break
+                    }
+                    case VirtualBlockchainType.NODE_VIRTUAL_BLOCKCHAIN: {
+                        results.push({
+                            type: 'Node',
+                            hash: query,
+                            icon: 'pi pi-server',
+                            route: `/nodes/${query}`,
+                        })
+                        break
+                    }
+                    case VirtualBlockchainType.ORGANIZATION_VIRTUAL_BLOCKCHAIN: {
+                        results.push({
+                            type: 'Organization',
+                            hash: query,
+                            icon: 'pi pi-building',
+                            route: `/organizations/${query}`,
+                        })
+                        break
+                    }
+                    case VirtualBlockchainType.APP_LEDGER_VIRTUAL_BLOCKCHAIN: {
+                        results.push({
+                            type: 'App Ledger',
+                            hash: query,
+                            icon: 'pi pi-book',
+                            route: `/vb/${query}`,
+                        })
+                    }
+                    default:
+                        console.warn(`Unsupported virtual blockchain type: ${vbType}`)
+                }
+
+            } catch (e) {
+                // Not found
+            }
+
+            // Search in nodes
+            try {
+                await blockchain.loadValidatorNodeVirtualBlockchain(hash)
+                results.push({
+                    type: 'Node',
+                    hash: query,
+                    icon: 'pi pi-server',
+                    route: `/nodes/${query}`,
+                })
+            } catch (e) {
+                // Not found in nodes
+            }
+
+            // Search for microblock by hash
+            try {
+                const microblock = await blockchain.getMicroblockHeader(hash)
+                const vbId = await blockchain.getVirtualBlockchainIdContainingMicroblock(hash)
+                if (microblock) {
+                    results.push({
+                        type: 'Microblock',
+                        hash: query,
+                        icon: 'pi pi-file',
+                        route: `/vb/${vbId.encode()}/mb/${query}`,
+                    })
                 }
             } catch (e) {
-                // Continue searching in other types
-                continue
+                // Not found as microblock
             }
+        } catch (e) {
+            // Invalid hash format
         }
 
-        // If we get here, nothing was found
-        searchError.value = 'No results found for the provided hash'
+        searchResults.value = results
+
+        if (results.length === 0) {
+            searchError.value = 'No results found'
+        }
     } catch (error) {
         console.error('Search error:', error)
-        searchError.value = 'Invalid hash format or search failed'
+        searchError.value = 'Search failed'
     } finally {
         searching.value = false
+    }
+}
+
+const navigateToResult = (result: { route: string }) => {
+    router.push(result.route)
+    closeSearchDialog()
+}
+
+const navigateToFirstResult = () => {
+    if (searchResults.value.length > 0) {
+        navigateToResult(searchResults.value[0])
     }
 }
 
@@ -259,7 +356,7 @@ const menuItems = [
     {
         label: 'Search',
         icon: 'pi pi-search',
-        command: () => showSearchDialog.value = true,
+        command: () => (showSearchDialog.value = true),
     },
     {
         label: 'Home',
@@ -497,18 +594,6 @@ const isActiveRoute = (path: string) => {
     width: 100%;
 }
 
-.search-type-selector {
-    display: flex;
-    flex-direction: column;
-    gap: var(--spacing-sm);
-}
-
-.search-type-label {
-    font-size: var(--font-size-sm);
-    font-weight: 600;
-    color: var(--p-text-color);
-}
-
 .search-loading {
     display: flex;
     flex-direction: column;
@@ -517,8 +602,71 @@ const isActiveRoute = (path: string) => {
     padding: var(--spacing-xl);
 }
 
-.search-result {
-    padding: var(--spacing-md) 0;
+.search-results {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+}
+
+.results-title {
+    font-size: var(--font-size-sm);
+    font-weight: 600;
+    color: var(--p-text-color);
+    margin: 0;
+}
+
+.results-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+}
+
+.result-item {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    padding: var(--spacing-md);
+    background: var(--p-surface-50);
+    border: 1px solid var(--p-surface-200);
+    border-radius: var(--p-border-radius);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.result-item:hover {
+    background: var(--p-primary-50);
+    border-color: var(--p-primary-200);
+    transform: translateX(4px);
+}
+
+.result-icon {
+    font-size: 1.25rem;
+    color: var(--p-primary-500);
+}
+
+.result-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+}
+
+.result-type {
+    font-size: var(--font-size-sm);
+    font-weight: 600;
+    color: var(--p-text-color);
+}
+
+.result-hash {
+    font-size: var(--font-size-xs);
+    color: var(--p-text-muted-color);
+    font-family: monospace;
+    word-break: break-all;
+}
+
+.result-item .pi-chevron-right {
+    color: var(--p-text-muted-color);
+    font-size: 0.875rem;
 }
 
 .search-footer {
