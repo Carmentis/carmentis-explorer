@@ -383,6 +383,11 @@ const menuItems = [
         icon: 'pi pi-user',
         path: '/accounts',
     },
+    {
+        label: 'Proof Checker',
+        icon: 'pi pi-verified',
+        path: '/checker/proof',
+    },
 ]
 
 const isActiveRoute = (path: string) => {
