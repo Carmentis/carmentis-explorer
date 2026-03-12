@@ -48,7 +48,18 @@
             </div>
         </div>
 
-        <DataView :value="blocks" :loading="loading" class="mt-8">
+        <div v-if="loading" class="rounded-lg border-2 border-gray-200 p-2 flex flex-col gap-2">
+            <div
+                v-for="(item, index) in 10"
+                :key="index"
+                class="flex p-2 gap-2 border-2 border-gray-200 rounded-lg divided-x h-16"
+            >
+                <Skeleton height="100%" v-for="(item, index) in 4" :key="index" />
+            </div>
+        </div>
+
+        <!-- Blocks -->
+        <DataView :value="blocks" v-if="!loading" class="mt-8">
             <template #empty>
                 <div class="text-center py-12 text-gray-500">No blocks found.</div>
             </template>
@@ -83,7 +94,10 @@
 
                         <!-- Proposer & Transactions -->
                         <div class="flex flex-col flex-1 min-w-0">
-                            <a class="font-mono text-sm text-gray-900 truncate font-medium" @click="e => visitNode(e, block.proposerVbId)">
+                            <a
+                                class="font-mono text-sm text-gray-900 truncate font-medium"
+                                @click="(e) => visitNode(e, block.proposerVbId)"
+                            >
                                 {{ block.proposerName }}
                             </a>
                             <div class="text-sm text-gray-500">
@@ -114,6 +128,7 @@ import { Tendermint37Client } from '@cosmjs/tendermint-rpc'
 import { useBlockchainStore } from '@/stores/blockchain'
 import DataView from 'primevue/dataview'
 import Tag from 'primevue/tag'
+import Skeleton from 'primevue/skeleton'
 import { CMTSToken, Hash, Microblock, ProviderFactory, Utils } from '@cmts-dev/carmentis-sdk/client'
 
 interface Block {
@@ -190,17 +205,17 @@ const getTimeAgo = (date: Date): string => {
 
 const provider = ProviderFactory.createInMemoryProviderWithExternalProvider(rpcUrl)
 const getValidatorNodeIdByCometBFTAddress = async (address: string) => {
-    console.log("Searching for validator node ID by Comet BFT address: ", address)
+    console.log('Searching for validator node ID by Comet BFT address: ', address)
     const vbId = await provider.getValidatorNodeIdByAddress(Hash.from(address))
     return Utils.binaryToHexa(vbId)
 }
 const getOrganizationNameByValidatorNodeId = async (nodeId: string) => {
-    console.log("Searching for organization name for validator node ID: ", nodeId)
+    console.log('Searching for organization name for validator node ID: ', nodeId)
     const nodeVb = await provider.loadValidatorNodeVirtualBlockchain(Hash.from(nodeId))
     const orgId = await nodeVb.getOrganizationId()
     const orgVb = await provider.loadOrganizationVirtualBlockchain(orgId)
     const desc = await orgVb.getDescription()
-    console.log("Organization name: ", desc.name)
+    console.log('Organization name: ', desc.name)
     return desc.name
 }
 
@@ -347,15 +362,14 @@ onMounted(async () => {
             }),
         )
 
-        loading.value = false
-
         // Subscribe to new blocks via WebSocket
         subscribeToNewBlocks()
     } catch (error) {
         console.error('Error fetching blocks:', error)
-        loading.value = false
         connectionStatus.value = 'Connection Failed'
         isConnected.value = false
+    } finally {
+        loading.value = false
     }
 })
 
