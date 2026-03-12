@@ -83,9 +83,9 @@
 
                         <!-- Proposer & Transactions -->
                         <div class="flex flex-col flex-1 min-w-0">
-                            <div class="font-mono text-sm text-gray-900 truncate font-medium">
-                                {{ block.proposer }}
-                            </div>
+                            <a class="font-mono text-sm text-gray-900 truncate font-medium" @click="e => visitNode(e, block.proposerVbId)">
+                                {{ block.proposerName }}
+                            </a>
                             <div class="text-sm text-gray-500">
                                 {{ block.numTxs }} transaction{{ block.numTxs !== 1 ? 's' : '' }}
                             </div>
@@ -114,7 +114,7 @@ import { Tendermint37Client } from '@cosmjs/tendermint-rpc'
 import { useBlockchainStore } from '@/stores/blockchain'
 import DataView from 'primevue/dataview'
 import Tag from 'primevue/tag'
-import { CMTSToken, Microblock, Utils } from '@cmts-dev/carmentis-sdk/client'
+import { CMTSToken, Hash, Microblock, ProviderFactory, Utils } from '@cmts-dev/carmentis-sdk/client'
 
 interface Block {
     height: number
@@ -122,12 +122,14 @@ interface Block {
     time: Date
     txs: Uint8Array[]
     numTxs: number
-    proposer: string
+    proposerVbId: string
+    proposerName: string
     rewards: string
 }
 
 const router = useRouter()
 const blockchainStore = useBlockchainStore()
+const rpcUrl = blockchainStore.getRpcUrl
 const loading = ref(true)
 const blocks = ref<Block[]>([])
 const connectionStatus = ref<string>('')
@@ -186,6 +188,22 @@ const getTimeAgo = (date: Date): string => {
     }
 }
 
+const provider = ProviderFactory.createInMemoryProviderWithExternalProvider(rpcUrl)
+const getValidatorNodeIdByCometBFTAddress = async (address: string) => {
+    console.log("Searching for validator node ID by Comet BFT address: ", address)
+    const vbId = await provider.getValidatorNodeIdByAddress(Hash.from(address))
+    return Utils.binaryToHexa(vbId)
+}
+const getOrganizationNameByValidatorNodeId = async (nodeId: string) => {
+    console.log("Searching for organization name for validator node ID: ", nodeId)
+    const nodeVb = await provider.loadValidatorNodeVirtualBlockchain(Hash.from(nodeId))
+    const orgId = await nodeVb.getOrganizationId()
+    const orgVb = await provider.loadOrganizationVirtualBlockchain(orgId)
+    const desc = await orgVb.getDescription()
+    console.log("Organization name: ", desc.name)
+    return desc.name
+}
+
 const onBlockClick = (block: Block) => {
     router.push(`/block/height/${block.height}`)
 }
@@ -199,12 +217,16 @@ const addBlock = (block: Block) => {
     }
 }
 
+function visitNode(e: Event, nodeId: string) {
+    e.stopPropagation()
+    router.push(`/nodes/${nodeId}`)
+}
+
 let ws: WebSocket | null = null
 //let reconnectTimeout: any = null
 
 const subscribeToNewBlocks = () => {
     try {
-        const rpcUrl = blockchainStore.getRpcUrl
         // Convert HTTP(S) URL to WebSocket URL
         const wsUrl = rpcUrl.replace(/^http/, 'ws') + '/websocket'
 
@@ -236,7 +258,8 @@ const subscribeToNewBlocks = () => {
                     const blockData = data.result.data.value.block
                     const header = blockData.header
                     const txs: Uint8Array[] = blockData.data?.txs ?? []
-
+                    const vbIs = await getValidatorNodeIdByCometBFTAddress(header.proposer_address)
+                    const orgName = await getOrganizationNameByValidatorNodeId(vbIs)
                     //console.log('New block:', header)
 
                     const newBlock: Block = {
@@ -245,7 +268,8 @@ const subscribeToNewBlocks = () => {
                         hash: header.last_block_id.hash,
                         time: new Date(header.time),
                         numTxs: blockData.data?.txs?.length || 0,
-                        proposer: header.proposer_address,
+                        proposerName: orgName,
+                        proposerVbId: vbIs,
                         rewards: computeRewardsForTransactions(txs),
                     }
 
@@ -304,15 +328,24 @@ onMounted(async () => {
         }
 
         const fetchedBlocks = await Promise.all(blockPromises)
-        blocks.value = fetchedBlocks.map((b) => ({
-            height: b.block.header.height,
-            hash: Utils.binaryToHexa(b.blockId.hash),
-            time: b.block.header.time,
-            numTxs: b.block.txs.length,
-            txs: b.block.txs,
-            proposer: Utils.binaryToHexa(b.block.header.proposerAddress),
-            rewards: computeRewardsForTransactions(b.block.txs ?? []),
-        }))
+        blocks.value = await Promise.all(
+            fetchedBlocks.map(async (b) => {
+                const vbId = await getValidatorNodeIdByCometBFTAddress(
+                    b.block.header.proposerAddress,
+                )
+                const orgName = await getOrganizationNameByValidatorNodeId(vbId)
+                return {
+                    height: b.block.header.height,
+                    hash: Utils.binaryToHexa(b.blockId.hash),
+                    time: b.block.header.time,
+                    numTxs: b.block.txs.length,
+                    txs: b.block.txs,
+                    proposerVbId: vbId,
+                    proposerName: orgName,
+                    rewards: computeRewardsForTransactions(b.block.txs ?? []),
+                }
+            }),
+        )
 
         loading.value = false
 
