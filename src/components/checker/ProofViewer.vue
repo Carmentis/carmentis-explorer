@@ -80,7 +80,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import { ProofDocument, Hash, ImportedProof } from '@cmts-dev/carmentis-sdk/client'
+import { ProofDocument, Hash,  type ImportedProof } from '@cmts-dev/carmentis-sdk/client'
 import { useBlockchainStore } from '@/stores/blockchain'
 import ProgressSpinner from 'primevue/progressspinner'
 import ProofRecordViewer from './ProofRecordViewer.vue'
