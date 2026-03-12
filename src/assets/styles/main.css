@@ -71,12 +71,6 @@
   --breakpoint-xl: 1280px;
 }
 
-/* Reset and Base Styles */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
 
 body {
   font-family: var(--font-family-base);

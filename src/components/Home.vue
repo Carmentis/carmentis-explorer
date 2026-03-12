@@ -11,47 +11,43 @@
             />
         </div>
 
-        <DataTable
-            :value="blocks"
-            :loading="loading"
-            stripedRows
-            showGridlines
-            selectionMode="single"
-            @row-click="onRowClick"
-            class="blocks-table clickable-table"
-        >
+        <DataView :value="blocks" :loading="loading" class="blocks-view mt-4">
             <template #empty>
                 <div class="empty-state">No blocks found.</div>
             </template>
-            <template #loading>
-                <ProgressSpinner />
+            <template #list="{ items }">
+                <div class="blocks-list">
+                    <div
+                        v-for="block in items"
+                        :key="block.height"
+                        class="p-2 flex flex-row gap-2 justify-between border-b-2 border-b-neutral-100"
+                        @click="onBlockClick(block)"
+                    >
+                        <div class="flex flex-row gap-2 items-center">
+                            <div class="bg-gray-200 p-3 rounded">
+                                <i class="pi pi-box"></i>
+                            </div>
+                            <div class="block-height">
+                                <div class="height-value">{{ block.height }}</div>
+                                <div class="time-ago" :title="formatTime(block.time)">
+                                    {{ getTimeAgo(block.time) }}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="block-proposer">
+                            <div class="proposer-address mono-cell">{{ block.proposer }}</div>
+                            <div class="tx-count">
+                                {{ block.numTxs }} transaction{{ block.numTxs !== 1 ? 's' : '' }}
+                            </div>
+                        </div>
+                        <div class="block-reward">
+                            <div class="reward-label">Reward</div>
+                            <div class="reward-value">{{ block.numTxs }}</div>
+                        </div>
+                    </div>
+                </div>
             </template>
-            <Column field="height" header="Height" :sortable="true">
-                <template #body="{ data }">
-                    <strong>{{ data.height }}</strong>
-                </template>
-            </Column>
-            <Column field="hash" header="Block Hash">
-                <template #body="{ data }">
-                    <span class="mono-cell" :title="data.hash">{{ data.hash }}</span>
-                </template>
-            </Column>
-            <Column field="time" header="Time">
-                <template #body="{ data }">
-                    {{ formatTime(data.time) }}
-                </template>
-            </Column>
-            <Column field="numTxs" header="Transactions" :sortable="true">
-                <template #body="{ data }">
-                    <Tag :value="data.numTxs.toString()" severity="info" />
-                </template>
-            </Column>
-            <Column field="proposer" header="Proposer">
-                <template #body="{ data }">
-                    <span class="mono-cell" :title="data.proposer">{{ data.proposer }}</span>
-                </template>
-            </Column>
-        </DataTable>
+        </DataView>
     </div>
 </template>
 
@@ -60,9 +56,7 @@ import { ref, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { Tendermint37Client } from '@cosmjs/tendermint-rpc'
 import { useBlockchainStore } from '@/stores/blockchain'
-import DataTable from 'primevue/datatable'
-import Column from 'primevue/column'
-import ProgressSpinner from 'primevue/progressspinner'
+import DataView from 'primevue/dataview'
 import Tag from 'primevue/tag'
 import { Utils } from '@cmts-dev/carmentis-sdk/client'
 
@@ -86,8 +80,26 @@ const formatTime = (date: Date): string => {
     return new Date(date).toLocaleString()
 }
 
-const onRowClick = (event: any) => {
-    router.push(`/block/height/${event.data.height}`)
+const getTimeAgo = (date: Date): string => {
+    const now = new Date()
+    const diffInSeconds = Math.floor((now.getTime() - new Date(date).getTime()) / 1000)
+
+    if (diffInSeconds < 60) {
+        return `${diffInSeconds} sec${diffInSeconds !== 1 ? 's' : ''} ago`
+    } else if (diffInSeconds < 3600) {
+        const minutes = Math.floor(diffInSeconds / 60)
+        return `${minutes} min${minutes !== 1 ? 's' : ''} ago`
+    } else if (diffInSeconds < 86400) {
+        const hours = Math.floor(diffInSeconds / 3600)
+        return `${hours} hour${hours !== 1 ? 's' : ''} ago`
+    } else {
+        const days = Math.floor(diffInSeconds / 86400)
+        return `${days} day${days !== 1 ? 's' : ''} ago`
+    }
+}
+
+const onBlockClick = (block: Block) => {
+    router.push(`/block/height/${block.height}`)
 }
 
 const addBlock = (block: Block) => {
@@ -95,7 +107,7 @@ const addBlock = (block: Block) => {
     blocks.value.unshift(block)
     // Keep only the latest 10 blocks
     if (blocks.value.length > 10) {
-        blocks.value = blocks.value.slice(0, 10)
+        blocks.value = blocks.value.slice(0, 8)
     }
 }
 
@@ -192,7 +204,7 @@ onMounted(async () => {
 
         // Fetch the last 10 blocks
         const blockPromises: Promise<any>[] = []
-        for (let i = 0; i < 10; i++) {
+        for (let i = 0; i < 8; i++) {
             const height = currentHeight - i
             if (height > 0) {
                 blockPromises.push(client.block(height))
@@ -253,16 +265,10 @@ h1 {
     margin-bottom: var(--spacing-sm);
 }
 
-.blocks-table {
-    margin-top: var(--spacing-2xl);
-}
-
 .mono-cell {
     font-family: var(--font-family-mono);
     font-size: 0.875rem;
 }
-
-
 
 .empty-state {
     text-align: center;
