@@ -11,38 +11,55 @@
             />
         </div>
 
-        <DataView :value="blocks" :loading="loading" class="blocks-view mt-4">
+        <DataView :value="blocks" :loading="loading" class="mt-8">
             <template #empty>
-                <div class="empty-state">No blocks found.</div>
+                <div class="text-center py-12 text-gray-500">No blocks found.</div>
             </template>
             <template #list="{ items }">
-                <div class="blocks-list">
+                <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
                     <div
-                        v-for="block in items"
+                        v-for="(block, index) in items"
                         :key="block.height"
-                        class="p-2 flex flex-row gap-2 justify-between border-b-2 border-b-neutral-100"
+                        class="flex items-center gap-6 px-6 py-4 hover:bg-gray-50 transition-colors cursor-pointer border-b border-gray-100 last:border-b-0"
                         @click="onBlockClick(block)"
                     >
-                        <div class="flex flex-row gap-2 items-center">
-                            <div class="bg-gray-200 p-3 rounded">
-                                <i class="pi pi-box"></i>
-                            </div>
-                            <div class="block-height">
-                                <div class="height-value">{{ block.height }}</div>
-                                <div class="time-ago" :title="formatTime(block.time)">
-                                    {{ getTimeAgo(block.time) }}
-                                </div>
+                        <!-- Icon -->
+                        <div class="flex-shrink-0">
+                            <div
+                                class="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center"
+                            >
+                                <i class="pi pi-box text-gray-600 text-xl"></i>
                             </div>
                         </div>
-                        <div class="block-proposer">
-                            <div class="proposer-address mono-cell">{{ block.proposer }}</div>
-                            <div class="tx-count">
+
+                        <!-- Block Height & Time -->
+                        <div class="flex flex-col min-w-[140px]">
+                            <div class="text-lg font-semibold text-gray-900">
+                                {{ block.height }}
+                            </div>
+                            <div class="text-sm text-gray-500" :title="formatTime(block.time)">
+                                {{ getTimeAgo(block.time) }}
+                            </div>
+                        </div>
+
+                        <!-- Proposer & Transactions -->
+                        <div class="flex flex-col flex-1 min-w-0">
+                            <div class="font-mono text-sm text-gray-900 truncate font-medium">
+                                {{ block.proposer }}
+                            </div>
+                            <div class="text-sm text-gray-500">
                                 {{ block.numTxs }} transaction{{ block.numTxs !== 1 ? 's' : '' }}
                             </div>
                         </div>
-                        <div class="block-reward">
-                            <div class="reward-label">Reward</div>
-                            <div class="reward-value">{{ block.numTxs }}</div>
+
+                        <!-- Reward -->
+                        <div class="flex flex-col items-end min-w-[120px]">
+                            <div class="text-xs text-gray-500 uppercase tracking-wider mb-1">
+                                Reward
+                            </div>
+                            <div class="text-lg font-semibold text-gray-900">
+                                {{ block.rewards }}
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -58,7 +75,7 @@ import { Tendermint37Client } from '@cosmjs/tendermint-rpc'
 import { useBlockchainStore } from '@/stores/blockchain'
 import DataView from 'primevue/dataview'
 import Tag from 'primevue/tag'
-import { Utils } from '@cmts-dev/carmentis-sdk/client'
+import { CMTSToken, Microblock, Utils } from '@cmts-dev/carmentis-sdk/client'
 
 interface Block {
     height: number
@@ -66,6 +83,7 @@ interface Block {
     time: Date
     numTxs: number
     proposer: string
+    rewards: string
 }
 
 const router = useRouter()
@@ -147,6 +165,12 @@ const subscribeToNewBlocks = () => {
                 if (data.result?.data?.type === 'tendermint/event/NewBlock') {
                     const blockData = data.result.data.value.block
                     const header = blockData.header
+                    const txs: Uint8Array[] = blockData.data?.txs ?? []
+                    const rewardsInAtomic = txs
+                        .map((tx: Uint8Array) => Microblock.loadFromSerializedMicroblock(tx))
+                        .map((mb: Microblock) => mb.getMaxFees().getAmountAsAtomic())
+                        .reduce((a, b) => a + b, 0)
+
                     //console.log('New block:', header)
 
                     const newBlock: Block = {
@@ -155,6 +179,7 @@ const subscribeToNewBlocks = () => {
                         time: new Date(header.time),
                         numTxs: blockData.data?.txs?.length || 0,
                         proposer: header.proposer_address,
+                        rewards: CMTSToken.createAtomic(rewardsInAtomic).toString(),
                     }
 
                     addBlock(newBlock)
@@ -218,6 +243,7 @@ onMounted(async () => {
             time: b.block.header.time,
             numTxs: b.block.txs.length,
             proposer: Utils.binaryToHexa(b.block.header.proposerAddress),
+            rewards: '',
         }))
 
         loading.value = false
@@ -263,16 +289,5 @@ onUnmounted(() => {
 h1 {
     font-size: var(--font-size-4xl);
     margin-bottom: var(--spacing-sm);
-}
-
-.mono-cell {
-    font-family: var(--font-family-mono);
-    font-size: 0.875rem;
-}
-
-.empty-state {
-    text-align: center;
-    padding: var(--spacing-xl);
-    color: var(--color-text-tertiary);
 }
 </style>
