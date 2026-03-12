@@ -1,14 +1,51 @@
 <template>
     <div class="home">
-        <h1>Latest Blocks</h1>
-        <p>Real-time blockchain activity</p>
+        <div class="flex justify-between items-start mb-8">
+            <div>
+                <h1>Latest Blocks</h1>
+                <p>Real-time blockchain activity</p>
 
-        <div v-if="connectionStatus" class="connection-status">
-            <Tag
-                :value="connectionStatus"
-                :severity="isConnected ? 'success' : 'danger'"
-                icon="pi pi-circle-fill"
-            />
+                <div v-if="connectionStatus" class="connection-status">
+                    <Tag
+                        :value="connectionStatus"
+                        :severity="isConnected ? 'success' : 'danger'"
+                        icon="pi pi-circle-fill"
+                    />
+                </div>
+            </div>
+            <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden w-150">
+                <div class="flex divide-x divide-gray-200">
+                    <!-- Min Gas Price -->
+                    <div class="flex-1 px-6 py-4">
+                        <div class="text-xs text-gray-500 uppercase tracking-wider mb-2">
+                            Min Gas Price
+                        </div>
+                        <div class="text-2xl font-semibold text-gray-900">
+                            {{ isMinMaxApplicable ? minGasPrice : '--' }}
+                        </div>
+                    </div>
+
+                    <!-- Avg Gas Price -->
+                    <div class="flex-1 px-6 py-4">
+                        <div class="text-xs text-gray-500 uppercase tracking-wider mb-2">
+                            Avg Gas Price
+                        </div>
+                        <div class="text-2xl font-semibold text-gray-900">
+                            {{ isMinMaxApplicable ? avgGasPrice.toFixed(2) : '--' }}
+                        </div>
+                    </div>
+
+                    <!-- Max Gas Price -->
+                    <div class="flex-1 px-6 py-4">
+                        <div class="text-xs text-gray-500 uppercase tracking-wider mb-2">
+                            Max Gas Price
+                        </div>
+                        <div class="text-2xl font-semibold text-gray-900">
+                            {{ isMinMaxApplicable ? maxGasPrice : '--' }}
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <DataView :value="blocks" :loading="loading" class="mt-8">
@@ -26,9 +63,11 @@
                         <!-- Icon -->
                         <div class="flex-shrink-0">
                             <div
-                                class="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center"
+                                :class="`w-12 h-12 ${block.numTxs === 0 ? 'bg-gray-100' : 'bg-green-100'} rounded-lg flex items-center justify-center`"
                             >
-                                <i class="pi pi-box text-gray-600 text-xl"></i>
+                                <i
+                                    :class="`pi pi-box ${block.numTxs === 0 ? 'text-gray-600' : 'text-green-500'} text-xl`"
+                                ></i>
                             </div>
                         </div>
 
@@ -69,7 +108,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, onMounted, onUnmounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { Tendermint37Client } from '@cosmjs/tendermint-rpc'
 import { useBlockchainStore } from '@/stores/blockchain'
@@ -81,6 +120,7 @@ interface Block {
     height: number
     hash: string
     time: Date
+    txs: Uint8Array[]
     numTxs: number
     proposer: string
     rewards: string
@@ -94,8 +134,38 @@ const connectionStatus = ref<string>('')
 const isConnected = ref(false)
 let client: Tendermint37Client | null = null
 
+const gasPrices = computed(() => {
+    if (blocks.value.length === 0) return []
+    return blocks.value
+        .map((block) =>
+            block.txs.map((tx) =>
+                Microblock.loadFromSerializedMicroblock(tx).getGasPrice().getAmountAsAtomic(),
+            ),
+        )
+        .reduce((acc, val) => acc.concat(val), [])
+})
+const isMinMaxApplicable = computed(() => gasPrices.value.length > 0)
+const minGasPrice = computed(() =>
+    gasPrices.value.length === 0 ? 0 : Math.min(...gasPrices.value),
+)
+const maxGasPrice = computed(() =>
+    gasPrices.value.length === 0 ? 0 : Math.max(...gasPrices.value),
+)
+const avgGasPrice = computed(() => {
+    if (gasPrices.value.length === 0) return 0
+    return gasPrices.value.reduce((acc, val) => acc + val, 0) / gasPrices.value.length
+})
+
 const formatTime = (date: Date): string => {
     return new Date(date).toLocaleString()
+}
+
+const computeRewardsForTransactions = (txs: Uint8Array[]) => {
+    const rewardsInAtomic = txs
+        .map((tx: Uint8Array) => Microblock.loadFromSerializedMicroblock(tx))
+        .map((mb: Microblock) => mb.getMaxFees().getAmountAsAtomic())
+        .reduce((a, b) => a + b, 0)
+    return CMTSToken.createAtomic(rewardsInAtomic).toString()
 }
 
 const getTimeAgo = (date: Date): string => {
@@ -124,7 +194,7 @@ const addBlock = (block: Block) => {
     // Add new block at the beginning
     blocks.value.unshift(block)
     // Keep only the latest 10 blocks
-    if (blocks.value.length > 10) {
+    if (blocks.value.length > 8) {
         blocks.value = blocks.value.slice(0, 8)
     }
 }
@@ -166,20 +236,17 @@ const subscribeToNewBlocks = () => {
                     const blockData = data.result.data.value.block
                     const header = blockData.header
                     const txs: Uint8Array[] = blockData.data?.txs ?? []
-                    const rewardsInAtomic = txs
-                        .map((tx: Uint8Array) => Microblock.loadFromSerializedMicroblock(tx))
-                        .map((mb: Microblock) => mb.getMaxFees().getAmountAsAtomic())
-                        .reduce((a, b) => a + b, 0)
 
                     //console.log('New block:', header)
 
                     const newBlock: Block = {
+                        txs,
                         height: parseInt(header.height),
                         hash: header.last_block_id.hash,
                         time: new Date(header.time),
                         numTxs: blockData.data?.txs?.length || 0,
                         proposer: header.proposer_address,
-                        rewards: CMTSToken.createAtomic(rewardsInAtomic).toString(),
+                        rewards: computeRewardsForTransactions(txs),
                     }
 
                     addBlock(newBlock)
@@ -242,8 +309,9 @@ onMounted(async () => {
             hash: Utils.binaryToHexa(b.blockId.hash),
             time: b.block.header.time,
             numTxs: b.block.txs.length,
+            txs: b.block.txs,
             proposer: Utils.binaryToHexa(b.block.header.proposerAddress),
-            rewards: '',
+            rewards: computeRewardsForTransactions(b.block.txs ?? []),
         }))
 
         loading.value = false
