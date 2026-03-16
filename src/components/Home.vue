@@ -224,6 +224,7 @@ const onBlockClick = (block: Block) => {
 }
 
 const addBlock = (block: Block) => {
+    console.info('Receiving a new block:', block)
     // Add new block at the beginning
     blocks.value.unshift(block)
     // Keep only the latest 10 blocks
@@ -270,9 +271,11 @@ const subscribeToNewBlocks = () => {
 
                 // Check if this is a new block event
                 if (data.result?.data?.type === 'tendermint/event/NewBlock') {
+                    console.info('Received new block from WS:', event.data)
                     const blockData = data.result.data.value.block
                     const header = blockData.header
-                    const txs: Uint8Array[] = blockData.data?.txs ?? []
+                    const base64EncodedTxs: string[] = blockData.data.txs;
+                    const txs : Uint8Array[] = base64EncodedTxs.map(tx => Uint8Array.from(atob(tx), c => c.charCodeAt(0)))
                     const vbIs = await getValidatorNodeIdByCometBFTAddress(header.proposer_address)
                     const orgName = await getOrganizationNameByValidatorNodeId(vbIs)
                     //console.log('New block:', header)
