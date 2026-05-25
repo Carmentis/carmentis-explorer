@@ -85,7 +85,7 @@
 import { useBlockchainStore } from '@/stores/blockchain.ts'
 import { useRoute, useRouter } from 'vue-router'
 import { onMounted, ref } from 'vue'
-import { CMTSToken, Hash, Utils } from '@cmts-dev/carmentis-sdk/client'
+import { CMTSToken, Hash, Utils } from '@cmts-dev/carmentis-sdk-core'
 import ProgressSpinner from 'primevue/progressspinner'
 import Button from 'primevue/button'
 import MicroblockInVirtualBlockchainSection from '@/components/vb/MicroblockInVirtualBlockchainSection.vue'
@@ -126,7 +126,7 @@ onMounted(async () => {
     try {
         const mb = await provider.loadMicroblockByMicroblockHash(Hash.fromHex(mbHash.value))
         const gasPrice = mb.getGasPrice().toString()
-        const paidFees = mb.getMaxFees().toString()
+        const paidFees = mb.getFees().toString()
 
         const signature = Utils.binaryToHexa(mb.getLastSignatureSection().signature)
         const signerAccount = mb.getFeesPayerAccount()

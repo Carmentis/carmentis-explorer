@@ -5,7 +5,7 @@ import {
     Hash,
     type VirtualBlockchain,
     VirtualBlockchainLabel,
-} from '@cmts-dev/carmentis-sdk/client'
+} from '@cmts-dev/carmentis-sdk-core'
 import { useBlockchainStore } from '@/stores/blockchain.ts'
 import ProgressSpinner from 'primevue/progressspinner'
 

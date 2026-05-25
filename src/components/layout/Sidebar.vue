@@ -104,7 +104,7 @@
 <script setup lang="ts">
 import { inject, ref } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import { Hash, VirtualBlockchainType } from '@cmts-dev/carmentis-sdk/client'
+import { Hash, VirtualBlockchainType } from '@cmts-dev/carmentis-sdk-core'
 import { useBlockchainStore } from '@/stores/blockchain'
 import Divider from 'primevue/divider'
 import Dialog from 'primevue/dialog'

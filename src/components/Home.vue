@@ -129,7 +129,7 @@ import { useBlockchainStore } from '@/stores/blockchain'
 import DataView from 'primevue/dataview'
 import Tag from 'primevue/tag'
 import Skeleton from 'primevue/skeleton'
-import { CMTSToken, Hash, Microblock, ProviderFactory, Utils } from '@cmts-dev/carmentis-sdk/client'
+import { CMTSToken, Hash, Microblock, ProviderFactory, Utils } from '@cmts-dev/carmentis-sdk-core'
 
 interface Block {
     height: number
@@ -180,7 +180,7 @@ const formatTime = (date: Date): string => {
 const computeRewardsForTransactions = (txs: Uint8Array[]) => {
     const rewardsInAtomic = txs
         .map((tx: Uint8Array) => Microblock.loadFromSerializedMicroblock(tx))
-        .map((mb: Microblock) => mb.getMaxFees().getAmountAsAtomic())
+        .map((mb: Microblock) => mb.getFees().getAmountAsAtomic())
         .reduce((a, b) => a + b, 0)
     return CMTSToken.createAtomic(rewardsInAtomic).toString()
 }

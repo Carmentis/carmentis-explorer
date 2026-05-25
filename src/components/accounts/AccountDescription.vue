@@ -35,7 +35,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { BalanceAvailability, CryptoEncoderFactory, Hash } from '@cmts-dev/carmentis-sdk/client'
+import { BalanceAvailability, CryptoEncoderFactory, Hash } from '@cmts-dev/carmentis-sdk-core'
 import { useBlockchainStore } from '@/stores/blockchain'
 import Button from 'primevue/button'
 

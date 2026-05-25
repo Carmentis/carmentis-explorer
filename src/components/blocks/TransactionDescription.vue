@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useBlockchainStore } from '@/stores/blockchain.ts'
 import { onMounted, ref } from 'vue'
-import { Hash, Microblock, Utils } from '@cmts-dev/carmentis-sdk/client'
+import { Hash, Microblock, Utils } from '@cmts-dev/carmentis-sdk-core'
 import Button from 'primevue/button'
 import SelectButton from 'primevue/selectbutton'
 import { useRouter } from 'vue-router'

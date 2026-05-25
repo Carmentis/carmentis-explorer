@@ -16,7 +16,7 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import { ProofDocument } from '@cmts-dev/carmentis-sdk/client'
+import { ProofDocument } from '@cmts-dev/carmentis-sdk-core'
 import ProofCheckerUpload from './ProofCheckerUpload.vue'
 import ProofViewer from './ProofViewer.vue'
 

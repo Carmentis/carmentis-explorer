@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
-import { Hash, Provider, ProviderFactory } from '@cmts-dev/carmentis-sdk/client'
+import { Hash, Provider, ProviderFactory } from '@cmts-dev/carmentis-sdk-core'
 import { useQuery } from '@tanstack/vue-query'
 
 export const useBlockchainStore = defineStore('blockchain', () => {

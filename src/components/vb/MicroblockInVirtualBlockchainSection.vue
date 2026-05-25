@@ -10,7 +10,7 @@ import {
     type Section,
     Microblock,
     CryptoEncoderFactory,
-} from '@cmts-dev/carmentis-sdk/client'
+} from '@cmts-dev/carmentis-sdk-core'
 
 const props = defineProps<{ serializedMb: Uint8Array; section: Section; sectionIndex: number }>()
 const section = props.section

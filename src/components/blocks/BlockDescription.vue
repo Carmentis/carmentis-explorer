@@ -155,7 +155,7 @@ import { ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { Tendermint37Client } from '@cosmjs/tendermint-rpc'
 import { useBlockchainStore } from '@/stores/blockchain'
-import { Utils } from '@cmts-dev/carmentis-sdk/client'
+import { Utils } from '@cmts-dev/carmentis-sdk-core'
 import ProgressSpinner from 'primevue/progressspinner'
 import TransactionDescription from '@/components/blocks/TransactionDescription.vue'
 

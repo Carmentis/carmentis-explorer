@@ -39,7 +39,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { BalanceAvailability, CryptoEncoderFactory } from '@cmts-dev/carmentis-sdk/client'
+import { BalanceAvailability, CryptoEncoderFactory } from '@cmts-dev/carmentis-sdk-core'
 import { useBlockchainStore } from '@/stores/blockchain'
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
