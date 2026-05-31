@@ -1,30 +1,32 @@
 <script setup lang="ts">
-import { useBlockchainStore } from '@/stores/blockchain.ts'
 import { onMounted, ref } from 'vue'
-import { Hash, Microblock, Utils } from '@cmts-dev/carmentis-sdk-core'
+import { Microblock, Base64 } from '@cmts-dev/carmentis-sdk-core'
 import Button from 'primevue/button'
 import SelectButton from 'primevue/selectbutton'
 import { useRouter } from 'vue-router'
+import * as api from "@/indexer-sdk/indexer-api";
 
 const router = useRouter()
 const value = ref('Formatted')
 const options = ref(['Formatted', 'Raw'])
 const props = defineProps(['index', 'tx'])
-const blockchainStore = useBlockchainStore()
 
 async function visitMicroblock(microblockHash: string) {
-    const microblockHashBytes = Utils.binaryFromHexa(microblockHash);
-    const vbId = await blockchainStore.getProvider.getVirtualBlockchainIdContainingMicroblock(
-        Hash.from(microblockHashBytes)
-    );
-    return router.push(`/vb/${vbId.encode()}/mb/${microblockHash}`)
+    const microblocks = await api.appControllerGetMicroblocks({ hash: microblockHash });
+    if (microblocks.data.items.length === 0) {
+        throw new Error('Microblock not found');
+    }
+    const microblock = microblocks.data.items[0];
+    const vbId = microblock.virtualBlockchainId;
+    return router.push(`/vb/${vbId}/mb/${microblockHash}`)
 }
 
 const tx = props.tx
 const hash = ref<string>('')
 onMounted(async () => {
-    const mb = Microblock.loadFromSerializedMicroblock(Utils.binaryFromHexa(tx))
-    hash.value = mb.getHash().encode()
+    const serializedData = Base64.decodeBinary(tx);
+    const mb = Microblock.loadFromSerializedMicroblock(serializedData);
+    hash.value = mb.getHash().encode();
 })
 </script>
 <template>

@@ -33,37 +33,9 @@
                 </div>
             </div>
 
-            <!-- Block ID -->
-            <div class="details-card">
-                <h3>Block ID</h3>
-                <div class="detail-section">
-                    <h4>Hash</h4>
-                    <p class="mono">{{ block.blockId.hash }}</p>
-                </div>
-                <div class="detail-section">
-                    <h4>Parts</h4>
-                    <p class="mono">Total: {{ block.blockId.parts.total }}</p>
-                    <p class="mono">Hash: {{ block.blockId.parts.hash }}</p>
-                </div>
-            </div>
-
-            <!-- Last Block ID -->
-            <div class="details-card">
-                <h3>Last Block ID</h3>
-                <div class="detail-section">
-                    <h4>Hash</h4>
-                    <p class="mono">{{ block.header.lastBlockId.hash }}</p>
-                </div>
-                <div class="detail-section">
-                    <h4>Parts</h4>
-                    <p class="mono">Total: {{ block.header.lastBlockId.parts.total }}</p>
-                    <p class="mono">Hash: {{ block.header.lastBlockId.parts.hash }}</p>
-                </div>
-            </div>
-
             <!-- Hashes -->
             <div class="details-card">
-                <h3>Merkle Roots</h3>
+                <h3>Hashes</h3>
                 <div class="detail-section">
                     <h4>Last Commit Hash</h4>
                     <p class="mono">{{ block.header.lastCommitHash }}</p>
@@ -109,39 +81,19 @@
                 <p v-else class="empty">No transactions in this block</p>
             </div>
 
-            <!-- Last Commit -->
-            <div v-if="block.lastCommit" class="details-card">
-                <h3>Last Commit</h3>
-                <div class="detail-section">
-                    <h4>Height</h4>
-                    <p class="mono">{{ block.lastCommit.height }}</p>
-                </div>
-                <div class="detail-section">
-                    <h4>Round</h4>
-                    <p class="mono">{{ block.lastCommit.round }}</p>
-                </div>
-                <div class="detail-section">
-                    <h4>Block ID Hash</h4>
-                    <p class="mono">{{ block.lastCommit.blockId.hash }}</p>
-                </div>
-                <div class="detail-section">
-                    <h4>Signatures</h4>
-                    <p>{{ block.lastCommit.signatures.length }} signatures</p>
-                </div>
-                <div v-if="block.lastCommit.signatures.length > 0" class="signatures-list">
-                    <div
-                        v-for="(sig, index) in block.lastCommit.signatures"
-                        :key="index"
-                        class="signature-item"
-                    >
-                        <h5>Signature {{ index + 1 }}</h5>
-                        <p class="mono"><strong>Type:</strong> {{ sig.blockIdFlag }}</p>
-                        <p class="mono"><strong>Validator:</strong> {{ sig.validatorAddress }}</p>
-                        <p class="mono">
-                            <strong>Timestamp:</strong> {{ formatTime(sig.timestamp) }}
-                        </p>
-                        <p class="mono"><strong>Signature:</strong> {{ sig.signature }}</p>
-                    </div>
+            <div v-if="block.signatures.length > 0" class="signatures-list">
+                <div
+                    v-for="(sig, index) in block.signatures"
+                    :key="index"
+                    class="signature-item"
+                >
+                    <h5>Signature {{ index + 1 }}</h5>
+                    <p class="mono"><strong>Type:</strong> {{ sig.blockIdFlag }}</p>
+                    <p class="mono"><strong>Validator:</strong> {{ sig.validatorAddress }}</p>
+                    <p class="mono">
+                        <strong>Timestamp:</strong> {{ formatTime(sig.timestamp) }}
+                    </p>
+                    <p class="mono"><strong>Signature:</strong> {{ sig.signature }}</p>
                 </div>
             </div>
         </div>
@@ -153,21 +105,13 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
-import { Tendermint37Client } from '@cosmjs/tendermint-rpc'
-import { useBlockchainStore } from '@/stores/blockchain'
-import { Utils } from '@cmts-dev/carmentis-sdk-core'
 import ProgressSpinner from 'primevue/progressspinner'
 import TransactionDescription from '@/components/blocks/TransactionDescription.vue'
+import { formatTime } from "@/utils/formatTime"
+import * as api from "@/indexer-sdk/indexer-api";
 
 interface BlockData {
     blockHash: string
-    blockId: {
-        hash: string
-        parts: {
-            total: number
-            hash: string
-        }
-    }
     header: {
         version: {
             block: string
@@ -176,13 +120,6 @@ interface BlockData {
         chainId: string
         height: number
         time: Date
-        lastBlockId: {
-            hash: string
-            parts: {
-                total: number
-                hash: string
-            }
-        }
         lastCommitHash: string
         dataHash: string
         validatorsHash: string
@@ -194,111 +131,63 @@ interface BlockData {
         proposerAddress: string
     }
     txs: string[]
-    lastCommit: {
-        height: number
-        round: number
-        blockId: {
-            hash: string
-            parts: {
-                total: number
-                hash: string
-            }
-        }
-        signatures: Array<{
-            blockIdFlag: number
-            validatorAddress: string
-            timestamp: Date
-            signature: string
-        }>
-    } | null
+    signatures: Array<{
+        blockIdFlag: number
+        validatorAddress: string
+        timestamp: Date
+        signature: string
+    }>
 }
 
 const route = useRoute()
-const blockchainStore = useBlockchainStore()
 const loading = ref(true)
 const block = ref<BlockData | null>(null)
 
-const formatTime = (date: Date): string => {
-    return new Date(date).toLocaleString()
-}
-
 onMounted(async () => {
     try {
-        const rpcUrl = blockchainStore.getRpcUrl
-        const client = await Tendermint37Client.connect(rpcUrl)
-
-        let blockResponse
-
-        // Check if we're searching by hash or height
-        if (route.params.blockHeight) {
-            const height = parseInt(route.params.blockHeight as string)
-            blockResponse = await client.block(height)
-        } else {
-            throw new Error('No block identifier provided')
+        if (!route.params.blockHeight) {
+            throw new Error('No block identifier provided');
         }
-
-        const blockHeader = blockResponse.block.header
-        const blockId = blockResponse.blockId
+        const height = parseInt(route.params.blockHeight as string);
+        const blockResponse = await api.appControllerGetBlocks({ height });
+        if (blockResponse.data.items.length !== 1) {
+            throw new Error('Block not found');
+        }
+        const requestedBlock = blockResponse.data.items[0];
+        const microblocks = await api.appControllerGetMicroblocks({
+            block_height: height,
+            include_content: true,
+        });
+        const txs = microblocks.data.items.map((mb) => mb.content);
 
         block.value = {
-            blockHash: Utils.binaryToHexa(blockId.hash),
-            blockId: {
-                hash: Utils.binaryToHexa(blockId.hash),
-                parts: {
-                    total: blockId.parts.total,
-                    hash: Utils.binaryToHexa(blockId.parts.hash),
-                },
-            },
+            blockHash: requestedBlock.hash,
             header: {
                 version: {
-                    block: blockHeader.version.block.toString(),
-                    app: blockHeader.version.app.toString(),
+                    block: requestedBlock.blockVersion.toString(),
+                    app: requestedBlock.appVersion.toString(),
                 },
-                chainId: blockHeader.chainId,
-                height: blockHeader.height,
-                time: blockHeader.time,
-                lastBlockId: {
-                    hash: Utils.binaryToHexa(blockHeader.lastBlockId.hash),
-                    parts: {
-                        total: blockHeader.lastBlockId.parts.total,
-                        hash: Utils.binaryToHexa(blockHeader.lastBlockId.parts.hash),
-                    },
-                },
-                lastCommitHash: Utils.binaryToHexa(blockHeader.lastCommitHash),
-                dataHash: Utils.binaryToHexa(blockHeader.dataHash),
-                validatorsHash: Utils.binaryToHexa(blockHeader.validatorsHash),
-                nextValidatorsHash: Utils.binaryToHexa(blockHeader.nextValidatorsHash),
-                consensusHash: Utils.binaryToHexa(blockHeader.consensusHash),
-                appHash: Utils.binaryToHexa(blockHeader.appHash),
-                lastResultsHash: Utils.binaryToHexa(blockHeader.lastResultsHash),
-                evidenceHash: Utils.binaryToHexa(blockHeader.evidenceHash),
-                proposerAddress: Utils.binaryToHexa(blockHeader.proposerAddress),
+                chainId: requestedBlock.chainId,
+                height: requestedBlock.height,
+                time: new Date(requestedBlock.milliseconds),
+                lastCommitHash: requestedBlock.lastCommitHash,
+                dataHash: requestedBlock.dataHash,
+                validatorsHash: requestedBlock.validatorsHash,
+                nextValidatorsHash: requestedBlock.nextValidatorsHash,
+                consensusHash: requestedBlock.consensusHash,
+                appHash: requestedBlock.appHash,
+                lastResultsHash: requestedBlock.lastResultsHash,
+                evidenceHash: requestedBlock.evidenceHash,
+                proposerAddress: requestedBlock.proposerAddress,
             },
-            txs: blockResponse.block.txs.map((tx: any) => Utils.binaryToHexa(tx)),
-            lastCommit: blockResponse.block.lastCommit
-                ? {
-                      height: blockResponse.block.lastCommit.height,
-                      round: blockResponse.block.lastCommit.round,
-                      blockId: {
-                          hash: Utils.binaryToHexa(blockResponse.block.lastCommit.blockId.hash),
-                          parts: {
-                              total: blockResponse.block.lastCommit.blockId.parts.total,
-                              hash: Utils.binaryToHexa(
-                                  blockResponse.block.lastCommit.blockId.parts.hash,
-                              ),
-                          },
-                      },
-                      signatures: blockResponse.block.lastCommit.signatures.map((sig: any) => ({
-                          blockIdFlag: sig.blockIdFlag,
-                          validatorAddress: Utils.binaryToHexa(sig.validatorAddress),
-                          timestamp: sig.timestamp,
-                          signature: Utils.binaryToHexa(sig.signature),
-                      })),
-                  }
-                : null,
+            txs,
+            signatures: requestedBlock.signatures.map((sig) => ({
+                blockIdFlag: sig.blockIdFlag,
+                validatorAddress: sig.validatorAddress,
+                timestamp: new Date(sig.milliseconds),
+                signature: sig.signature,
+            })),
         }
-
-        await client.disconnect()
     } catch (error) {
         console.error('Error fetching block:', error)
     } finally {

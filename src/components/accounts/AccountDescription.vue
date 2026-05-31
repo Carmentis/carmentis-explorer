@@ -2,29 +2,32 @@
     <div class="page">
         <div class="flex justify-between items-center">
             <h2>Account Details</h2>
-            <Button label="Explore Virtual Blockchain" @click="visitVb" />
+            <div class="flex gap-2">
+                <Button icon="pi pi-chart-line" label="See account history" @click="visitHistory" />
+                <Button icon="pi pi-external-link" label="Explore Virtual Blockchain" @click="visitVb" />
+            </div>
         </div>
         <div v-if="loading" class="loading">
             <div class="spinner"></div>
             <p>Loading account details...</p>
         </div>
 
-        <div v-if="account && !loading" class="details-card">
+        <div v-if="accountObject && !loading" class="details-card">
             <div class="detail-section">
                 <h3>Hash</h3>
-                <p class="mono">{{ account.hash }}</p>
+                <p class="mono">{{ accountObject.hash }}</p>
             </div>
             <div class="detail-section">
                 <h3>Public Key</h3>
-                <p class="mono">{{ account.pk }}</p>
+                <p class="mono">{{ accountObject.pk }}</p>
             </div>
             <div class="detail-section">
                 <h3>Spendable</h3>
-                <p class="mono">{{ account.spendable }}</p>
+                <p class="mono">{{ accountObject.spendable }}</p>
             </div>
             <div class="detail-section">
                 <h3>Staked</h3>
-                <p class="mono">{{ account.staked }}</p>
+                <p class="mono">{{ accountObject.staked }}</p>
             </div>
         </div>
 
@@ -35,16 +38,19 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { BalanceAvailability, CryptoEncoderFactory, Hash } from '@cmts-dev/carmentis-sdk-core'
-import { useBlockchainStore } from '@/stores/blockchain'
+import { getBalanceAvaibility } from '@/utils/accountBalanceAvaibility'
 import Button from 'primevue/button'
+import * as api from "@/indexer-sdk/indexer-api";
 
 const router = useRouter()
 const route = useRoute()
 const accountHash = route.params.accountId as string
-const blockchainStore = useBlockchainStore()
 const loading = ref(true)
-const account = ref<{ hash: string; pk: string; spendable: string; staked: string } | null>(null)
+const accountObject = ref<{ hash: string; pk: string; spendable: string; staked: string } | null>(null)
+
+function visitHistory() {
+    router.push(`/account-history/${accountHash}`)
+}
 
 function visitVb() {
     router.push(`/vb/${accountHash}`)
@@ -52,19 +58,15 @@ function visitVb() {
 
 onMounted(async () => {
     try {
-        const blockchain = blockchainStore.getProvider
-        const accountId = Hash.from(accountHash)
-        const vb = await blockchain.loadAccountVirtualBlockchain(accountId)
-        const encoder = CryptoEncoderFactory.defaultStringSignatureEncoder()
-        const pk = await encoder.encodePublicKey(await vb.getPublicKey())
-        const accountState = await blockchain.getAccountState(accountId.toBytes())
-        const tokenState = BalanceAvailability.createFromAccountStateAbciResponse(accountState)
-        const spendable = tokenState.getSpendable()
-        const staked = tokenState.getStaked()
+        const accounts = await api.appControllerGetAccounts({ id: accountHash });
+        const account = accounts.data.items[0];
+        const balanceAvaibility = getBalanceAvaibility(account);
+        const spendable = balanceAvaibility.getSpendable();
+        const staked = balanceAvaibility.getStaked();
 
-        account.value = {
+        accountObject.value = {
             hash: accountHash,
-            pk,
+            pk: account.publicKey,
             staked: staked.toString(),
             spendable: spendable.toString(),
         }

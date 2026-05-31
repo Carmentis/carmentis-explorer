@@ -55,10 +55,10 @@
                     <InputIcon class="pi pi-search" />
                     <InputText
                         v-model="searchQuery"
-                        placeholder="Enter hash or block height..."
+                        placeholder="Enter hash, block height, entity name, ..."
                         class="search-input"
                         @input="onSearchInput"
-                        @keyup.enter="navigateToFirstResult"
+                        @keyup.enter="(e) => navigateToFirstResult(e)"
                         autofocus
                     />
                 </IconField>
@@ -80,12 +80,14 @@
                         v-for="(result, index) in searchResults"
                         :key="index"
                         class="result-item"
-                        @click="navigateToResult(result)"
+                        @click="(e) => navigateToResult(e, result)"
                     >
                         <i :class="result.icon" class="result-icon"></i>
                         <div class="result-info">
                             <span class="result-type">{{ result.type }}</span>
-                            <span class="result-hash">{{ result.hash }}</span>
+                            <span class="result-id">ID: {{ result.id }}</span>
+                            <span class="result-id">Field: {{ result.matchedFieldName }}</span>
+                            <span class="result-id">Value: {{ result.matchedFieldValue }}</span>
                         </div>
                         <i class="pi pi-chevron-right"></i>
                     </div>
@@ -104,8 +106,6 @@
 <script setup lang="ts">
 import { inject, ref } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import { Hash, VirtualBlockchainType } from '@cmts-dev/carmentis-sdk-core'
-import { useBlockchainStore } from '@/stores/blockchain'
 import Divider from 'primevue/divider'
 import Dialog from 'primevue/dialog'
 import InputText from 'primevue/inputtext'
@@ -114,6 +114,8 @@ import Message from 'primevue/message'
 import ProgressSpinner from 'primevue/progressspinner'
 import IconField from 'primevue/iconfield'
 import InputIcon from 'primevue/inputicon'
+import * as api from "@/indexer-sdk/indexer-api";
+import { AppControllerSearchType } from "@/indexer-sdk/model/appControllerSearchType";
 
 const showSearchDialog = ref(false)
 const searchQuery = ref('')
@@ -122,16 +124,17 @@ const searchError = ref('')
 const searchResults = ref<
     Array<{
         type: string
-        hash: string
+        id: string
         icon: string
         route: string
+        matchedFieldName: string
+        matchedFieldValue: string
     }>
 >([])
 let searchTimeout = null
 
 const router = useRouter()
 const route = useRoute()
-const blockchainStore = useBlockchainStore()
 const isOpen = inject<{ value: boolean }>('sidebarOpen')
 const closeSidebar = inject<() => void>('closeSidebar')
 
@@ -175,180 +178,121 @@ const performSearch = async () => {
     searchError.value = ''
     searchResults.value = []
 
-    try {
-        const query = searchQuery.value.trim()
-        const blockchain = blockchainStore.getProvider
-        const results: Array<{
-            type: string
-            hash: string
-            icon: string
-            route: string
-        }> = []
+    const results: Array<{
+        type: string
+        id: string
+        icon: string
+        route: string
+        matchedFieldName: string
+        matchedFieldValue: string
+    }> = []
 
-        // Check if it's a number (block height)
-        const heightNum = parseInt(query)
-        if (!isNaN(heightNum) && heightNum.toString() === query) {
-            results.push({
-                type: 'Block by Height',
-                hash: query,
-                icon: 'pi pi-box',
-                route: `/block/height/${heightNum}`,
-            })
-        }
+    const query = searchQuery.value.trim()
+    const searchList = await api.appControllerSearch({ q: query, type: "all" })
 
-        // Try to parse as hash
-        try {
-            const hash = Hash.from(query)
-
-            // Search in accounts
-            try {
-                await blockchain.loadAccountVirtualBlockchain(hash)
+    for (const result of searchList.data.items) {
+        switch (result.type) {
+            case AppControllerSearchType.account: {
                 results.push({
                     type: 'Account',
-                    hash: query,
+                    id: result.id,
                     icon: 'pi pi-user',
-                    route: `/accounts/${query}`,
+                    route: `/accounts/${result.id}`,
+                    matchedFieldName: result.matchedFieldName,
+                    matchedFieldValue: result.matchedFieldValue,
                 })
-            } catch (e) {
-                // Not found in accounts
+                break;
             }
-
-            // Search in applications
-            try {
-                await blockchain.loadApplicationVirtualBlockchain(hash)
+            case AppControllerSearchType.application: {
                 results.push({
                     type: 'Application',
-                    hash: query,
+                    id: result.id,
                     icon: 'pi pi-mobile',
-                    route: `/applications/${query}`,
+                    route: `/applications/${result.id}`,
+                    matchedFieldName: result.matchedFieldName,
+                    matchedFieldValue: result.matchedFieldValue,
                 })
-            } catch (e) {
-                // Not found in applications
+                break;
             }
-
-            // Search in organizations
-            try {
-                await blockchain.loadOrganizationVirtualBlockchain(hash)
+            case AppControllerSearchType.block: {
                 results.push({
-                    type: 'Organization',
-                    hash: query,
-                    icon: 'pi pi-building',
-                    route: `/organizations/${query}`,
+                    type: 'Block',
+                    id: result.id,
+                    icon: 'pi pi-box',
+                    route: `/block/height/${result.id}`,
+                    matchedFieldName: result.matchedFieldName,
+                    matchedFieldValue: result.matchedFieldValue,
                 })
-            } catch (e) {
-                // Not found in organizations
+                break;
             }
-
-            // Search by vb
-            try {
-                const vb = await blockchain.loadVirtualBlockchain(hash)
-                const vbType = vb.getType()
-                switch (vbType) {
-                    case VirtualBlockchainType.ACCOUNT_VIRTUAL_BLOCKCHAIN: {
-                        results.push({
-                            type: 'Account',
-                            hash: query,
-                            icon: 'pi pi-user',
-                            route: `/accounts/${query}`,
-                        })
-                        break
-                    }
-                    case VirtualBlockchainType.APPLICATION_VIRTUAL_BLOCKCHAIN: {
-                        results.push({
-                            type: 'Application',
-                            hash: query,
-                            icon: 'pi pi-mobile',
-                            route: `/applications/${query}`,
-                        })
-                        break
-                    }
-                    case VirtualBlockchainType.NODE_VIRTUAL_BLOCKCHAIN: {
-                        results.push({
-                            type: 'Node',
-                            hash: query,
-                            icon: 'pi pi-server',
-                            route: `/nodes/${query}`,
-                        })
-                        break
-                    }
-                    case VirtualBlockchainType.ORGANIZATION_VIRTUAL_BLOCKCHAIN: {
-                        results.push({
-                            type: 'Organization',
-                            hash: query,
-                            icon: 'pi pi-building',
-                            route: `/organizations/${query}`,
-                        })
-                        break
-                    }
-                    case VirtualBlockchainType.APP_LEDGER_VIRTUAL_BLOCKCHAIN: {
-                        results.push({
-                            type: 'App Ledger',
-                            hash: query,
-                            icon: 'pi pi-book',
-                            route: `/vb/${query}`,
-                        })
-                    }
-                    default:
-                        console.warn(`Unsupported virtual blockchain type: ${vbType}`)
-                }
-
-            } catch (e) {
-                // Not found
+            case AppControllerSearchType.microblock: {
+                // TODO: The VB ID should not be part of a microblock URL.
+                // TODO: But for now, we have to retrieve it.
+                const mbs = await api.appControllerGetMicroblocks({ hash: result.id });
+                const mb = mbs.data.items[0];
+                results.push({
+                    type: 'Microblock',
+                    id: result.id,
+                    icon: 'pi pi-file',
+                    route: `/vb/${mb.virtualBlockchainId}/mb/${result.id}`,
+                    matchedFieldName: result.matchedFieldName,
+                    matchedFieldValue: result.matchedFieldValue,
+                })
+                break;
             }
-
-            // Search in nodes
-            try {
-                await blockchain.loadValidatorNodeVirtualBlockchain(hash)
+            case AppControllerSearchType.node: {
                 results.push({
                     type: 'Node',
-                    hash: query,
+                    id: result.id,
                     icon: 'pi pi-server',
-                    route: `/nodes/${query}`,
+                    route: `/nodes/${result.id}`,
+                    matchedFieldName: result.matchedFieldName,
+                    matchedFieldValue: result.matchedFieldValue,
                 })
-            } catch (e) {
-                // Not found in nodes
+                break;
             }
-
-            // Search for microblock by hash
-            try {
-                const microblock = await blockchain.getMicroblockHeader(hash)
-                const vbId = await blockchain.getVirtualBlockchainIdContainingMicroblock(hash)
-                if (microblock) {
-                    results.push({
-                        type: 'Microblock',
-                        hash: query,
-                        icon: 'pi pi-file',
-                        route: `/vb/${vbId.encode()}/mb/${query}`,
-                    })
-                }
-            } catch (e) {
-                // Not found as microblock
+            case AppControllerSearchType.organization: {
+                results.push({
+                    type: 'Organization',
+                    id: result.id,
+                    icon: 'pi pi-building',
+                    route: `/organizations/${result.id}`,
+                    matchedFieldName: result.matchedFieldName,
+                    matchedFieldValue: result.matchedFieldValue,
+                })
+                break;
             }
-        } catch (e) {
-            // Invalid hash format
+            case AppControllerSearchType.vb: {
+                results.push({
+                    type: 'Virtual Blockchain',
+                    id: result.id,
+                    icon: 'pi pi-link',
+                    route: `/vb/${result.id}`,
+                    matchedFieldName: result.matchedFieldName,
+                    matchedFieldValue: result.matchedFieldValue,
+                })
+                break;
+            }
         }
-
-        searchResults.value = results
-
-        if (results.length === 0) {
-            searchError.value = 'No results found'
-        }
-    } catch (error) {
-        console.error('Search error:', error)
-        searchError.value = 'Search failed'
-    } finally {
-        searching.value = false
     }
+
+    searchResults.value = results
+
+    if (results.length === 0) {
+        searchError.value = 'No results found'
+    }
+    searching.value = false
 }
 
-const navigateToResult = (result: { route: string }) => {
-    router.push(result.route)
-    closeSearchDialog()
+const navigateToResult = (e: Event, result: { route: string }) => {
+    e.stopPropagation();
+    closeSearchDialog();
+    router.push(result.route);
 }
 
-const navigateToFirstResult = () => {
+const navigateToFirstResult = (e: Event) => {
     if (searchResults.value.length > 0) {
-        navigateToResult(searchResults.value[0])
+        navigateToResult(e, searchResults.value[0]);
     }
 }
 
@@ -382,6 +326,16 @@ const menuItems = [
         label: 'Accounts',
         icon: 'pi pi-user',
         path: '/accounts',
+    },
+    {
+        label: 'Account History',
+        icon: 'pi pi-chart-line',
+        path: '/account-history',
+    },
+    {
+        label: 'Virtual Blockchains',
+        icon: 'pi pi-link',
+        path: '/vb',
     },
     {
         label: 'Proof Checker',
@@ -662,7 +616,7 @@ const isActiveRoute = (path: string) => {
     color: var(--p-text-color);
 }
 
-.result-hash {
+.result-id {
     font-size: var(--font-size-xs);
     color: var(--p-text-muted-color);
     font-family: monospace;

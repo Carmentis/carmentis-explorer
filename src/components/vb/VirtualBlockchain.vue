@@ -2,33 +2,34 @@
 import { onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import {
-    Hash,
-    type VirtualBlockchain,
     VirtualBlockchainLabel,
 } from '@cmts-dev/carmentis-sdk-core'
-import { useBlockchainStore } from '@/stores/blockchain.ts'
 import ProgressSpinner from 'primevue/progressspinner'
+import * as api from "@/indexer-sdk/indexer-api";
+
+interface MicroblockData {
+    hash: string
+    height: number
+}
 
 interface VirtualBlockchainData {
     identifier: string
     height: number
     type: number
-    expirationDay: number
-    microblockHashes: string[]
+    creationTimestamp: number
+    modificationTimestamp: number
+    expirationTimestamp: number
+    microblockData: MicroblockData[]
 }
 
 const route = useRoute()
 const router = useRouter()
 const vbId = ref(route.params.vbId as string)
-const vb = ref<VirtualBlockchain | null>(null)
 const vbData = ref<VirtualBlockchainData | null>(null)
 const loading = ref(true)
-const blockchainStore = useBlockchainStore()
 
-const formatDate = (dayNumber: number): string => {
-    if (dayNumber === 0) return 'No expiration'
-    // Assuming day 0 is epoch start (1970-01-01)
-    const date = new Date(dayNumber * 1000)
+const formatDate = (timestampInSeconds: number): string => {
+    const date = new Date(timestampInSeconds * 1000)
     return date.toLocaleDateString()
 }
 
@@ -47,15 +48,30 @@ const navigateToMicroblock = (mbHash: string) => {
 
 onMounted(async () => {
     try {
-        const provider = blockchainStore.getProvider
-        vb.value = await provider.loadVirtualBlockchain(Hash.fromHex(vbId.value as string))
-
+        const vbs = await api.appControllerGetVirtualBlockchains({
+            vb_id: vbId.value as string
+        });
+        if (vbs.data.items.length === 0) {
+            throw new Error("virtual blockchain not found");
+        }
+        const vb = vbs.data.items[0];
+        const microblocks = await api.appControllerGetMicroblocks({
+            vb_id: vb.virtualBlockchainId,
+            sort: "height",
+            order: "DESC",
+        });
+        const microblockData: MicroblockData[] = microblocks.data.items.map((mb) => ({
+            hash: mb.hash,
+            height: mb.height,
+        }));
         vbData.value = {
-            identifier: vb.value.getIdentifier().encode(),
-            height: vb.value.getHeight(),
-            type: vb.value.getType(),
-            expirationDay: vb.value.getExpirationDay(),
-            microblockHashes: vb.value.getAllMicroblockHashes().map((hash) => hash.encode()),
+            identifier: vb.virtualBlockchainId,
+            height: vb.height,
+            type: vb.type,
+            creationTimestamp: vb.creationTimestamp,
+            modificationTimestamp: vb.modificationTimestamp,
+            expirationTimestamp: vb.expirationTimestamp,
+            microblockData,
         }
     } catch (error) {
         console.error('Error loading virtual blockchain:', error)
@@ -91,11 +107,23 @@ onMounted(async () => {
                     <p class="mono">{{ VirtualBlockchainLabel.getVirtualBlockchainLabelFromVirtualBlockchainType(vbData.type) }}</p>
                 </div>
                 <div class="detail-section">
-                    <h4>Expiration Day</h4>
-                    <p>{{ formatDate(vbData.expirationDay) }}</p>
-                    <p v-if="getDaysRemaining(vbData.expirationDay) !== null" class="days-remaining">
-                        {{ getDaysRemaining(vbData.expirationDay)! > 0
-                            ? `${getDaysRemaining(vbData.expirationDay)} days remaining`
+                    <h4>Creation</h4>
+                    <p>{{ formatDate(vbData.creationTimestamp) }}</p>
+                </div>
+                <div class="detail-section">
+                    <h4>Last modification</h4>
+                    <p>{{ formatDate(vbData.modificationTimestamp) }}</p>
+                </div>
+                <div class="detail-section">
+                    <h4>Expiration</h4>
+                    <p>
+                        {{ vbData.expirationTimestamp !== 0
+                            ? formatDate(vbData.expirationTimestamp)
+                            : 'No expiration' }}
+                    </p>
+                    <p v-if="getDaysRemaining(vbData.expirationTimestamp) !== null" class="days-remaining">
+                        {{ getDaysRemaining(vbData.expirationTimestamp)! > 0
+                            ? `${getDaysRemaining(vbData.expirationTimestamp)} days remaining`
                             : 'Expired' }}
                     </p>
                 </div>
@@ -103,16 +131,16 @@ onMounted(async () => {
 
             <!-- Microblocks List -->
             <div class="details-card">
-                <h3>Microblocks ({{ vbData.microblockHashes.length }})</h3>
-                <div v-if="vbData.microblockHashes.length > 0" class="microblocks-list">
+                <h3>Microblocks ({{ vbData.height }})</h3>
+                <div v-if="vbData.microblockData.length > 0" class="microblocks-list">
                     <div
-                        v-for="(mbHash, index) in vbData.microblockHashes"
-                        :key="index"
+                        v-for="({hash, height}) in vbData.microblockData"
+                        :key="height"
                         class="microblock-item"
-                        @click="navigateToMicroblock(mbHash)"
+                        @click="navigateToMicroblock(hash)"
                     >
-                        <h5>Microblock {{ index + 1 }}</h5>
-                        <p class="mono">{{ mbHash }}</p>
+                        <h5>Microblock #{{ height }}</h5>
+                        <p class="mono">{{ hash }}</p>
                     </div>
                 </div>
                 <p v-else class="empty">No microblocks in this virtual blockchain</p>

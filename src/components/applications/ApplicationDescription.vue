@@ -2,7 +2,7 @@
     <div class="page">
         <div class="flex justify-between items-center">
             <h2>Application Details</h2>
-            <Button label="Explore Virtual Blockchain" @click="visitVb" />
+            <Button icon="pi pi-link" label="Explore Virtual Blockchain" @click="visitVb" />
         </div>
 
         <div v-if="loading" class="loading">
@@ -49,13 +49,12 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { Hash } from '@cmts-dev/carmentis-sdk-core'
-import { useBlockchainStore } from '@/stores/blockchain'
 import Button from 'primevue/button'
+import * as api from "@/indexer-sdk/indexer-api";
+
 const router = useRouter()
 const route = useRoute()
 const appHash = route.params.applicationId as string
-const blockchainStore = useBlockchainStore()
 const loading = ref(true)
 const application = ref<{
     hash: string
@@ -76,23 +75,18 @@ function visitVb() {
 
 onMounted(async () => {
     try {
-        const blockchain = blockchainStore.getProvider
-        const appId = Hash.from(appHash)
-        const vb = await blockchain.loadApplicationVirtualBlockchain(appId)
-        const nameDeclaration = await vb.getApplicationDescription()
-        const orgId = await vb.getOrganizationId()
-        const orgVb = await blockchain.loadOrganizationVirtualBlockchain(orgId)
-        const orgDesc = await orgVb.getDescription()
-        const orgName = orgDesc.name
-        const appWebsite = nameDeclaration.homepageUrl
+        const apps = await api.appControllerGetApplications({ vb_id: appHash });
+        const app = apps.data.items[0];
+        const orgs = await api.appControllerGetOrganizations({ vb_id: app.organizationId });
+        const org = orgs.data.items[0];
 
         application.value = {
             hash: appHash,
-            name: nameDeclaration.name,
-            description: nameDeclaration.description,
-            orgId: orgId.encode(),
-            orgName: orgName,
-            website: appWebsite,
+            name: app.name,
+            description: app.description,
+            orgId: app.organizationId,
+            orgName: org.name,
+            website: org.website,
         }
     } catch (error) {
         console.error('Error fetching application:', error)

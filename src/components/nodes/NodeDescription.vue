@@ -2,12 +2,11 @@
 import { ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { BalanceAvailability, CMTSToken, Hash } from '@cmts-dev/carmentis-sdk-core'
-import { useBlockchainStore } from '@/stores/blockchain'
 import Button from 'primevue/button'
 import router from '@/router'
+import * as api from "@/indexer-sdk/indexer-api";
 
 const route = useRoute()
-const blockchainStore = useBlockchainStore()
 const loading = ref(true)
 
 // node information
@@ -31,17 +30,19 @@ type StakeInfo = {
 }
 
 const nodeHash = route.params.nodeId as string
-const node = ref<NodeInfo | null>(null)
-const stake = ref<StakeInfo | null>(null)
+const nodeObject = ref<NodeInfo | null>(null)
+const stakeObject = ref<StakeInfo | null>(null)
 function visitVb() {
     router.push(`/vb/${nodeHash}`)
 }
 
 onMounted(async () => {
     try {
-        const blockchain = blockchainStore.getProvider
-        const nodeId = Hash.from(nodeHash)
-        const vb = await blockchain.loadValidatorNodeVirtualBlockchain(nodeId)
+        const nodes = await api.appControllerGetValidatorNodes({ vb_id: nodeHash });
+        const node = nodes.data.items[0];
+        const orgs = await api.appControllerGetOrganizations({ vb_id: node.organizationId });
+        const org = orgs.data.items[0];
+/*
         const cometbft = await vb.getCometbftPublicKeyDeclaration()
         const rpcEndpoint = await vb.getRpcEndpointDeclaration()
         const internalState = await vb.getInternalState()
@@ -55,16 +56,16 @@ onMounted(async () => {
         const balanceAvailability =
             BalanceAvailability.createFromAccountStateAbciResponse(accountState)
         const nodeStakingLock = balanceAvailability.getNodeStakingLock(nodeId.toBytes())
-
-        node.value = {
+*/
+        nodeObject.value = {
             hash: nodeHash,
-            status: approvalStatus ? 'Validator' : 'Replicator',
-            rpc: rpcEndpoint,
-            nodeOwnerName: (await orgVb.getDescription()).name,
-            nodeOwnerOrgId: orgId.encode(),
-            publicKey: cometbft.cometbftPublicKey,
+            status: node.currentVotingPower > 0 ? 'Validator' : 'Replicator',
+            rpc: node.rpcEndpoint,
+            nodeOwnerName: org.name,
+            nodeOwnerOrgId: node.organizationId,
+            publicKey: node.cometPublicKey,
         }
-
+/*
         if (nodeStakingLock) {
             stake.value = {
                 staked: CMTSToken.createAtomic(nodeStakingLock.lockedAmountInAtomics).toString(),
@@ -81,6 +82,7 @@ onMounted(async () => {
                         : undefined,
             }
         }
+ */
     } catch (error) {
         console.error('Error fetching node:', error)
     } finally {
@@ -105,46 +107,46 @@ onMounted(async () => {
             <p>Loading node details...</p>
         </div>
 
-        <div v-if="node !== null && !loading" class="details-card">
+        <div v-if="nodeObject !== null && !loading" class="details-card">
             <div class="detail-section">
                 <h3>Hash</h3>
-                <p class="mono">{{ node.hash }}</p>
+                <p class="mono">{{ nodeObject.hash }}</p>
             </div>
 
             <div class="detail-section">
                 <h3>Status</h3>
-                <p class="mono">{{ node.status }}</p>
+                <p class="mono">{{ nodeObject.status }}</p>
             </div>
 
             <div class="detail-section">
                 <h3>CometBFT Public Key</h3>
-                <p class="mono">{{ node.publicKey }}</p>
+                <p class="mono">{{ nodeObject.publicKey }}</p>
             </div>
 
             <div class="detail-section">
                 <h3>RPC Endpoint</h3>
-                <p class="mono">{{ node.rpc }}</p>
+                <p class="mono">{{ nodeObject.rpc }}</p>
             </div>
 
             <div class="detail-section">
                 <h3>Node Owner</h3>
-                <p class="mono">{{ node.nodeOwnerName }} ({{ node.nodeOwnerOrgId }})</p>
+                <p class="mono">{{ nodeObject.nodeOwnerName }} ({{ nodeObject.nodeOwnerOrgId }})</p>
                 <Button
                     label="Explore organization"
-                    @click="router.push(`/organizations/${node.nodeOwnerOrgId}`)"
+                    @click="router.push(`/organizations/${nodeObject.nodeOwnerOrgId}`)"
                 />
             </div>
 
-            <div v-if="stake !== null" class="flex flex-col gap-8">
+            <div v-if="stakeObject !== null" class="flex flex-col gap-8">
                 <div class="detail-section">
                     <h3>Staked</h3>
-                    <p class="mono">{{ stake.staked }}</p>
+                    <p class="mono">{{ stakeObject.staked }}</p>
                 </div>
 
-                <div class="detail-section" v-if="stake.unstaked">
+                <div class="detail-section" v-if="stakeObject.unstaked">
                     <h3>Unstaking</h3>
                     <p class="mono">
-                        {{ stake.unstaked.unstakingAt }} - {{ stake.unstaked.unstaked }}
+                        {{ stakeObject.unstaked.unstakingAt }} - {{ stakeObject.unstaked.unstaked }}
                     </p>
                 </div>
             </div>

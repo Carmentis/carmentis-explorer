@@ -17,19 +17,19 @@
             <template #loading>
                 <ProgressSpinner />
             </template>
-            <Column field="hash" header="Hash">
+            <Column field="hash" header="ID">
                 <template #body="{ data }">
-                    <span class="mono-cell" :title="data.hash">{{ data.hash }}</span>
+                    <span class="mono-cell" :title="data.hash">{{ shortenHash(data.hash) }}</span>
                 </template>
             </Column>
             <Column field="pk" header="Public Key">
                 <template #body="{ data }">
-                    <span class="mono-cell" :title="data.pk">{{ data.pk }}</span>
+                    <span class="mono-cell" :title="data.pk">{{ shortenHash(data.pk, 20, 4) || "(none)" }}</span>
                 </template>
             </Column>
             <Column field="balance" header="Balance">
                 <template #body="{ data }">
-                    <span class="mono-cell" :title="data.spendable">{{ data.spendable }}</span>
+                    <span class="mono-cell" :title="data.balance">{{ data.balance }}</span>
                 </template>
             </Column>
         </DataTable>
@@ -39,42 +39,40 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { BalanceAvailability, CryptoEncoderFactory } from '@cmts-dev/carmentis-sdk-core'
-import { useBlockchainStore } from '@/stores/blockchain'
+import { CMTSToken } from '@cmts-dev/carmentis-sdk-core'
+import { shortenHash } from '@/utils/shortenHash'
 import DataTable from 'primevue/datatable'
+import type { DataTableRowClickEvent } from 'primevue/datatable';
 import Column from 'primevue/column'
 import ProgressSpinner from 'primevue/progressspinner'
+import * as api from "@/indexer-sdk/indexer-api";
 
 const router = useRouter()
-const blockchainStore = useBlockchainStore()
 const loading = ref(true)
 const accounts = ref<Account[]>([])
 
 export interface Account {
     hash: string
     pk: string
-    spendable: string
+    balance: string
 }
 
-const onRowClick = (event: any) => {
+const onRowClick = (event: DataTableRowClickEvent) => {
     router.push(`/accounts/${event.data.hash}`)
 }
 
 onMounted(async () => {
     try {
-        const blockchain = blockchainStore.getProvider
-        const fetchedAccounts = await blockchain.getAllAccounts()
+        const fetchedAccounts = await api.appControllerGetAccounts({
+            sort: "balance",
+            order: "DESC",
+        });
         accounts.value = []
-        for (const account of fetchedAccounts) {
-            const vb = await blockchain.loadAccountVirtualBlockchain(account)
-            const encoder = CryptoEncoderFactory.defaultStringSignatureEncoder()
-            const pk = await encoder.encodePublicKey(await vb.getPublicKey())
-            const accounsState = await blockchain.getAccountState(account.toBytes())
-            const balance = BalanceAvailability.createFromAccountStateAbciResponse(accounsState)
+        for (const account of fetchedAccounts.data.items) {
             accounts.value.push({
-                hash: account.encode(),
-                pk,
-                spendable: balance.getSpendable().toString(),
+                hash: account.id,
+                pk: account.publicKey,
+                balance: CMTSToken.createAtomic(account.balance).toString(),
             })
         }
     } catch (error) {

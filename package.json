@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "run-p type-check \"build-only {@}\" --",
+    "build:sdk": "node scripts/sdk-gen/index.js",
     "preview": "vite preview",
     "test:unit": "vitest",
     "build-only": "vite build",
@@ -14,7 +15,7 @@
     "format": "prettier --write --experimental-cli src/"
   },
   "dependencies": {
-    "@cmts-dev/carmentis-sdk-core": "^1.2.0",
+    "@cmts-dev/carmentis-sdk-core": "^1.2.9",
     "@cosmjs/tendermint-rpc": "^0.38.1",
     "@primeuix/themes": "^2.0.3",
     "@tailwindcss/vite": "^4.2.1",
@@ -41,6 +42,7 @@
     "jiti": "^2.6.1",
     "jsdom": "^27.4.0",
     "npm-run-all2": "^8.0.4",
+    "orval": "^8.13.0",
     "prettier": "3.8.1",
     "typescript": "~5.9.3",
     "vite": "^7.3.1",

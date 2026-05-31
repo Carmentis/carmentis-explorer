@@ -4,7 +4,7 @@
             <h2>Organization Details</h2>
             <Button
                 label="Explore Virtual Blockchain"
-                icon="pi pi-external-link"
+                icon="pi pi-link"
                 @click="visitVb"
             />
         </div>
@@ -55,14 +55,12 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { Hash } from '@cmts-dev/carmentis-sdk-core'
-import { useBlockchainStore } from '@/stores/blockchain'
 import Button from 'primevue/button'
+import * as api from "@/indexer-sdk/indexer-api";
 
 const router = useRouter()
 const route = useRoute()
 const orgHash = route.params.organizationId as string
-const blockchainStore = useBlockchainStore()
 const loading = ref(true)
 const organization = ref<{
     hash: string
@@ -82,21 +80,18 @@ function goToAccount(accountId: string) {
 
 onMounted(async () => {
     try {
-        const blockchain = blockchainStore.getProvider
-        const orgId = Hash.from(orgHash)
-        const vb = await blockchain.loadOrganizationVirtualBlockchain(orgId)
-        const nameDeclaration = await vb.getDescription()
-        const localisation = `${nameDeclaration.city} (${nameDeclaration.countryCode.toUpperCase()})`
-        const website = nameDeclaration.website
-        const accountId = await vb.getAccountId()
-        const accountVb = await blockchain.loadAccountVirtualBlockchain(accountId)
+        const orgs = await api.appControllerGetOrganizations({ vb_id: orgHash });
+        const org = orgs.data.items[0];
+        const localisation = `${org.city} (${org.countryCode.toUpperCase()})`
+        const website = org.website
+        const accountId = org.accountId;
 
         organization.value = {
             hash: orgHash,
-            name: nameDeclaration.name,
+            name: org.name,
             localisation,
             website,
-            accountId: accountId.encode(),
+            accountId,
         }
     } catch (error) {
         console.error('Error fetching organization:', error)

@@ -17,12 +17,18 @@
             <template #loading>
                 <ProgressSpinner />
             </template>
-            <Column field="hash" header="Hash">
+            <Column field="hash" header="ID">
                 <template #body="{ data }">
-                    <span class="mono-cell" :title="data.hash">{{ data.hash }}</span>
+                    <span class="mono-cell" :title="data.hash">{{ shortenHash(data.hash) }}</span>
                 </template>
             </Column>
             <Column field="name" header="Name" />
+            <Column field="country" header="Country">
+                <template #body="{ data }">
+                    <span class="mono-cell">{{ data.countryCode }} - {{ data.country }}</span>
+                </template>
+            </Column>
+            <Column field="city" header="City" />
         </DataTable>
     </div>
 </template>
@@ -30,36 +36,41 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { useBlockchainStore } from '@/stores/blockchain'
+import { shortenHash } from '@/utils/shortenHash'
+import { getCountry } from '@/utils/countryCodes'
 import DataTable from 'primevue/datatable'
+import type { DataTableRowClickEvent } from 'primevue/datatable';
 import Column from 'primevue/column'
 import ProgressSpinner from 'primevue/progressspinner'
+import * as api from "@/indexer-sdk/indexer-api";
 
 const router = useRouter()
-const blockchainStore = useBlockchainStore()
 const loading = ref(true)
 const organizations = ref<Organization[]>([])
 
 export interface Organization {
     hash: string
     name: string
+    countryCode: string
+    country: string
+    city: string
 }
 
-const onRowClick = (event: any) => {
+const onRowClick = (event: DataTableRowClickEvent) => {
     router.push(`/organizations/${event.data.hash}`)
 }
 
 onMounted(async () => {
     try {
-        const blockchain = blockchainStore.getProvider
-        const fetchedOrgs = await blockchain.getAllOrganizationIds()
+        const fetchedOrgs = await api.appControllerGetOrganizations();
         organizations.value = []
-        for (const org of fetchedOrgs) {
-            const vb = await blockchain.loadOrganizationVirtualBlockchain(org)
-            const nameDeclaration = await vb.getDescription()
+        for (const org of fetchedOrgs.data.items) {
             organizations.value.push({
-                hash: org.encode(),
-                name: nameDeclaration.name,
+                hash: org.virtualBlockchainId,
+                name: org.name,
+                countryCode: org.countryCode,
+                country: getCountry(org.countryCode),
+                city: org.city,
             })
         }
     } catch (error) {
@@ -69,4 +80,3 @@ onMounted(async () => {
     }
 })
 </script>
-

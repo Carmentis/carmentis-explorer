@@ -2,7 +2,7 @@
     <div class="home">
         <div class="flex justify-between items-start mb-8">
             <div>
-                <h1>Latest Blocks</h1>
+                <h2>Latest Blocks</h2>
                 <p>Real-time blockchain activity</p>
 
                 <div v-if="connectionStatus" class="connection-status">
@@ -21,7 +21,7 @@
                             Min Gas Price
                         </div>
                         <div class="text-2xl font-semibold text-gray-900">
-                            {{ isMinMaxApplicable ? minGasPrice : '--' }}
+                            {{ isMinMaxApplicable ? minGasPrice.toFixed(2) : '--' }}
                         </div>
                     </div>
 
@@ -41,7 +41,7 @@
                             Max Gas Price
                         </div>
                         <div class="text-2xl font-semibold text-gray-900">
-                            {{ isMinMaxApplicable ? maxGasPrice : '--' }}
+                            {{ isMinMaxApplicable ? maxGasPrice.toFixed(2) : '--' }}
                         </div>
                     </div>
                 </div>
@@ -94,12 +94,21 @@
 
                         <!-- Proposer & Transactions -->
                         <div class="flex flex-col flex-1 min-w-0">
-                            <a
-                                class="font-mono text-sm text-gray-900 truncate font-medium"
-                                @click="(e) => visitNode(e, block.proposerVbId)"
-                            >
-                                {{ block.proposerName }}
-                            </a>
+                            <div class="text-sm text-gray-500">
+                                <a
+                                    class="font-mono text-sm text-gray-900 truncate font-medium"
+                                    @click="(e) => visitNode(e, block.nodeId)"
+                                >
+                                    Proposer node
+                                </a>
+                                owned by
+                                <a
+                                    class="font-mono text-sm text-gray-900 truncate font-medium"
+                                    @click="(e) => visitOrganization(e, block.nodeOwnerId)"
+                                >
+                                    {{ block.nodeOwnerName }}
+                                </a>
+                            </div>
                             <div class="text-sm text-gray-500">
                                 {{ block.numTxs }} transaction{{ block.numTxs !== 1 ? 's' : '' }}
                             </div>
@@ -108,10 +117,10 @@
                         <!-- Reward -->
                         <div class="flex flex-col items-end min-w-[120px]">
                             <div class="text-xs text-gray-500 uppercase tracking-wider mb-1">
-                                Reward
+                                Fees
                             </div>
                             <div class="text-lg font-semibold text-gray-900">
-                                {{ block.rewards }}
+                                {{ block.fees }}
                             </div>
                         </div>
                     </div>
@@ -122,74 +131,50 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, computed } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { Tendermint37Client } from '@cosmjs/tendermint-rpc'
-import { useBlockchainStore } from '@/stores/blockchain'
 import DataView from 'primevue/dataview'
 import Tag from 'primevue/tag'
 import Skeleton from 'primevue/skeleton'
-import { CMTSToken, Hash, Microblock, ProviderFactory, Utils } from '@cmts-dev/carmentis-sdk-core'
+import { CMTSToken } from '@cmts-dev/carmentis-sdk-core'
+import * as api from "@/indexer-sdk/indexer-api";
+import { formatTime } from "@/utils/formatTime"
+import { appControllerGetGasPrice } from '@/indexer-sdk/indexer-api'
 
 interface Block {
     height: number
     hash: string
     time: Date
-    txs: Uint8Array[]
     numTxs: number
-    proposerVbId: string
-    proposerName: string
-    rewards: string
+    nodeId: string
+    nodeOwnerId: string
+    nodeOwnerName: string
+    fees: string
 }
 
+const MAX_BLOCKS = 10;
+const GAS_PRICE_BLOCKS = 10;
+
 const router = useRouter()
-const blockchainStore = useBlockchainStore()
-const rpcUrl = blockchainStore.getRpcUrl
 const loading = ref(true)
 const blocks = ref<Block[]>([])
 const connectionStatus = ref<string>('')
 const isConnected = ref(false)
-let client: Tendermint37Client | null = null
-
-const gasPrices = computed(() => {
-    if (blocks.value.length === 0) return []
-    return blocks.value
-        .map((block) =>
-            block.txs.map((tx) =>
-                Microblock.loadFromSerializedMicroblock(tx).getGasPrice().getAmountAsAtomic(),
-            ),
-        )
-        .reduce((acc, val) => acc.concat(val), [])
-})
-const isMinMaxApplicable = computed(() => gasPrices.value.length > 0)
-const minGasPrice = computed(() =>
-    gasPrices.value.length === 0 ? 0 : Math.min(...gasPrices.value),
-)
-const maxGasPrice = computed(() =>
-    gasPrices.value.length === 0 ? 0 : Math.max(...gasPrices.value),
-)
-const avgGasPrice = computed(() => {
-    if (gasPrices.value.length === 0) return 0
-    return gasPrices.value.reduce((acc, val) => acc + val, 0) / gasPrices.value.length
-})
-
-const formatTime = (date: Date): string => {
-    return new Date(date).toLocaleString()
-}
-
-const computeRewardsForTransactions = (txs: Uint8Array[]) => {
-    const rewardsInAtomic = txs
-        .map((tx: Uint8Array) => Microblock.loadFromSerializedMicroblock(tx))
-        .map((mb: Microblock) => mb.getFees().getAmountAsAtomic())
-        .reduce((a, b) => a + b, 0)
-    return CMTSToken.createAtomic(rewardsInAtomic).toString()
-}
+let schedulerTimer: number | null = null;
+let knownHeight = 0;
+const isMinMaxApplicable = ref(false);
+const minGasPrice = ref(0);
+const avgGasPrice = ref(0);
+const maxGasPrice = ref(0);
+const nodeCache = new Map;
 
 const getTimeAgo = (date: Date): string => {
     const now = new Date()
     const diffInSeconds = Math.floor((now.getTime() - new Date(date).getTime()) / 1000)
 
-    if (diffInSeconds < 60) {
+    if (diffInSeconds < 2) {
+        return `just now`
+    } else if (diffInSeconds < 60) {
         return `${diffInSeconds} sec${diffInSeconds !== 1 ? 's' : ''} ago`
     } else if (diffInSeconds < 3600) {
         const minutes = Math.floor(diffInSeconds / 60)
@@ -203,33 +188,16 @@ const getTimeAgo = (date: Date): string => {
     }
 }
 
-const provider = ProviderFactory.createInMemoryProviderWithExternalProvider(rpcUrl)
-const getValidatorNodeIdByCometBFTAddress = async (address: string) => {
-    console.log('Searching for validator node ID by Comet BFT address: ', address)
-    const vbId = await provider.getValidatorNodeIdByAddress(Hash.from(address))
-    return Utils.binaryToHexa(vbId)
-}
-const getOrganizationNameByValidatorNodeId = async (nodeId: string) => {
-    console.log('Searching for organization name for validator node ID: ', nodeId)
-    const nodeVb = await provider.loadValidatorNodeVirtualBlockchain(Hash.from(nodeId))
-    const orgId = await nodeVb.getOrganizationId()
-    const orgVb = await provider.loadOrganizationVirtualBlockchain(orgId)
-    const desc = await orgVb.getDescription()
-    console.log('Organization name: ', desc.name)
-    return desc.name
-}
-
 const onBlockClick = (block: Block) => {
     router.push(`/block/height/${block.height}`)
 }
 
 const addBlock = (block: Block) => {
-    console.info('Receiving a new block:', block)
     // Add new block at the beginning
     blocks.value.unshift(block)
-    // Keep only the latest 10 blocks
-    if (blocks.value.length > 8) {
-        blocks.value = blocks.value.slice(0, 8)
+    // Keep only the latest MAX_BLOCKS blocks
+    if (blocks.value.length > MAX_BLOCKS) {
+        blocks.value = blocks.value.slice(0, MAX_BLOCKS)
     }
 }
 
@@ -238,135 +206,110 @@ function visitNode(e: Event, nodeId: string) {
     router.push(`/nodes/${nodeId}`)
 }
 
-let ws: WebSocket | null = null
-//let reconnectTimeout: any = null
+function visitOrganization(e: Event, organizationId: string) {
+    e.stopPropagation()
+    router.push(`/organizations/${organizationId}`)
+}
 
-const subscribeToNewBlocks = () => {
+function scheduleNextSynchronization() {
+    schedulerTimer = setTimeout(
+        () =>
+            synchronize()
+                .then(() => {
+                })
+                .catch((err) => {
+                }),
+        1000,
+    );
+}
+
+async function getNodeInfoFromAddress(address: string) {
+    if (nodeCache.has(address)) {
+        return nodeCache.get(address);
+    }
+    let res;
     try {
-        // Convert HTTP(S) URL to WebSocket URL
-        const wsUrl = rpcUrl.replace(/^http/, 'ws') + '/websocket'
-
-        ws = new WebSocket(wsUrl)
-
-        ws.onopen = () => {
-            console.log('WebSocket connected')
-            connectionStatus.value = 'Connected - Live Updates'
-            isConnected.value = true
-
-            // Subscribe to new block events
-            const subscribeMsg = {
-                jsonrpc: '2.0',
-                method: 'subscribe',
-                id: '1',
-                params: {
-                    query: "tm.event='NewBlock'",
-                },
-            }
-            ws?.send(JSON.stringify(subscribeMsg))
+        const validatorNodes = await api.appControllerGetValidatorNodes({
+            address,
+        });
+        if (validatorNodes.data.items.length === 0) {
+            throw new Error('node not found');
         }
-
-        ws.onmessage = async (event) => {
-            try {
-                const data = JSON.parse(event.data)
-
-                // Check if this is a new block event
-                if (data.result?.data?.type === 'tendermint/event/NewBlock') {
-                    console.info('Received new block from WS:', event.data)
-                    const blockData = data.result.data.value.block
-                    const header = blockData.header
-                    const base64EncodedTxs: string[] = blockData.data.txs;
-                    const txs : Uint8Array[] = base64EncodedTxs.map(tx => Uint8Array.from(atob(tx), c => c.charCodeAt(0)))
-                    const vbIs = await getValidatorNodeIdByCometBFTAddress(header.proposer_address)
-                    const orgName = await getOrganizationNameByValidatorNodeId(vbIs)
-                    //console.log('New block:', header)
-
-                    const newBlock: Block = {
-                        txs,
-                        height: parseInt(header.height),
-                        hash: header.last_block_id.hash,
-                        time: new Date(header.time),
-                        numTxs: blockData.data?.txs?.length || 0,
-                        proposerName: orgName,
-                        proposerVbId: vbIs,
-                        rewards: computeRewardsForTransactions(txs),
-                    }
-
-                    addBlock(newBlock)
-                }
-            } catch (error) {
-                console.error('Error parsing WebSocket message:', error)
-            }
+        const node = validatorNodes.data.items[0];
+        const organizations = await api.appControllerGetOrganizations({
+            vb_id: node.organizationId,
+        });
+        if (validatorNodes.data.items.length === 0) {
+            throw new Error('node owner not found');
         }
-
-        ws.onerror = (error) => {
-            console.error('WebSocket error:', error)
-            connectionStatus.value = 'Connection Error'
-            isConnected.value = false
+        const nodeOwner = organizations.data.items[0];
+        res = {
+            nodeId: node.virtualBlockchainId,
+            nodeOwnerName: nodeOwner.name,
+            nodeOwnerId: nodeOwner.virtualBlockchainId,
+        };
+    }
+    catch (err) {
+        res = {
+            nodeId: "",
+            nodeOwnerName: "(unknown)",
+            nodeOwnerId: "",
         }
+    }
+    nodeCache.set(address, res);
+    return res;
+}
 
-        ws.onclose = () => {
-            console.log('WebSocket disconnected')
-            connectionStatus.value = 'Disconnected - Reconnecting...'
-            isConnected.value = false
-
-            // Attempt to reconnect after 5 seconds
-            /*
-            reconnectTimeout = setTimeout(() => {
-                console.log('Attempting to reconnect...')
-                subscribeToNewBlocks()
-            }, 5000)
-
-             */
+async function synchronize() {
+    try {
+        const blocks = await api.appControllerGetBlocks({
+            height_gte: knownHeight + 1,
+            sort: "height",
+            order: "DESC",
+            limit: MAX_BLOCKS,
+        });
+        if (blocks.data.items.length == 0) {
+            return;
         }
-    } catch (error) {
-        console.error('Error setting up WebSocket:', error)
-        connectionStatus.value = 'Connection Failed'
-        isConnected.value = false
+        knownHeight = blocks.data.items[0].height;
+        blocks.data.items.reverse();
+        for (const block of blocks.data.items) {
+            const microblocks = await api.appControllerGetMicroblocks({
+                block_height: block.height
+            });
+            const { nodeId, nodeOwnerId, nodeOwnerName } =
+                await getNodeInfoFromAddress(block.proposerAddress);
+            const feesInAtomics = microblocks.data.items.reduce((total, mb) => {
+                return total + mb.gas * mb.gasPrice;
+            }, 0);
+            const newBlock: Block = {
+                height: block.height,
+                hash: block.hash,
+                time: new Date(block.milliseconds),
+                numTxs: microblocks.data.items.length,
+                nodeId,
+                nodeOwnerName,
+                nodeOwnerId,
+                fees: CMTSToken.createAtomic(feesInAtomics).toString(),
+            };
+            addBlock(newBlock);
+        }
+        const gasPrice = await appControllerGetGasPrice({
+            height_gte: knownHeight - GAS_PRICE_BLOCKS,
+        });
+        isMinMaxApplicable.value = gasPrice.data.average !== null;
+        minGasPrice.value = gasPrice.data.min;
+        maxGasPrice.value = gasPrice.data.max;
+        avgGasPrice.value = gasPrice.data.average;
+    }
+    finally {
+        scheduleNextSynchronization();
     }
 }
 
 onMounted(async () => {
     try {
-        const rpcUrl = blockchainStore.getRpcUrl
-
-        // Connect to Tendermint RPC
-        client = await Tendermint37Client.connect(rpcUrl)
-
-        // Fetch latest blocks
-        const latestBlock = await client.block()
-        const currentHeight = latestBlock.block.header.height
-
-        // Fetch the last 10 blocks
-        const blockPromises: Promise<any>[] = []
-        for (let i = 0; i < 8; i++) {
-            const height = currentHeight - i
-            if (height > 0) {
-                blockPromises.push(client.block(height))
-            }
-        }
-
-        const fetchedBlocks = await Promise.all(blockPromises)
-        blocks.value = await Promise.all(
-            fetchedBlocks.map(async (b) => {
-                const vbId = await getValidatorNodeIdByCometBFTAddress(
-                    b.block.header.proposerAddress,
-                )
-                const orgName = await getOrganizationNameByValidatorNodeId(vbId)
-                return {
-                    height: b.block.header.height,
-                    hash: Utils.binaryToHexa(b.blockId.hash),
-                    time: b.block.header.time,
-                    numTxs: b.block.txs.length,
-                    txs: b.block.txs,
-                    proposerVbId: vbId,
-                    proposerName: orgName,
-                    rewards: computeRewardsForTransactions(b.block.txs ?? []),
-                }
-            }),
-        )
-
-        // Subscribe to new blocks via WebSocket
-        subscribeToNewBlocks()
+        synchronize();
     } catch (error) {
         console.error('Error fetching blocks:', error)
         connectionStatus.value = 'Connection Failed'
@@ -377,24 +320,8 @@ onMounted(async () => {
 })
 
 onUnmounted(() => {
-    // Clean up WebSocket connection
-    if (ws) {
-        ws.close()
-        ws = null
-    }
-
-    // Clear reconnection timeout
-    /*
-    if (reconnectTimeout) {
-        clearTimeout(reconnectTimeout)
-        reconnectTimeout = null
-    }
-
-     */
-
-    // Disconnect Tendermint client
-    if (client) {
-        client.disconnect()
+    if (schedulerTimer !== null) {
+        clearInterval(schedulerTimer);
     }
 })
 </script>

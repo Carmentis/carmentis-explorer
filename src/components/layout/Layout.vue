@@ -1,13 +1,13 @@
 <template>
-  <div class="layout">
-    <Navbar />
-    <Sidebar />
-    <main class="main-content">
-      <div class="content-wrapper">
-        <slot />
-      </div>
-    </main>
-  </div>
+    <div class="layout">
+        <Navbar />
+        <Sidebar />
+        <main class="main-content">
+            <div class="content-wrapper">
+                <router-view :key="$route.fullPath" />
+            </div>
+        </main>
+    </div>
 </template>
 
 <script setup lang="ts">
@@ -18,11 +18,11 @@ import Sidebar from './Sidebar.vue'
 const sidebarOpen = ref(false)
 
 const toggleSidebar = () => {
-  sidebarOpen.value = !sidebarOpen.value
+    sidebarOpen.value = !sidebarOpen.value
 }
 
 const closeSidebar = () => {
-  sidebarOpen.value = false
+    sidebarOpen.value = false
 }
 
 provide('sidebarOpen', sidebarOpen)
@@ -32,35 +32,35 @@ provide('closeSidebar', closeSidebar)
 
 <style scoped>
 .layout {
-  min-height: 100vh;
-  background-color: var(--color-bg-secondary);
+    min-height: 100vh;
+    background-color: var(--color-bg-secondary);
 }
 
 .main-content {
-  margin-left: var(--sidebar-width);
-  margin-top: var(--navbar-height);
-  padding: var(--spacing-xl);
-  min-height: calc(100vh - var(--navbar-height));
+    margin-left: var(--sidebar-width);
+    margin-top: var(--navbar-height);
+    padding: var(--spacing-xl);
+    min-height: calc(100vh - var(--navbar-height));
 }
 
 .content-wrapper {
-  max-width: 1400px;
-  margin: 0 auto;
+    max-width: 1400px;
+    margin: 0 auto;
 }
 
 /* Mobile Styles */
 @media (max-width: 768px) {
-  .main-content {
-    margin-left: 0;
-    padding: var(--spacing-md);
-  }
+    .main-content {
+        margin-left: 0;
+        padding: var(--spacing-md);
+    }
 }
 
 /* Tablet Styles */
 @media (min-width: 769px) and (max-width: 1024px) {
-  .main-content {
-    margin-left: 0;
-    padding: var(--spacing-lg);
-  }
+    .main-content {
+        margin-left: 0;
+        padding: var(--spacing-lg);
+    }
 }
 </style>

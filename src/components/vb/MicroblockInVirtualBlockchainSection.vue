@@ -10,12 +10,13 @@ import {
     type Section,
     Microblock,
     CryptoEncoderFactory,
+    Utils,
 } from '@cmts-dev/carmentis-sdk-core'
 
 const props = defineProps<{ serializedMb: Uint8Array; section: Section; sectionIndex: number }>()
-const section = props.section
 const mb = Microblock.loadFromSerializedMicroblock(props.serializedMb)
-const stringifiedSection = JSON.stringify(section)
+const sections = mb.getAllSections()
+const stringifiedSection = prettyStringify(sections[props.sectionIndex])
 
 const showVerifyDialog = ref(false)
 const publicKeyInput = ref('')
@@ -27,6 +28,17 @@ const currentSignatureIndex = ref<number>(0)
 for (const section of mb.getAllSections()) {
     if (section.type === SectionType.SIGNATURE) {
         currentSignatureIndex.value++
+    }
+}
+
+function prettyStringify(section: Section): string {
+    return JSON.stringify(section, prettify, 2)
+
+    function prettify(key: string, value: any) {
+        if (value instanceof Uint8Array) {
+            return `(${value.length} bytes) ${Utils.binaryToHexa(value)}`
+        }
+        return value
     }
 }
 
@@ -82,13 +94,16 @@ function closeVerifyDialog() {
     <div class="flex flex-row items-center justify-between mb-2">
         <h5>{{ SectionLabel.getSectionLabelFromSection(section) }}</h5>
         <div v-if="section.type === SectionType.SIGNATURE">
-            <Button label="Verify Signature" icon="pi pi-check-circle" @click="verifySignature" size="small" />
+            <Button
+                label="Verify Signature"
+                icon="pi pi-check-circle"
+                @click="verifySignature"
+                size="small"
+            />
         </div>
     </div>
 
-    <p class="mono">
-        {{ stringifiedSection }}
-    </p>
+    <pre class="mono overflow-auto">{{ stringifiedSection }}</pre>
 
     <Dialog
         v-model:visible="showVerifyDialog"

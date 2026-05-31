@@ -2,7 +2,7 @@
     <div class="page">
         <div class="flex flex-row justify-between items-center">
             <h2>Microblock Details</h2>
-            <Button @click="visitVB">Explore Virtual Blockchain</Button>
+            <Button icon="pi pi-link" label="Explore Virtual Blockchain" @click="visitVB" />
         </div>
 
         <div v-if="loading" class="loading">
@@ -82,13 +82,14 @@
 </template>
 
 <script setup lang="ts">
-import { useBlockchainStore } from '@/stores/blockchain.ts'
 import { useRoute, useRouter } from 'vue-router'
 import { onMounted, ref } from 'vue'
-import { CMTSToken, Hash, Utils } from '@cmts-dev/carmentis-sdk-core'
+import { Base64, Microblock, Utils } from '@cmts-dev/carmentis-sdk-core'
 import ProgressSpinner from 'primevue/progressspinner'
 import Button from 'primevue/button'
 import MicroblockInVirtualBlockchainSection from '@/components/vb/MicroblockInVirtualBlockchainSection.vue'
+import { formatTime } from "@/utils/formatTime"
+import * as api from "@/indexer-sdk/indexer-api";
 
 interface MicroblockData {
     serializedMb: Uint8Array
@@ -108,8 +109,6 @@ interface MicroblockData {
 }
 const router = useRouter()
 const route = useRoute()
-const blockchainStore = useBlockchainStore()
-const provider = blockchainStore.getProvider
 const mbHash = ref(route.params.mbHash as string)
 const loading = ref(true)
 const microblock = ref<MicroblockData | null>(null)
@@ -118,13 +117,18 @@ function visitVB() {
     router.push(`/vb/${route.params.vbId}`)
 }
 
-const formatTime = (timestamp: number): string => {
-    return new Date(timestamp).toLocaleString()
-}
-
 onMounted(async () => {
     try {
-        const mb = await provider.loadMicroblockByMicroblockHash(Hash.fromHex(mbHash.value))
+        const microblocks = await api.appControllerGetMicroblocks({
+            hash: mbHash.value,
+            include_content: true,
+        });
+        if (microblocks.data.items.length === 0) {
+            throw new Error('Microblock not found');
+        }
+        const requestedMicroblock = microblocks.data.items[0];
+        const serializedData = Base64.decodeBinary(requestedMicroblock.content);
+        const mb = Microblock.loadFromSerializedMicroblock(serializedData);
         const gasPrice = mb.getGasPrice().toString()
         const paidFees = mb.getFees().toString()
 

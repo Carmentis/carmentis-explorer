@@ -3,7 +3,10 @@
     <template #start>
       <div class="navbar-brand">
         <Button icon="pi pi-bars" text @click="toggleSidebar" aria-label="Toggle menu" class="menu-toggle" />
-        <router-link to="/" class="logo">Carmentis Explorer</router-link>
+        <router-link to="/" class="logo">
+            <img src="/carmentis-logo-color.png" alt="Carmentis" class="logo-img" />
+            <span>Carmentis Explorer</span>
+        </router-link>
       </div>
     </template>
     <template #end>
@@ -16,13 +19,12 @@
 
 <script setup lang="ts">
 import { inject } from 'vue'
-import { useBlockchainStore } from '@/stores/blockchain'
 import Toolbar from 'primevue/toolbar'
 import Button from 'primevue/button'
 import Tag from 'primevue/tag'
+import { getApiBaseUrl } from '@/indexer-sdk/http-client/http-client'
 
-const blockchainStore = useBlockchainStore()
-const apiUrl = blockchainStore.getRpcUrl
+const apiUrl = getApiBaseUrl();
 const toggleSidebar = inject<() => void>('toggleSidebar')
 </script>
 
