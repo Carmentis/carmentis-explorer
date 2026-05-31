@@ -99,7 +99,7 @@ interface MicroblockData {
         hash: string
         previousHash: string
         height: number
-        timestamp: number
+        timestamp: Date
         signature: string
         signer: string
     }
@@ -143,7 +143,7 @@ onMounted(async () => {
                 hash: mb.getHash().encode(),
                 previousHash: mb.getPreviousHash().encode(),
                 height: mb.getHeight(),
-                timestamp: mb.getTimestampAsDate().getTime(),
+                timestamp: mb.getTimestampAsDate(),
                 signature,
                 signer: Utils.binaryToHexa(signerAccount),
             },
