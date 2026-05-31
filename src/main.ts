@@ -9,8 +9,7 @@ import router from './router'
 import './assets/styles/main.css'
 import 'primeicons/primeicons.css'
 
-//setApiBaseUrl("https://indexer.server4.devnet.carmentis.io");
-setApiBaseUrl("http://localhost:3000");
+setApiBaseUrl(import.meta.env.VITE_INDEXER_URL);
 
 const app = createApp(App)
 
