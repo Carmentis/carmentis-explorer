@@ -14,7 +14,6 @@ import BlockDescription from '../components/blocks/BlockDescription.vue'
 import VirtualBlockchain from '@/components/vb/VirtualBlockchain.vue'
 import VirtualBlockchainList from '@/components/vb/VirtualBlockchainList.vue'
 import MicroblockInVirtualBlockchain from '@/components/vb/MicroblockInVirtualBlockchain.vue'
-import ProofChecker from '@/components/checker/ProofChecker.vue'
 
 const router = createRouter({
     history: createWebHistory(import.meta.env.BASE_URL),
@@ -116,11 +115,6 @@ const router = createRouter({
             path: '/vb/:vbId/mb/:mbHash',
             component: MicroblockInVirtualBlockchain,
             meta: { title: 'Microblock' },
-        },
-        {
-            path: '/checker/proof',
-            component: ProofChecker,
-            name: 'ProofChecker',
         },
     ],
 })

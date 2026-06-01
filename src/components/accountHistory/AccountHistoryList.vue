@@ -59,14 +59,14 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { shortenHash } from '@/utils/shortenHash.ts'
-import DataTable from 'primevue/datatable'
 import type { DataTableRowClickEvent } from 'primevue/datatable'
+import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
 import ProgressSpinner from 'primevue/progressspinner'
-import { BK_NAMES, BK_PLUS, CMTSToken } from '@cmts-dev/carmentis-sdk-core'
+import { BK_NAMES, BK_PLUS, CMTSToken, TokenUnit } from '@cmts-dev/carmentis-sdk-core'
 import { formatTime } from '@/utils/formatTime'
 import * as api from '@/indexer-sdk/indexer-api.ts'
 
@@ -97,16 +97,14 @@ function visitAccount(e: Event, accountId: string) {
 onMounted(async () => {
     try {
         const accountId =
-            typeof route.params.accountId === 'string' ? route.params.accountId : undefined;
+            typeof route.params.accountId === 'string' ? route.params.accountId : undefined
         const fetchedHistory = await api.appControllerGetAccountHistory({
             account_id: accountId,
             sort: 'timestamp',
             order: 'DESC',
         })
         history.value = []
-        fetchedHistory.data.items.sort((a, b) =>
-            b.timestamp - a.timestamp || b.height - a.height
-        );
+        fetchedHistory.data.items.sort((a, b) => b.timestamp - a.timestamp || b.height - a.height)
         for (const entry of fetchedHistory.data.items) {
             history.value.push({
                 accountId: entry.accountId,
@@ -115,7 +113,10 @@ onMounted(async () => {
                 timestamp: new Date(entry.timestamp * 1000),
                 incoming: !!(entry.type & BK_PLUS),
                 type: BK_NAMES[entry.type],
-                amount: CMTSToken.createAtomic(entry.amount).toString(),
+                amount: CMTSToken.createAtomic(entry.amount).toString(
+                    TokenUnit.TOKEN,
+                    { locale: "system", grouping: true, decimalPlaces: 2 }
+                ),
             })
         }
     } catch (error) {

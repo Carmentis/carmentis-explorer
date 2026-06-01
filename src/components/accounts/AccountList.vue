@@ -39,7 +39,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { CMTSToken } from '@cmts-dev/carmentis-sdk-core'
+import { CMTSToken, TokenUnit } from '@cmts-dev/carmentis-sdk-core'
 import { shortenHash } from '@/utils/shortenHash'
 import DataTable from 'primevue/datatable'
 import type { DataTableRowClickEvent } from 'primevue/datatable';
@@ -72,7 +72,10 @@ onMounted(async () => {
             accounts.value.push({
                 hash: account.id,
                 pk: account.publicKey,
-                balance: CMTSToken.createAtomic(account.balance).toString(),
+                balance: CMTSToken.createAtomic(account.balance).toString(
+                    TokenUnit.TOKEN,
+                    { locale: "system", grouping: true, decimalPlaces: 2 }
+                ),
             })
         }
     } catch (error) {

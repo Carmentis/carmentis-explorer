@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
-import { BalanceAvailability, CMTSToken, Hash } from '@cmts-dev/carmentis-sdk-core'
+import { CMTSToken, TokenUnit, Utils } from '@cmts-dev/carmentis-sdk-core'
+import { getBalanceAvailability } from '@/utils/accountBalanceAvailability.ts'
 import Button from 'primevue/button'
 import router from '@/router'
 import * as api from "@/indexer-sdk/indexer-api";
@@ -41,34 +42,29 @@ onMounted(async () => {
         const nodes = await api.appControllerGetValidatorNodes({ vb_id: nodeHash });
         const node = nodes.data.items[0];
         const orgs = await api.appControllerGetOrganizations({ vb_id: node.organizationId });
-        const org = orgs.data.items[0];
-/*
-        const cometbft = await vb.getCometbftPublicKeyDeclaration()
-        const rpcEndpoint = await vb.getRpcEndpointDeclaration()
-        const internalState = await vb.getInternalState()
-        const approvalStatus = internalState.getLastKnownApprovalStatus()
+        const owner = orgs.data.items[0];
+        const accounts = await api.appControllerGetAccounts({ id: owner.accountId });
+        const account = accounts.data.items[0];
+        const balanceAvailability = getBalanceAvailability(account);
+        const nodeStakingLock = balanceAvailability.getNodeStakingLock(
+            Utils.binaryFromHexa(nodeHash)
+        )
 
-        // load the account
-        const orgId = internalState.getOrganizationId()
-        const orgVb = await blockchain.loadOrganizationVirtualBlockchain(orgId)
-        const accountId = orgVb.getAccountId()
-        const accountState = await blockchain.getAccountState(accountId.toBytes())
-        const balanceAvailability =
-            BalanceAvailability.createFromAccountStateAbciResponse(accountState)
-        const nodeStakingLock = balanceAvailability.getNodeStakingLock(nodeId.toBytes())
-*/
         nodeObject.value = {
             hash: nodeHash,
             status: node.currentVotingPower > 0 ? 'Validator' : 'Replicator',
             rpc: node.rpcEndpoint,
-            nodeOwnerName: org.name,
+            nodeOwnerName: owner.name,
             nodeOwnerOrgId: node.organizationId,
             publicKey: node.cometPublicKey,
         }
-/*
+
         if (nodeStakingLock) {
-            stake.value = {
-                staked: CMTSToken.createAtomic(nodeStakingLock.lockedAmountInAtomics).toString(),
+            stakeObject.value = {
+                staked: CMTSToken.createAtomic(nodeStakingLock.lockedAmountInAtomics).toString(
+                    TokenUnit.TOKEN,
+                    { locale: "system", grouping: true, decimalPlaces: 2 }
+                ),
                 unstaked:
                     nodeStakingLock.parameters.plannedUnlockAmountInAtomics !== 0
                         ? {
@@ -77,12 +73,15 @@ onMounted(async () => {
                               ).toLocaleString(),
                               unstaked: CMTSToken.createAtomic(
                                   nodeStakingLock.parameters.plannedUnlockAmountInAtomics,
-                              ).toString(),
+                              ).toString(
+                                  TokenUnit.TOKEN,
+                                  { locale: "system", grouping: true, decimalPlaces: 2 }
+                              ),
                           }
                         : undefined,
             }
         }
- */
+
     } catch (error) {
         console.error('Error fetching node:', error)
     } finally {

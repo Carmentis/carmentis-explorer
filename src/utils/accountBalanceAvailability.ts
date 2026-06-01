@@ -1,7 +1,7 @@
 import { type AccountDto } from '@/indexer-sdk/model/accountDto'
 import { BalanceAvailability, type Lock, LockType, Utils } from '@cmts-dev/carmentis-sdk-core'
 
-export function getBalanceAvaibility(account: AccountDto) {
+export function getBalanceAvailability(account: AccountDto) {
     const locks: Lock[] = []
     for (const lock of account.escrowLocks) {
         locks.push({

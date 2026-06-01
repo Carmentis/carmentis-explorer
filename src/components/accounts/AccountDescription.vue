@@ -38,9 +38,10 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { getBalanceAvaibility } from '@/utils/accountBalanceAvaibility'
+import { getBalanceAvailability } from '@/utils/accountBalanceAvailability.ts'
 import Button from 'primevue/button'
 import * as api from "@/indexer-sdk/indexer-api";
+import { TokenUnit } from '@cmts-dev/carmentis-sdk-core'
 
 const router = useRouter()
 const route = useRoute()
@@ -60,15 +61,21 @@ onMounted(async () => {
     try {
         const accounts = await api.appControllerGetAccounts({ id: accountHash });
         const account = accounts.data.items[0];
-        const balanceAvaibility = getBalanceAvaibility(account);
+        const balanceAvaibility = getBalanceAvailability(account);
         const spendable = balanceAvaibility.getSpendable();
         const staked = balanceAvaibility.getStaked();
 
         accountObject.value = {
             hash: accountHash,
             pk: account.publicKey,
-            staked: staked.toString(),
-            spendable: spendable.toString(),
+            staked: staked.toString(
+                TokenUnit.TOKEN,
+                { locale: "system", grouping: true, decimalPlaces: 2 }
+            ),
+            spendable: spendable.toString(
+                TokenUnit.TOKEN,
+                { locale: "system", grouping: true, decimalPlaces: 2 }
+            ),
         }
     } catch (error) {
         console.error('Error fetching account:', error)

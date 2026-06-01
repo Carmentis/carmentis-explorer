@@ -153,7 +153,7 @@ interface Block {
 }
 
 const MAX_BLOCKS = 10;
-const GAS_PRICE_BLOCKS = 10;
+const GAS_PRICE_BLOCKS = 25;
 
 const router = useRouter()
 const loading = ref(true)

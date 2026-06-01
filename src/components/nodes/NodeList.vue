@@ -39,7 +39,13 @@
             </Column>
             <Column field="votingPower" header="Voting Power">
                 <template #body="{ data }">
-                    <span class="mono-cell">{{ data.isValidator ? data.votingPower : 'Replicator' }}</span>
+                    <span class="mono-cell">
+                        {{
+                            data.isValidator
+                                ? Intl.NumberFormat().format(data.votingPower)
+                                : 'Replicator'
+                        }}
+                    </span>
                 </template>
             </Column>
         </DataTable>

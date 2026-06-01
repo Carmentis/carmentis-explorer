@@ -44,7 +44,7 @@ import { ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import * as api from "@/indexer-sdk/indexer-api";
 import { formatTime } from '@/utils/formatTime'
-import { BK_NAMES, BK_PLUS, CMTSToken } from '@cmts-dev/carmentis-sdk-core'
+import { BK_NAMES, BK_PLUS, CMTSToken, TokenUnit } from '@cmts-dev/carmentis-sdk-core'
 
 const route = useRoute()
 const accountId = route.params.accountId as string
@@ -74,7 +74,10 @@ onMounted(async () => {
             timestamp: new Date(entry.timestamp * 1000),
             incoming: !!(entry.type & BK_PLUS),
             type: BK_NAMES[entry.type],
-            amount: CMTSToken.createAtomic(entry.amount).toString(),
+            amount: CMTSToken.createAtomic(entry.amount).toString(
+                TokenUnit.TOKEN,
+                { locale: "system", grouping: true, decimalPlaces: 2 }
+            ),
             publicReference: entry.publicReference,
         }
     } catch (error) {

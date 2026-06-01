@@ -2,10 +2,20 @@
     <aside :class="['sidebar', { open: isOpen }]">
         <nav class="sidebar-nav">
             <template v-for="item in menuItems" :key="item.path || item.label">
-                <button v-if="item.command" class="nav-item" @click="item.command" type="button">
+                <button v-if="item.command" class="nav-item w-full flex items-center justify-start text-left cursor-pointer" @click="item.command" type="button">
                     <i :class="item.icon" class="nav-icon"></i>
                     <span class="nav-label">{{ item.label }}</span>
                 </button>
+                <a
+                    v-else-if="item.external"
+                    :href="item.external"
+                    class="nav-item"
+                    rel="noopener noreferrer"
+                >
+                    <i :class="item.icon" class="nav-icon"></i>
+                    <span class="nav-label">{{ item.label }}</span>
+                    <i class="pi pi-external-link nav-chevron"></i>
+                </a>
                 <router-link
                     v-else
                     :to="item.path"
@@ -340,7 +350,7 @@ const menuItems = [
     {
         label: 'Proof Checker',
         icon: 'pi pi-verified',
-        path: '/checker/proof',
+        external: import.meta.env.VITE_PROOFCHECKER_URL,
     },
 ]
 
