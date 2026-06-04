@@ -19,12 +19,12 @@
             </template>
             <Column field="hash" header="ID">
                 <template #body="{ data }">
-                    <span class="mono-cell" :title="data.hash">{{ shortenHash(data.hash) }}</span>
+                    <span class="mono-cell mono" :title="data.hash">{{ shortenHash(data.hash) }}</span>
                 </template>
             </Column>
             <Column field="pk" header="Public Key">
                 <template #body="{ data }">
-                    <span class="mono-cell" :title="data.pk">{{ shortenHash(data.pk, 20, 4) || "(none)" }}</span>
+                    <span class="mono-cell mono" :title="data.pk">{{ shortenHash(data.pk, 20, 4) || "(none)" }}</span>
                 </template>
             </Column>
             <Column field="balance" header="Balance">

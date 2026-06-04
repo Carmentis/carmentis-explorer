@@ -84,7 +84,7 @@
             </div>
 
             <div v-if="searchResults.length > 0" class="search-results">
-                <h4 class="results-title">Results found:</h4>
+                <h4 class="results-title">{{ searchResults.length }} {{ searchResults.length > 1 ? "results" : "result" }} found:</h4>
                 <div class="results-list">
                     <div
                         v-for="(result, index) in searchResults"

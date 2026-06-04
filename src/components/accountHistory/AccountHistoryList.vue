@@ -22,7 +22,7 @@
             <Column field="accountId" header="Account">
                 <template #body="{ data }">
                     <a
-                        class="font-mono text-sm text-gray-900 truncate font-medium"
+                        class="mono text-sm text-gray-900 truncate font-medium"
                         @click="(e) => visitAccount(e, data.accountId)"
                     >
                         {{ shortenHash(data.accountId) }}
@@ -32,7 +32,7 @@
             <Column field="linkedAccountId" header="Linked Account">
                 <template #body="{ data }">
                     <a
-                        class="font-mono text-sm text-gray-900 truncate font-medium"
+                        class="mono text-sm text-gray-900 truncate font-medium"
                         @click="(e) => visitAccount(e, data.linkedAccountId)"
                     >
                         {{ shortenHash(data.linkedAccountId) }}
@@ -42,7 +42,7 @@
             <Column field="timestamp" header="Date">
                 <template #body="{ data }">
                     <span class="mono-cell" :title="data.timestamp">{{
-                        formatTime(data.timestamp)
+                        getTimeAgo(data.timestamp)
                     }}</span>
                 </template>
             </Column>
@@ -67,7 +67,7 @@ import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
 import ProgressSpinner from 'primevue/progressspinner'
 import { BK_NAMES, BK_PLUS, CMTSToken, TokenUnit } from '@cmts-dev/carmentis-sdk-core'
-import { formatTime } from '@/utils/formatTime'
+import { getTimeAgo } from '@/utils/formatTime'
 import * as api from '@/indexer-sdk/indexer-api.ts'
 
 const route = useRoute()

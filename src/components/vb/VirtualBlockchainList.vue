@@ -19,7 +19,7 @@
             </template>
             <Column field="hash" header="ID">
                 <template #body="{ data }">
-                    <span class="mono-cell" :title="data.id">{{ shortenHash(data.id) }}</span>
+                    <span class="mono-cell mono" :title="data.id">{{ shortenHash(data.id) }}</span>
                 </template>
             </Column>
             <Column field="type" header="Type" />
@@ -27,7 +27,7 @@
             <Column field="lastModified" header="Last modified">
                 <template #body="{ data }">
                     <span class="mono-cell" :title="data.lastModified">{{
-                        formatTime(data.lastModified)
+                        getTimeAgo(data.lastModified)
                     }}</span>
                 </template>
             </Column>
@@ -54,7 +54,7 @@ import type { DataTableRowClickEvent } from 'primevue/datatable'
 import Column from 'primevue/column'
 import ProgressSpinner from 'primevue/progressspinner'
 import { VB_NAME } from '@cmts-dev/carmentis-sdk-core'
-import { formatTime } from "@/utils/formatTime"
+import { getTimeAgo } from "@/utils/formatTime"
 import * as api from '@/indexer-sdk/indexer-api'
 
 const router = useRouter()

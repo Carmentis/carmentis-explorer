@@ -19,13 +19,13 @@
             </template>
             <Column field="hash" header="ID">
                 <template #body="{ data }">
-                    {{ shortenHash(data.hash) }}
+                    <span class="mono-cell mono" :title="data.hash">{{ shortenHash(data.hash) }}</span>
                 </template>
             </Column>
             <Column field="organizationId" header="Organization ID">
                 <template #body="{ data }">
                     <a
-                        class="font-mono text-sm text-gray-900 truncate font-medium"
+                        class="mono text-sm text-gray-900 truncate font-medium"
                         @click="(e) => visitOrganization(e, data.organizationId)"
                     >
                         {{ shortenHash(data.organizationId) }}

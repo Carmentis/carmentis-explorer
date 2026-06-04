@@ -19,7 +19,7 @@
             </template>
             <Column field="hash" header="ID">
                 <template #body="{ data }">
-                    <span class="mono-cell" :title="data.hash">{{ shortenHash(data.hash) }}</span>
+                    <span class="mono-cell mono" :title="data.hash">{{ shortenHash(data.hash) }}</span>
                 </template>
             </Column>
             <Column field="owner" header="Owner">
