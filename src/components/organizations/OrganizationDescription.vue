@@ -15,36 +15,38 @@
         </div>
 
         <div v-if="organization !== null && !loading" class="details-card">
-            <div class="detail-section">
-                <h3>Hash</h3>
-                <p class="mono">{{ organization.hash }}</p>
-            </div>
-            <div class="detail-section">
-                <h3>Name</h3>
-                <p>{{ organization.name }}</p>
-            </div>
-            <div class="detail-section">
-                <h3>Localisation</h3>
-                <p>{{ organization.localisation }}</p>
-            </div>
-            <div class="detail-section">
-                <h3>Website</h3>
-                <p v-if="!organization.website">{{ 'No website provided' }}</p>
-                <a v-else :href="organization.website" target="_blank">{{
-                    organization.website
-                }}</a>
-            </div>
-            <div class="detail-section">
-                <h3>Account</h3>
-                <p>
-                    <button
-                        @click="() => goToAccount(organization!.accountId)"
-                        type="button"
-                        class="link-button"
-                    >
-                        {{ organization.accountId }}
-                    </button>
-                </p>
+            <div class="cards-grid">
+                <div class="detail-section">
+                    <h3>Hash</h3>
+                    <p class="mono">{{ organization.hash }}</p>
+                </div>
+                <div class="detail-section">
+                    <h3>Name</h3>
+                    <p>{{ organization.name }}</p>
+                </div>
+                <div class="detail-section">
+                    <h3>Localisation</h3>
+                    <p>{{ organization.localisation }}</p>
+                </div>
+                <div class="detail-section">
+                    <h3>Website</h3>
+                    <p v-if="!organization.website">{{ 'No website provided' }}</p>
+                    <a v-else :href="organization.website" target="_blank">{{
+                        organization.website
+                    }}</a>
+                </div>
+                <div class="detail-section">
+                    <h3>Account</h3>
+                    <p>
+                        <button
+                            @click="() => goToAccount(organization!.accountId)"
+                            type="button"
+                            class="link-button"
+                        >
+                            {{ organization.accountId }}
+                        </button>
+                    </p>
+                </div>
             </div>
         </div>
 

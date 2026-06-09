@@ -1,6 +1,6 @@
 <template>
     <div class="page">
-        <h2>Validator Nodes</h2>
+        <h2>Nodes</h2>
 
         <DataTable
             :value="nodes"
@@ -37,6 +37,11 @@
                     <span class="mono-cell">{{ data.url }}</span>
                 </template>
             </Column>
+            <Column field="status" header="Status" headerClass="center-header" :bodyStyle="{ textAlign: 'center' }">
+                <template #body="{ data }">
+                    <span :class="['mono-cell', { 'opacity-50': data.statusIsExpired }]"><i :class="data.statusIcon"></i> {{ data.statusLabel }}</span>
+                </template>
+            </Column>
             <Column field="votingPower" header="Voting Power">
                 <template #body="{ data }">
                     <span class="mono-cell">
@@ -71,6 +76,9 @@ export interface Node {
     ownerName: string
     ownerVbId: string
     url: string
+    statusIcon: string
+    statusLabel: string
+    statusIsExpired: boolean
     votingPower: number
     isValidator: boolean
 }
@@ -84,6 +92,14 @@ function visitOrganization(e: Event, organizationId: string) {
     router.push(`/organizations/${organizationId}`)
 }
 
+const NodeStatus = {
+    "OK": { icon: "pi pi-check-circle", label: "OK" },
+    "SYNC": { icon: "pi pi-sync", label: "Syncing" },
+    "DOWN": { icon: "pi pi-times-circle", label: "Unreachable" },
+    "BAD": { icon: "pi pi-question-circle", label: "Invalid" },
+    "UNKNOWN": { icon: "", label: "(pending)" }
+};
+
 onMounted(async () => {
     try {
         const fetchedNodes = await api.appControllerGetValidatorNodes();
@@ -94,14 +110,32 @@ onMounted(async () => {
                 vb_id: node.organizationId
             });
             const owner = organizations.data.items[0];
-            nodes.value.push({
+
+            const nodeObject = {
                 hash: node.virtualBlockchainId,
                 ownerName: owner.name,
                 ownerVbId: owner.virtualBlockchainId,
                 url: node.rpcEndpoint,
+                statusIcon: NodeStatus[node.status].icon,
+                statusLabel: NodeStatus[node.status].label,
+                statusIsExpired: node.statusIsExpired,
                 isValidator: isValidator,
                 votingPower: node.currentVotingPower,
-            })
+            };
+
+            const index = nodes.value.push(nodeObject) - 1;
+
+            if (node.statusIsExpired) {
+                api.appControllerGetNodeStatus({ node_id: node.virtualBlockchainId })
+                .then((answer) => {
+                    nodes.value[index] = {
+                        ...nodeObject,
+                        statusIcon: NodeStatus[answer.data.status].icon,
+                        statusLabel: NodeStatus[answer.data.status].label,
+                        statusIsExpired: false,
+                    }
+                });
+            }
         }
     } catch (error) {
         console.error('Error fetching nodes:', error)

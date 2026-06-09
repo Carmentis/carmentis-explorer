@@ -251,8 +251,13 @@ ul {
     padding: var(--spacing-xl);
     display: flex;
     flex-direction: column;
-    gap: var(--spacing-xl);
     box-shadow: var(--shadow-sm);
+}
+
+.cards-grid {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-lg);
 }
 
 .detail-section h3 {
@@ -437,4 +442,8 @@ td.mono-cell {
     float: left;
     max-width: 36px;
     max-height: 36px;
+}
+
+.center-header .p-datatable-column-header-content {
+    justify-content: center;
 }

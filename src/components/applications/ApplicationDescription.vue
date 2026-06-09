@@ -11,34 +11,36 @@
         </div>
 
         <div v-if="application && !loading" class="details-card">
-            <div class="detail-section">
-                <h3>Hash</h3>
-                <p class="mono">{{ application.hash }}</p>
-            </div>
-            <div class="detail-section">
-                <h3>Name</h3>
-                <p>{{ application.name }}</p>
-            </div>
-            <div class="detail-section">
-                <h3>Description</h3>
-                <p>{{ application.description ?? 'No description provided' }}</p>
-            </div>
-            <div class="detail-section">
-                <h3>Website</h3>
-                <p v-if="!application.website">{{ 'No website provided' }}</p>
-                <a v-else :href="application.website" target="_blank">{{ application.website  }}</a>
-            </div>
-            <div class="detail-section">
-                <h3>Owner</h3>
-                <p>
-                    {{ application.orgName }} (<button
-                        @click="() => goToOrganization(application!.orgId)"
-                        type="button"
-                        class="link-button"
-                    >
-                        {{ application.orgId }}</button
-                    >)
-                </p>
+            <div class="cards-grid">
+                <div class="detail-section">
+                    <h3>Hash</h3>
+                    <p class="mono">{{ application.hash }}</p>
+                </div>
+                <div class="detail-section">
+                    <h3>Name</h3>
+                    <p>{{ application.name }}</p>
+                </div>
+                <div class="detail-section">
+                    <h3>Description</h3>
+                    <p>{{ application.description ?? 'No description provided' }}</p>
+                </div>
+                <div class="detail-section">
+                    <h3>Website</h3>
+                    <p v-if="!application.website">{{ 'No website provided' }}</p>
+                    <a v-else :href="application.website" target="_blank">{{ application.website  }}</a>
+                </div>
+                <div class="detail-section">
+                    <h3>Owner</h3>
+                    <p>
+                        {{ application.orgName }} (<button
+                            @click="() => goToOrganization(application!.orgId)"
+                            type="button"
+                            class="link-button"
+                        >
+                            {{ application.orgId }}</button
+                        >)
+                    </p>
+                </div>
             </div>
         </div>
 

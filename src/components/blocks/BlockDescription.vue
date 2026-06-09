@@ -11,31 +11,33 @@
             <!-- Block Header -->
             <div class="details-card">
                 <h3>Block Header</h3>
-                <div class="detail-section">
-                    <h4>Height</h4>
-                    <p class="mono">{{ block.header.height }}</p>
-                </div>
-                <div class="detail-section">
-                    <h4>Block Hash</h4>
-                    <p class="mono">{{ block.blockHash }}</p>
-                </div>
-                <div class="detail-section">
-                    <h4>Time</h4>
-                    <p>{{ formatTime(block.header.time) }}</p>
-                </div>
-                <div class="detail-section">
-                    <h4>Chain ID</h4>
-                    <p class="mono">{{ block.header.chainId }}</p>
-                </div>
-                <div class="detail-section">
-                    <h4>CometBFT Address</h4>
-                    <p class="mono">{{ block.header.proposerAddress }}</p>
+                <div class="cards-grid">
+                    <div class="detail-section">
+                        <h4>Height</h4>
+                        <p class="mono">{{ block.header.height }}</p>
+                    </div>
+                    <div class="detail-section">
+                        <h4>Block Hash</h4>
+                        <p class="mono">{{ block.blockHash }}</p>
+                    </div>
+                    <div class="detail-section">
+                        <h4>Time</h4>
+                        <p>{{ formatTime(block.header.time) }}</p>
+                    </div>
+                    <div class="detail-section">
+                        <h4>Chain ID</h4>
+                        <p class="mono">{{ block.header.chainId }}</p>
+                    </div>
+                    <div class="detail-section">
+                        <h4>CometBFT Address</h4>
+                        <p class="mono">{{ block.header.proposerAddress }}</p>
+                    </div>
                 </div>
             </div>
 
-            <!-- Hashes -->
-            <div class="details-card">
-                <h3>Hashes</h3>
+            <!-- Comet Hashes -->
+            <CollapsibleCard :default-open="false">
+                <template #title>Comet BFT Hashes</template>
                 <div class="detail-section">
                     <h4>Last Commit Hash</h4>
                     <p class="mono">{{ block.header.lastCommitHash }}</p>
@@ -68,7 +70,28 @@
                     <h4>Evidence Hash</h4>
                     <p class="mono">{{ block.header.evidenceHash }}</p>
                 </div>
-            </div>
+            </CollapsibleCard>
+
+            <!-- ABCI Hashes -->
+            <CollapsibleCard :default-open="false">
+                <template #title>ABCI Hashes</template>
+                <div class="detail-section">
+                    <h4>Virtual Blockchain Radix Hash</h4>
+                    <p class="mono">{{ block.abci.vbRadixHash }}</p>
+                </div>
+                <div class="detail-section">
+                    <h4>Token Radix Hash</h4>
+                    <p class="mono">{{ block.abci.tokenRadixHash }}</p>
+                </div>
+                <div class="detail-section">
+                    <h4>Storage Hash</h4>
+                    <p class="mono">{{ block.abci.storageHash }}</p>
+                </div>
+                <div class="detail-section">
+                    <h4>App Hash</h4>
+                    <p class="mono">{{ block.abci.appHash }}</p>
+                </div>
+            </CollapsibleCard>
 
             <!-- Transactions -->
             <div class="details-card">
@@ -107,6 +130,7 @@ import { ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import ProgressSpinner from 'primevue/progressspinner'
 import TransactionDescription from '@/components/blocks/TransactionDescription.vue'
+import CollapsibleCard from '@/components/utils/CollapsibleCard.vue'
 import { formatTime } from "@/utils/formatTime"
 import * as api from "@/indexer-sdk/indexer-api";
 
@@ -129,6 +153,12 @@ interface BlockData {
         lastResultsHash: string
         evidenceHash: string
         proposerAddress: string
+    }
+    abci: {
+        vbRadixHash: string
+        tokenRadixHash: string
+        storageHash: string
+        appHash: string
     }
     txs: string[]
     signatures: Array<{
@@ -179,6 +209,12 @@ onMounted(async () => {
                 lastResultsHash: requestedBlock.lastResultsHash,
                 evidenceHash: requestedBlock.evidenceHash,
                 proposerAddress: requestedBlock.proposerAddress,
+            },
+            abci: {
+                vbRadixHash: requestedBlock.appVbRadixHash,
+                tokenRadixHash: requestedBlock.appTokenRadixHash,
+                storageHash: requestedBlock.appStorageHash,
+                appHash: requestedBlock.appHash,
             },
             txs,
             signatures: requestedBlock.signatures.map((sig) => ({

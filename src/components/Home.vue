@@ -15,9 +15,12 @@
             </div>
             <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden w-180">
                 <div class="px-6 py-3 bg-gray-50 border-b border-gray-200">
-                    <div class="text-sm font-medium text-gray-700">
-                        <span class="font-bold">Statistics</span>
-                        (last {{ STATS_BLOCKS }} blocks)
+                    <div class="flex items-center gap-2 text-sm font-medium text-gray-700">
+                        <i class="pi pi-gauge text-xl leading-none"></i>
+                        <span>
+                            <span class="font-bold">Statistics</span>
+                            (last {{ STATS_BLOCKS }} blocks)
+                        </span>
                     </div>
                 </div>
                 <div class="flex divide-x divide-gray-200">
@@ -165,7 +168,7 @@ import { CMTSToken } from '@cmts-dev/carmentis-sdk-core'
 import * as api from '@/indexer-sdk/indexer-api'
 import { formatTime, getTimeAgo } from '@/utils/formatTime'
 import { appControllerGetGasPrice } from '@/indexer-sdk/indexer-api'
-import AmountDisplay from '@/components/formatting/AmountDisplay.vue'
+import AmountDisplay from '@/components/utils/AmountDisplay.vue'
 
 interface Block {
     height: number
@@ -193,6 +196,7 @@ const minGasPrice = ref(0)
 const avgGasPrice = ref(0)
 const maxGasPrice = ref(0)
 const microblocksCount = ref(0)
+const isMounted = ref(false);
 const nodeCache = new Map()
 
 const onBlockClick = (block: Block) => {
@@ -287,7 +291,9 @@ async function synchronize() {
             const feesInAtomics = microblocks.data.items.reduce((total, mb) => {
                 return total + mb.gas * mb.gasPrice
             }, 0)
-            console.log(`got block ${block.height} with ${microblocks.data.items.length} microblocks and fees ${feesInAtomics}`)
+            console.log(
+                `got block ${block.height} with ${microblocks.data.items.length} microblocks and fees ${feesInAtomics}`,
+            )
             const newBlock: Block = {
                 height: block.height,
                 hash: block.hash,
@@ -309,11 +315,14 @@ async function synchronize() {
         avgGasPrice.value = gasPrice.data.average
         microblocksCount.value = gasPrice.data.microblocks
     } finally {
-        scheduleNextSynchronization()
+        if (isMounted.value) {
+            scheduleNextSynchronization()
+        }
     }
 }
 
 onMounted(async () => {
+    isMounted.value = true;
     try {
         synchronize()
     } catch (error) {
@@ -326,8 +335,9 @@ onMounted(async () => {
 })
 
 onUnmounted(() => {
+    isMounted.value = false;
     if (schedulerTimer !== null) {
-        clearInterval(schedulerTimer)
+        clearTimeout(schedulerTimer)
     }
 })
 </script>

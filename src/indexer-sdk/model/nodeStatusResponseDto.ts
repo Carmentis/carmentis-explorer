@@ -5,10 +5,10 @@
  * Documentation for the Carmentis indexer API.
  * OpenAPI spec version: 1.0
  */
+import type { NodeStatusResponseDtoStatus } from './nodeStatusResponseDtoStatus';
 
-export interface VotingPowerDto {
+export interface NodeStatusResponseDto {
   nodeId: string;
-  height: number;
-  timestamp: number;
-  votingPower: number;
+  status: NodeStatusResponseDtoStatus;
+  statusTimestamp: number;
 }

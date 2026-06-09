@@ -14,43 +14,45 @@
             <!-- Microblock Header -->
             <div class="details-card">
                 <h3>Microblock Header</h3>
-                <div class="detail-section">
-                    <h4>Microblock Hash</h4>
-                    <p class="mono">{{ microblock.header.hash }}</p>
-                </div>
-                <div class="detail-section">
-                    <h4>Gas Price</h4>
-                    <p class="mono">
-                        {{ microblock.header.gasPrice }}
-                    </p>
-                </div>
-                <div class="detail-section">
-                    <h4>Paid fees</h4>
-                    <p class="mono">
-                        {{ microblock.header.paidFees }}
-                    </p>
-                </div>
-                <div class="detail-section">
-                    <h4>Previous Hash</h4>
-                    <p class="mono">{{ microblock.header.previousHash }}</p>
-                </div>
-                <div class="detail-section">
-                    <h4>Height</h4>
-                    <p class="mono">{{ microblock.header.height }}</p>
-                </div>
-                <div class="detail-section">
-                    <h4>Timestamp</h4>
-                    <p>{{ formatTime(microblock.header.timestamp) }}</p>
-                </div>
-                <div class="detail-section">
-                    <h4>Signer</h4>
-                    <a :href="`/accounts/${microblock.header.signer}`">{{
-                        microblock.header.signer
-                    }}</a>
-                </div>
-                <div class="detail-section">
-                    <h4>Signature</h4>
-                    <p>{{ microblock.header.signature }}</p>
+                <div class="cards-grid">
+                    <div class="detail-section">
+                        <h4>Microblock Hash</h4>
+                        <p class="mono">{{ microblock.header.hash }}</p>
+                    </div>
+                    <div class="detail-section">
+                        <h4>Gas Price</h4>
+                        <p class="mono">
+                            {{ microblock.header.gasPrice }}
+                        </p>
+                    </div>
+                    <div class="detail-section">
+                        <h4>Paid fees</h4>
+                        <p class="mono">
+                            {{ microblock.header.paidFees }}
+                        </p>
+                    </div>
+                    <div class="detail-section">
+                        <h4>Previous Hash</h4>
+                        <p class="mono">{{ microblock.header.previousHash }}</p>
+                    </div>
+                    <div class="detail-section">
+                        <h4>Height</h4>
+                        <p class="mono">{{ microblock.header.height }}</p>
+                    </div>
+                    <div class="detail-section">
+                        <h4>Timestamp</h4>
+                        <p>{{ formatTime(microblock.header.timestamp) }}</p>
+                    </div>
+                    <div class="detail-section">
+                        <h4>Signer</h4>
+                        <a :href="`/accounts/${microblock.header.signer}`">{{
+                            microblock.header.signer
+                        }}</a>
+                    </div>
+                    <div class="detail-section">
+                        <h4>Signature</h4>
+                        <p>{{ microblock.header.signature }}</p>
+                    </div>
                 </div>
             </div>
 

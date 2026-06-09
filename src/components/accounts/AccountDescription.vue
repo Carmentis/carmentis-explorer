@@ -13,21 +13,23 @@
         </div>
 
         <div v-if="accountObject && !loading" class="details-card">
-            <div class="detail-section">
-                <h3>Hash</h3>
-                <p class="mono">{{ accountObject.hash }}</p>
-            </div>
-            <div class="detail-section">
-                <h3>Public Key</h3>
-                <p class="mono">{{ accountObject.pk }}</p>
-            </div>
-            <div class="detail-section">
-                <h3>Spendable</h3>
-                <p class="mono">{{ accountObject.spendable }}</p>
-            </div>
-            <div class="detail-section">
-                <h3>Staked</h3>
-                <p class="mono">{{ accountObject.staked }}</p>
+            <div class="cards-grid">
+                <div class="detail-section">
+                    <h3>Hash</h3>
+                    <p class="mono">{{ accountObject.hash }}</p>
+                </div>
+                <div class="detail-section">
+                    <h3>Public Key</h3>
+                    <p class="mono">{{ accountObject.pk }}</p>
+                </div>
+                <div class="detail-section">
+                    <h3>Spendable</h3>
+                    <p class="mono">{{ accountObject.spendable }}</p>
+                </div>
+                <div class="detail-section">
+                    <h3>Staked</h3>
+                    <p class="mono">{{ accountObject.staked }}</p>
+                </div>
             </div>
         </div>
 

@@ -5,9 +5,10 @@
  * Documentation for the Carmentis indexer API.
  * OpenAPI spec version: 1.0
  */
-import type { OrganizationDto } from './organizationDto';
 
-export interface OrganizationListResponseDto {
-  items: OrganizationDto[];
-  hasMore: boolean;
-}
+export type AppControllerGetAccountProofParams = {
+/**
+ * Account ID
+ */
+account_id: string;
+};

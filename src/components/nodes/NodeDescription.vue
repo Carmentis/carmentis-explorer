@@ -107,52 +107,54 @@ onMounted(async () => {
         </div>
 
         <div v-if="nodeObject !== null && !loading" class="details-card">
-            <div class="detail-section">
-                <h3>Hash</h3>
-                <p class="mono">{{ nodeObject.hash }}</p>
-            </div>
-
-            <div class="detail-section">
-                <h3>Status</h3>
-                <p class="mono">{{ nodeObject.status }}</p>
-            </div>
-
-            <div class="detail-section">
-                <h3>CometBFT Public Key</h3>
-                <p class="mono">{{ nodeObject.publicKey }}</p>
-            </div>
-
-            <div class="detail-section">
-                <h3>RPC Endpoint</h3>
-                <p class="mono">{{ nodeObject.rpc }}</p>
-            </div>
-
-            <div class="detail-section">
-                <h3>Node Owner</h3>
-                <p class="mono">{{ nodeObject.nodeOwnerName }} ({{ nodeObject.nodeOwnerOrgId }})</p>
-                <Button
-                    label="Explore organization"
-                    @click="router.push(`/organizations/${nodeObject.nodeOwnerOrgId}`)"
-                />
-            </div>
-
-            <div v-if="stakeObject !== null" class="flex flex-col gap-8">
+            <div class="cards-grid">
                 <div class="detail-section">
-                    <h3>Staked</h3>
-                    <p class="mono">{{ stakeObject.staked }}</p>
+                    <h3>Hash</h3>
+                    <p class="mono">{{ nodeObject.hash }}</p>
                 </div>
 
-                <div class="detail-section" v-if="stakeObject.unstaked">
-                    <h3>Unstaking</h3>
-                    <p class="mono">
-                        {{ stakeObject.unstaked.unstakingAt }} - {{ stakeObject.unstaked.unstaked }}
-                    </p>
-                </div>
-            </div>
-            <div v-else>
                 <div class="detail-section">
-                    <h3>Staked</h3>
-                    <p class="mono">No stake</p>
+                    <h3>Status</h3>
+                    <p class="mono">{{ nodeObject.status }}</p>
+                </div>
+
+                <div class="detail-section">
+                    <h3>CometBFT Public Key</h3>
+                    <p class="mono">{{ nodeObject.publicKey }}</p>
+                </div>
+
+                <div class="detail-section">
+                    <h3>RPC Endpoint</h3>
+                    <p class="mono">{{ nodeObject.rpc }}</p>
+                </div>
+
+                <div class="detail-section">
+                    <h3>Node Owner</h3>
+                    <p class="mono">{{ nodeObject.nodeOwnerName }} ({{ nodeObject.nodeOwnerOrgId }})</p>
+                    <Button
+                        label="Explore organization"
+                        @click="router.push(`/organizations/${nodeObject.nodeOwnerOrgId}`)"
+                    />
+                </div>
+
+                <div v-if="stakeObject !== null" class="flex flex-col gap-8">
+                    <div class="detail-section">
+                        <h3>Staked</h3>
+                        <p class="mono">{{ stakeObject.staked }}</p>
+                    </div>
+
+                    <div class="detail-section" v-if="stakeObject.unstaked">
+                        <h3>Unstaking</h3>
+                        <p class="mono">
+                            {{ stakeObject.unstaked.unstakingAt }} - {{ stakeObject.unstaked.unstaked }}
+                        </p>
+                    </div>
+                </div>
+                <div v-else>
+                    <div class="detail-section">
+                        <h3>Staked</h3>
+                        <p class="mono">No stake</p>
+                    </div>
                 </div>
             </div>
         </div>

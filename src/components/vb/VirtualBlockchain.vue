@@ -94,38 +94,40 @@ onMounted(async () => {
             <!-- Virtual Blockchain Info -->
             <div class="details-card">
                 <h3>General Information</h3>
-                <div class="detail-section">
-                    <h4>Identifier</h4>
-                    <p class="mono">{{ vbData.identifier }}</p>
-                </div>
-                <div class="detail-section">
-                    <h4>Height</h4>
-                    <p class="mono">{{ vbData.height }}</p>
-                </div>
-                <div class="detail-section">
-                    <h4>Type</h4>
-                    <p class="mono">{{ VirtualBlockchainLabel.getVirtualBlockchainLabelFromVirtualBlockchainType(vbData.type) }}</p>
-                </div>
-                <div class="detail-section">
-                    <h4>Creation</h4>
-                    <p>{{ formatDate(vbData.creationTimestamp) }}</p>
-                </div>
-                <div class="detail-section">
-                    <h4>Last modification</h4>
-                    <p>{{ formatDate(vbData.modificationTimestamp) }}</p>
-                </div>
-                <div class="detail-section">
-                    <h4>Expiration</h4>
-                    <p>
-                        {{ vbData.expirationTimestamp !== 0
-                            ? formatDate(vbData.expirationTimestamp)
-                            : 'No expiration' }}
-                    </p>
-                    <p v-if="getDaysRemaining(vbData.expirationTimestamp) !== null" class="days-remaining">
-                        {{ getDaysRemaining(vbData.expirationTimestamp)! > 0
-                            ? `${getDaysRemaining(vbData.expirationTimestamp)} days remaining`
-                            : 'Expired' }}
-                    </p>
+                <div class="cards-grid">
+                    <div class="detail-section">
+                        <h4>Identifier</h4>
+                        <p class="mono">{{ vbData.identifier }}</p>
+                    </div>
+                    <div class="detail-section">
+                        <h4>Height</h4>
+                        <p class="mono">{{ vbData.height }}</p>
+                    </div>
+                    <div class="detail-section">
+                        <h4>Type</h4>
+                        <p class="mono">{{ VirtualBlockchainLabel.getVirtualBlockchainLabelFromVirtualBlockchainType(vbData.type) }}</p>
+                    </div>
+                    <div class="detail-section">
+                        <h4>Creation</h4>
+                        <p>{{ formatDate(vbData.creationTimestamp) }}</p>
+                    </div>
+                    <div class="detail-section">
+                        <h4>Last modification</h4>
+                        <p>{{ formatDate(vbData.modificationTimestamp) }}</p>
+                    </div>
+                    <div class="detail-section">
+                        <h4>Expiration</h4>
+                        <p>
+                            {{ vbData.expirationTimestamp !== 0
+                                ? formatDate(vbData.expirationTimestamp)
+                                : 'No expiration' }}
+                        </p>
+                        <p v-if="getDaysRemaining(vbData.expirationTimestamp) !== null" class="days-remaining">
+                            {{ getDaysRemaining(vbData.expirationTimestamp)! > 0
+                                ? `${getDaysRemaining(vbData.expirationTimestamp)} days remaining`
+                                : 'Expired' }}
+                        </p>
+                    </div>
                 </div>
             </div>
 
