@@ -106,15 +106,11 @@ onMounted(async () => {
         nodes.value = []
         for (const node of fetchedNodes.data.items) {
             const isValidator = node.currentVotingPower > 0;
-            const organizations = await api.appControllerGetOrganizations({
-                vb_id: node.organizationId
-            });
-            const owner = organizations.data.items[0];
 
             const nodeObject = {
                 hash: node.virtualBlockchainId,
-                ownerName: owner.name,
-                ownerVbId: owner.virtualBlockchainId,
+                ownerName: node.organizationId,
+                ownerVbId: node.organizationId,
                 url: node.rpcEndpoint,
                 statusIcon: NodeStatus[node.status].icon,
                 statusLabel: NodeStatus[node.status].label,
@@ -125,11 +121,22 @@ onMounted(async () => {
 
             const index = nodes.value.push(nodeObject) - 1;
 
+            api.appControllerGetOrganizations({
+                vb_id: node.organizationId
+            })
+            .then((answer) => {
+                const owner = answer.data.items[0];
+                nodes.value[index] = {
+                    ...nodes.value[index],
+                    ownerName: owner.name,
+                }
+            });
+
             if (node.statusIsExpired) {
                 api.appControllerGetNodeStatus({ node_id: node.virtualBlockchainId })
                 .then((answer) => {
                     nodes.value[index] = {
-                        ...nodeObject,
+                        ...nodes.value[index],
                         statusIcon: NodeStatus[answer.data.status].icon,
                         statusLabel: NodeStatus[answer.data.status].label,
                         statusIsExpired: false,
