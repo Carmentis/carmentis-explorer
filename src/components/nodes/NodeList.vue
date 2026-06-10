@@ -109,7 +109,7 @@ onMounted(async () => {
 
             const nodeObject = {
                 hash: node.virtualBlockchainId,
-                ownerName: node.organizationId,
+                ownerName: shortenHash(node.organizationId),
                 ownerVbId: node.organizationId,
                 url: node.rpcEndpoint,
                 statusIcon: NodeStatus[node.status].icon,

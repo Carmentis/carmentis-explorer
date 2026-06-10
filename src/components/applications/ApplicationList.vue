@@ -22,13 +22,13 @@
                     <span class="mono-cell mono" :title="data.hash">{{ shortenHash(data.hash) }}</span>
                 </template>
             </Column>
-            <Column field="organizationId" header="Organization ID">
+            <Column field="organizationName" header="Organization">
                 <template #body="{ data }">
                     <a
                         class="mono text-sm text-gray-900 truncate font-medium"
                         @click="(e) => visitOrganization(e, data.organizationId)"
                     >
-                        {{ shortenHash(data.organizationId) }}
+                        {{ data.organizationName }}
                     </a>
                 </template>
             </Column>
@@ -53,6 +53,7 @@ const applications = ref<Application[]>([])
 
 export interface Application {
     hash: string
+    organizationName: string
     organizationId: string
     name: string
 }
@@ -71,11 +72,24 @@ onMounted(async () => {
         const fetchedApps = await api.appControllerGetApplications()
         applications.value = []
         for (const app of fetchedApps.data.items) {
-            applications.value.push({
+            const appObject = {
                 hash: app.virtualBlockchainId,
+                organizationName: shortenHash(app.organizationId),
                 organizationId: app.organizationId,
                 name: app.name,
+            };
+            const index = applications.value.push(appObject) - 1;
+
+            api.appControllerGetOrganizations({
+                vb_id: app.organizationId
             })
+            .then((answer) => {
+                const org = answer.data.items[0];
+                applications.value[index] = {
+                    ...applications.value[index],
+                    organizationName: org.name,
+                }
+            });
         }
     } catch (error) {
         console.error('Error fetching applications:', error)
