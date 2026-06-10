@@ -31,7 +31,7 @@
                         </div>
                         <div class="text-xl font-semibold text-gray-900">
                             <div v-if="isGasPriceConsistent">
-                                <AmountDisplay :value="minGasPrice" />
+                                <AmountDisplay :atomics="minGasPrice" />
                             </div>
                             <div v-else>--</div>
                         </div>
@@ -44,7 +44,7 @@
                         </div>
                         <div class="text-xl font-semibold text-gray-900">
                             <div v-if="isGasPriceConsistent">
-                                <AmountDisplay :value="avgGasPrice" />
+                                <AmountDisplay :atomics="avgGasPrice" />
                             </div>
                             <div v-else>--</div>
                         </div>
@@ -57,7 +57,7 @@
                         </div>
                         <div class="text-xl font-semibold text-gray-900">
                             <div v-if="isGasPriceConsistent">
-                                <AmountDisplay :value="maxGasPrice" />
+                                <AmountDisplay :atomics="maxGasPrice" />
                             </div>
                             <div v-else>--</div>
                         </div>
@@ -148,7 +148,7 @@
                                 Fees
                             </div>
                             <div class="text-lg font-semibold text-gray-900">
-                                <AmountDisplay :value="block.fees" />
+                                <AmountDisplay :atomics="block.fees" />
                             </div>
                         </div>
                     </div>
@@ -291,9 +291,6 @@ async function synchronize() {
             const feesInAtomics = microblocks.data.items.reduce((total, mb) => {
                 return total + mb.gas * mb.gasPrice
             }, 0)
-            console.log(
-                `got block ${block.height} with ${microblocks.data.items.length} microblocks and fees ${feesInAtomics}`,
-            )
             const newBlock: Block = {
                 height: block.height,
                 hash: block.hash,
@@ -302,7 +299,7 @@ async function synchronize() {
                 nodeId,
                 nodeOwnerName,
                 nodeOwnerId,
-                fees: CMTSToken.createAtomic(feesInAtomics).getAmountAsCMTS(),
+                fees: feesInAtomics,
             }
             addBlock(newBlock)
         }

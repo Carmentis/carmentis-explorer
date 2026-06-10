@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { computed } from 'vue'
+import { CMTSToken } from '@cmts-dev/carmentis-sdk-core'
 
 const props = defineProps({
-    value: Number,
+    atomics: Number,
     decimals: {
         type: Number,
         default: 4,
@@ -14,7 +15,8 @@ const props = defineProps({
 })
 
 const parts = computed(() => {
-    const [integer, decimal] = props.value.toFixed(props.decimals).split('.')
+    const amountInCMTS = CMTSToken.createAtomic(props.atomics).getAmountAsCMTS();
+    const [integer, decimal] = amountInCMTS.toFixed(props.decimals).split('.')
     return { integer, decimal }
 })
 </script>
