@@ -96,7 +96,7 @@ onMounted(async () => {
             <h2>Node Details</h2>
             <Button
                 label="Explore Virtual Blockchain"
-                icon="pi pi-external-link"
+                icon="pi pi-link"
                 @click="visitVb"
             />
         </div>
@@ -133,6 +133,7 @@ onMounted(async () => {
                     <p class="mono">{{ nodeObject.nodeOwnerName }} ({{ nodeObject.nodeOwnerOrgId }})</p>
                     <Button
                         label="Explore organization"
+                        icon="pi pi-building"
                         @click="router.push(`/organizations/${nodeObject.nodeOwnerOrgId}`)"
                     />
                 </div>

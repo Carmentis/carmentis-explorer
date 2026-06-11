@@ -895,6 +895,15 @@
               "example": "C5F1A9EEA5451BC797DE6CAA8C17765B824E7F85",
               "type": "string"
             }
+          },
+          {
+            "name": "is_validator",
+            "required": false,
+            "in": "query",
+            "description": "Flag to include only validator nodes",
+            "schema": {
+              "type": "boolean"
+            }
           }
         ],
         "responses": {
@@ -1886,8 +1895,8 @@
           "statusTimestamp": {
             "type": "number"
           },
-          "statusIsExpired": {
-            "type": "boolean"
+          "moniker": {
+            "type": "string"
           }
         },
         "required": [
@@ -1900,7 +1909,7 @@
           "currentVotingPower",
           "status",
           "statusTimestamp",
-          "statusIsExpired"
+          "moniker"
         ]
       },
       "ValidatorNodeListResponseDto": {
@@ -1939,12 +1948,28 @@
           },
           "statusTimestamp": {
             "type": "number"
+          },
+          "moniker": {
+            "type": "string"
+          },
+          "latency": {
+            "type": "number"
+          },
+          "txInMempool": {
+            "type": "number"
+          },
+          "height": {
+            "type": "number"
           }
         },
         "required": [
           "nodeId",
           "status",
-          "statusTimestamp"
+          "statusTimestamp",
+          "moniker",
+          "latency",
+          "txInMempool",
+          "height"
         ]
       },
       "VirtualBlockchainDto": {

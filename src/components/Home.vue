@@ -127,7 +127,7 @@
                                     class="font-mono text-sm text-gray-900 truncate font-medium"
                                     @click="(e) => visitNode(e, block.nodeId)"
                                 >
-                                    Proposer node
+                                    {{ block.nodeMoniker }}
                                 </a>
                                 owned by
                                 <a
@@ -178,6 +178,7 @@ interface Block {
     nodeId: string
     nodeOwnerId: string
     nodeOwnerName: string
+    nodeMoniker: string
     fees: number
 }
 
@@ -256,12 +257,14 @@ async function getNodeInfoFromAddress(address: string) {
             nodeId: node.virtualBlockchainId,
             nodeOwnerName: nodeOwner.name,
             nodeOwnerId: nodeOwner.virtualBlockchainId,
+            nodeMoniker: node.moniker,
         }
     } catch (err) {
         res = {
             nodeId: '',
             nodeOwnerName: '(unknown)',
             nodeOwnerId: '',
+            nodeMoniker: '(unknown)',
         }
     }
     nodeCache.set(address, res)
@@ -285,7 +288,12 @@ async function synchronize() {
             const microblocks = await api.appControllerGetMicroblocks({
                 block_height: block.height,
             })
-            const { nodeId, nodeOwnerId, nodeOwnerName } = await getNodeInfoFromAddress(
+            const {
+                nodeId,
+                nodeOwnerId,
+                nodeOwnerName,
+                nodeMoniker,
+            } = await getNodeInfoFromAddress(
                 block.proposerAddress,
             )
             const feesInAtomics = microblocks.data.items.reduce((total, mb) => {
@@ -299,6 +307,7 @@ async function synchronize() {
                 nodeId,
                 nodeOwnerName,
                 nodeOwnerId,
+                nodeMoniker,
                 fees: feesInAtomics,
             }
             addBlock(newBlock)

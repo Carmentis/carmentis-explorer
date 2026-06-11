@@ -1,11 +1,11 @@
 <template>
     <div class="page">
         <div class="flex justify-between items-center">
-            <h2>Nodes</h2>
+            <h2>Validator Nodes</h2>
             <Button
-                label="See real-time activity of validators"
-                icon="pi pi-chart-bar"
-                @click="visitValidators"
+                label="See all nodes"
+                icon="pi pi-server"
+                @click="visitNodes"
             />
         </div>
 
@@ -24,24 +24,14 @@
             <template #loading>
                 <ProgressSpinner />
             </template>
-            <Column field="hash" header="ID">
-                <template #body="{ data }">
-                    <span class="mono-cell mono" :title="data.hash">{{ shortenHash(data.hash) }}</span>
-                </template>
-            </Column>
             <Column field="moniker" header="Moniker">
                 <template #body="{ data }">
                     <span class="mono-cell" :title="data.moniker">{{ data.moniker }}</span>
                 </template>
             </Column>
-            <Column field="owner" header="Owner">
+            <Column field="url" header="RPC URL">
                 <template #body="{ data }">
-                    <a
-                        class="font-mono text-sm text-gray-900 truncate font-medium"
-                        @click="(e) => visitOrganization(e, data.ownerVbId)"
-                    >
-                        {{ data.ownerName }}
-                    </a>
+                    <span class="mono-cell">{{ data.url }}</span>
                 </template>
             </Column>
             <Column field="status" header="Status" headerClass="center-header" :bodyStyle="{ textAlign: 'center' }">
@@ -49,14 +39,25 @@
                     <span :class="['mono-cell', { 'opacity-50': data.statusIsExpired }]"><i :class="data.statusIcon"></i> {{ data.statusLabel }}</span>
                 </template>
             </Column>
+            <Column field="height" header="Height" headerClass="center-header" :bodyStyle="{ textAlign: 'center' }">
+                <template #body="{ data }">
+                    <span class="mono-cell">{{ data.height }}</span>
+                </template>
+            </Column>
+            <Column field="latency" header="Latency" headerClass="center-header" :bodyStyle="{ textAlign: 'center' }">
+                <template #body="{ data }">
+                    <span class="mono-cell">{{ data.latency }}ms</span>
+                </template>
+            </Column>
+            <Column field="txInMempool" header="TX in Mempool" headerClass="center-header" :bodyStyle="{ textAlign: 'center' }">
+                <template #body="{ data }">
+                    <span class="mono-cell">{{ data.txInMempool }}</span>
+                </template>
+            </Column>
             <Column field="votingPower" header="Voting Power">
                 <template #body="{ data }">
                     <span class="mono-cell">
-                        {{
-                            data.isValidator
-                                ? Intl.NumberFormat().format(data.votingPower)
-                                : 'Replicator'
-                        }}
+                        {{ Intl.NumberFormat().format(data.votingPower) }}
                     </span>
                 </template>
             </Column>
@@ -67,7 +68,6 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { shortenHash } from '@/utils/shortenHash'
 import DataTable from 'primevue/datatable'
 import type { DataTableRowClickEvent } from 'primevue/datatable';
 import Column from 'primevue/column'
@@ -79,17 +79,16 @@ const router = useRouter()
 const loading = ref(true)
 const nodes = ref<Node[]>([])
 
-const NODE_STATUS_LIFESPAN = 10000;
-
 export interface Node {
     hash: string
     moniker: string
-    ownerName: string
-    ownerVbId: string
+    url: string
     statusIcon: string
     statusLabel: string
     votingPower: number
-    isValidator: boolean
+    latency: number
+    height: number
+    txInMempool: number
 }
 
 function onRowClick(event: DataTableRowClickEvent) {
@@ -101,9 +100,9 @@ function visitOrganization(e: Event, organizationId: string) {
     router.push(`/organizations/${organizationId}`)
 }
 
-function visitValidators(e: Event) {
+function visitNodes(e: Event) {
     e.stopPropagation()
-    router.push(`/nodes/validators`)
+    router.push(`/nodes`)
 }
 
 const NodeStatus = {
@@ -116,45 +115,28 @@ const NodeStatus = {
 
 onMounted(async () => {
     try {
-        const fetchedNodes = await api.appControllerGetValidatorNodes();
+        const fetchedNodes = await api.appControllerGetValidatorNodes({
+            is_validator: true
+        });
         nodes.value = []
         for (const node of fetchedNodes.data.items) {
-            const isValidator = node.currentVotingPower > 0;
+            const status = await api.appControllerGetNodeStatus({
+                node_id: node.virtualBlockchainId,
+            });
 
             const nodeObject = {
                 hash: node.virtualBlockchainId,
-                moniker: node.moniker,
-                ownerName: shortenHash(node.organizationId),
-                ownerVbId: node.organizationId,
+                moniker: status.data.moniker,
+                url: node.rpcEndpoint,
                 statusIcon: NodeStatus[node.status].icon,
                 statusLabel: NodeStatus[node.status].label,
-                isValidator: isValidator,
                 votingPower: node.currentVotingPower,
+                latency: status.data.latency,
+                height: status.data.height,
+                txInMempool: status.data.txInMempool,
             };
 
             const index = nodes.value.push(nodeObject) - 1;
-
-            api.appControllerGetOrganizations({
-                vb_id: node.organizationId
-            })
-            .then((answer) => {
-                const owner = answer.data.items[0];
-                nodes.value[index] = {
-                    ...nodes.value[index],
-                    ownerName: owner.name,
-                }
-            });
-
-            if (node.statusTimestamp + NODE_STATUS_LIFESPAN < Date.now()) {
-                api.appControllerGetNodeStatus({ node_id: node.virtualBlockchainId })
-                .then((answer) => {
-                    nodes.value[index] = {
-                        ...nodes.value[index],
-                        statusIcon: NodeStatus[answer.data.status].icon,
-                        statusLabel: NodeStatus[answer.data.status].label,
-                    }
-                });
-            }
         }
     } catch (error) {
         console.error('Error fetching nodes:', error)

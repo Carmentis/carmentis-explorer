@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import Home from '../components/Home.vue'
 import NodeList from '../components/nodes/NodeList.vue'
+import ValidatorNodeList from '../components/nodes/ValidatorNodeList.vue'
 import NodeDescription from '../components/nodes/NodeDescription.vue'
 import OrganizationList from '../components/organizations/OrganizationList.vue'
 import OrganizationDescription from '../components/organizations/OrganizationDescription.vue'
@@ -28,6 +29,12 @@ const router = createRouter({
             component: NodeList,
             name: 'NodeList',
             meta: { title: 'Carmentis Explorer - Nodes' },
+        },
+        {
+            path: '/nodes/validators',
+            component: ValidatorNodeList,
+            name: 'ValidatorNodeList',
+            meta: { title: 'Carmentis Explorer - Validator Nodes' },
         },
         {
             path: '/nodes/:nodeId',

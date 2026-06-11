@@ -17,5 +17,5 @@ export interface ValidatorNodeDto {
   currentVotingPower: number;
   status: ValidatorNodeDtoStatus;
   statusTimestamp: number;
-  statusIsExpired: boolean;
+  moniker: string;
 }

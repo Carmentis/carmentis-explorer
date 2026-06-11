@@ -11,4 +11,8 @@ export interface NodeStatusResponseDto {
   nodeId: string;
   status: NodeStatusResponseDtoStatus;
   statusTimestamp: number;
+  moniker: string;
+  latency: number;
+  txInMempool: number;
+  height: number;
 }
