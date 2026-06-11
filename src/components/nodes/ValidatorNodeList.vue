@@ -66,7 +66,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import DataTable from 'primevue/datatable'
 import type { DataTableRowClickEvent } from 'primevue/datatable';
@@ -78,6 +78,8 @@ import * as api from "@/indexer-sdk/indexer-api";
 const router = useRouter()
 const loading = ref(true)
 const nodes = ref<Node[]>([])
+const isMounted = ref(false);
+let schedulerTimer: number | null = null
 
 export interface Node {
     hash: string
@@ -113,7 +115,40 @@ const NodeStatus = {
     "UNKNOWN": { icon: "", label: "(pending)" }
 };
 
+function scheduleNextSynchronization() {
+    schedulerTimer = setTimeout(
+        () =>
+            synchronize()
+                .then(() => {})
+                .catch((err) => {}),
+        1000,
+    )
+}
+
+async function synchronize() {
+    try {
+        for (const index in nodes.value) {
+            const status = await api.appControllerGetNodeStatus({
+                node_id: nodes.value[index].hash,
+            });
+            nodes.value[index] = {
+                ...nodes.value[index],
+                statusIcon: NodeStatus[status.data.status].icon,
+                statusLabel: NodeStatus[status.data.status].label,
+                latency: status.data.latency,
+                height: status.data.height,
+                txInMempool: status.data.txInMempool,
+            }
+        }
+    } finally {
+        if (isMounted.value) {
+            scheduleNextSynchronization()
+        }
+    }
+}
+
 onMounted(async () => {
+    isMounted.value = true;
     try {
         const fetchedNodes = await api.appControllerGetValidatorNodes({
             is_validator: true
@@ -128,20 +163,28 @@ onMounted(async () => {
                 hash: node.virtualBlockchainId,
                 moniker: status.data.moniker,
                 url: node.rpcEndpoint,
-                statusIcon: NodeStatus[node.status].icon,
-                statusLabel: NodeStatus[node.status].label,
+                statusIcon: NodeStatus[status.data.status].icon,
+                statusLabel: NodeStatus[status.data.status].label,
                 votingPower: node.currentVotingPower,
                 latency: status.data.latency,
                 height: status.data.height,
                 txInMempool: status.data.txInMempool,
             };
 
-            const index = nodes.value.push(nodeObject) - 1;
+            nodes.value.push(nodeObject);
         }
     } catch (error) {
         console.error('Error fetching nodes:', error)
     } finally {
         loading.value = false
+        scheduleNextSynchronization()
+    }
+})
+
+onUnmounted(() => {
+    isMounted.value = false;
+    if (schedulerTimer !== null) {
+        clearTimeout(schedulerTimer)
     }
 })
 </script>

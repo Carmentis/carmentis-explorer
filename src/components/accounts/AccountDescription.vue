@@ -4,7 +4,7 @@
             <h2>Account Details</h2>
             <div class="flex gap-2">
                 <Button icon="pi pi-chart-line" label="See account history" @click="visitHistory" />
-                <Button icon="pi pi-external-link" label="Explore Virtual Blockchain" @click="visitVb" />
+                <Button icon="pi pi-external-link" :disabled="accountObject?.isSpecial" label="Explore Virtual Blockchain" @click="visitVb" />
             </div>
         </div>
         <div v-if="loading" class="loading">
@@ -19,8 +19,12 @@
                     <p class="mono">{{ accountObject.hash }}</p>
                 </div>
                 <div class="detail-section">
+                    <h3>Type</h3>
+                    <p class="mono">{{ accountObject.type }}</p>
+                </div>
+                <div class="detail-section">
                     <h3>Public Key</h3>
-                    <p class="mono">{{ accountObject.pk }}</p>
+                    <p class="mono">{{ accountObject.isSpecial ? "(none)" : accountObject.pk }}</p>
                 </div>
                 <div class="detail-section">
                     <h3>Spendable</h3>
@@ -43,13 +47,20 @@ import { useRoute, useRouter } from 'vue-router'
 import { getBalanceAvailability } from '@/utils/accountBalanceAvailability.ts'
 import Button from 'primevue/button'
 import * as api from "@/indexer-sdk/indexer-api";
-import { TokenUnit } from '@cmts-dev/carmentis-sdk-core'
+import { TokenUnit, Utils, Economics, ACCOUNT_NAMES, ACCOUNT_STANDARD } from '@cmts-dev/carmentis-sdk-core'
 
 const router = useRouter()
 const route = useRoute()
 const accountHash = route.params.accountId as string
 const loading = ref(true)
-const accountObject = ref<{ hash: string; pk: string; spendable: string; staked: string } | null>(null)
+const accountObject = ref<{
+    hash: string;
+    type: string;
+    pk: string;
+    spendable: string;
+    staked: string;
+    isSpecial: boolean;
+} | null>(null)
 
 function visitHistory() {
     router.push(`/account-history/${accountHash}`)
@@ -66,9 +77,12 @@ onMounted(async () => {
         const balanceAvaibility = getBalanceAvailability(account);
         const spendable = balanceAvaibility.getSpendable();
         const staked = balanceAvaibility.getStaked();
+        const accountType = Economics.getAccountTypeFromIdentifier(Utils.binaryFromHexa(account.id));
 
         accountObject.value = {
             hash: accountHash,
+            type: ACCOUNT_NAMES[accountType],
+            isSpecial: accountType !== ACCOUNT_STANDARD,
             pk: account.publicKey,
             staked: staked.toString(
                 TokenUnit.TOKEN,

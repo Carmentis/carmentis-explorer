@@ -9,29 +9,31 @@
         </div>
 
         <div v-if="operation && !loading" class="details-card">
-            <div class="detail-section">
-                <h3>Account ID</h3>
-                <p class="mono">{{ operation.accountId }}</p>
-            </div>
-            <div class="detail-section">
-                <h3>Linked account ID</h3>
-                <p class="mono">{{ operation.linkedAccountId }}</p>
-            </div>
-            <div class="detail-section">
-                <h3>Time</h3>
-                <p class="mono">{{ formatTime(operation.timestamp) }}</p>
-            </div>
-            <div class="detail-section">
-                <h3>Type</h3>
-                <p class="mono">{{ operation.type }}</p>
-            </div>
-            <div class="detail-section">
-                <h3>Amount</h3>
-                <p class="mono">{{ operation.amount }}</p>
-            </div>
-            <div class="detail-section">
-                <h3>Public reference</h3>
-                <p class="mono">{{ operation.publicReference }}</p>
+            <div class="cards-grid">
+                <div class="detail-section">
+                    <h3>Account ID</h3>
+                    <p class="mono">{{ operation.accountId }}</p>
+                </div>
+                <div class="detail-section">
+                    <h3>Linked account ID</h3>
+                    <p class="mono">{{ operation.linkedAccountId }}</p>
+                </div>
+                <div class="detail-section">
+                    <h3>Time</h3>
+                    <p class="mono">{{ formatTime(operation.timestamp) }}</p>
+                </div>
+                <div class="detail-section">
+                    <h3>Type</h3>
+                    <p class="mono">{{ operation.type }}</p>
+                </div>
+                <div class="detail-section">
+                    <h3>Amount</h3>
+                    <p class="mono">{{ operation.amount }}</p>
+                </div>
+                <div class="detail-section">
+                    <h3>Public reference</h3>
+                    <p class="mono">{{ operation.publicReference }}</p>
+                </div>
             </div>
         </div>
 
