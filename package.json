@@ -15,16 +15,18 @@
     "format": "prettier --write --experimental-cli src/"
   },
   "dependencies": {
-    "@cmts-dev/carmentis-sdk-core": "^1.2.19",
+    "@cmts-dev/carmentis-sdk-core": "^1.2.23",
     "@cosmjs/tendermint-rpc": "^0.38.1",
     "@primeuix/themes": "^2.0.3",
     "@tailwindcss/vite": "^4.3.0",
     "@tanstack/vue-query": "^5.100.14",
+    "chart.js": "^4.5.1",
     "pinia": "^3.0.4",
     "primeicons": "^7.0.0",
     "primevue": "^4.5.5",
     "tailwindcss": "^4.3.0",
     "vue": "^3.5.35",
+    "vue-chartjs": "^5.3.3",
     "vue-router": "^4.6.4"
   },
   "devDependencies": {

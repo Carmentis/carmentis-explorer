@@ -236,15 +236,11 @@ const performSearch = async () => {
                 break;
             }
             case AppControllerSearchType.microblock: {
-                // TODO: The VB ID should not be part of a microblock URL.
-                // TODO: But for now, we have to retrieve it.
-                const mbs = await api.appControllerGetMicroblocks({ hash: result.id });
-                const mb = mbs.data.items[0];
                 results.push({
                     type: 'Microblock',
                     id: result.id,
                     icon: 'pi pi-file',
-                    route: `/vb/${mb.virtualBlockchainId}/mb/${result.id}`,
+                    route: `/mb/${result.id}`,
                     matchedFieldName: result.matchedFieldName,
                     matchedFieldValue: result.matchedFieldValue,
                 })
@@ -317,6 +313,13 @@ const menuItems = [
         icon: 'pi pi-home',
         path: '/',
     },
+/*
+    {
+        label: 'Statistics',
+        icon: 'pi pi-chart-bar',
+        path: '/stats',
+    },
+*/
     {
         label: 'Nodes',
         icon: 'pi pi-server',
@@ -384,7 +387,7 @@ const isActiveRoute = (path: string) => {
     margin: 0;
     font-size: var(--font-size-lg);
     font-weight: 700;
-    color: var(--p-primary-500);
+    color: var(--p-sky-500);
     text-transform: uppercase;
     letter-spacing: 0.5px;
 }
@@ -394,14 +397,14 @@ const isActiveRoute = (path: string) => {
     display: flex;
     flex-direction: column;
     gap: var(--spacing-xs);
-    padding: var(--spacing-md) var(--spacing-sm);
+    padding: var(--spacing-sm) var(--spacing-sm);
 }
 
 .nav-item {
     display: flex;
     align-items: center;
     gap: var(--spacing-md);
-    padding: var(--spacing-md) var(--spacing-lg);
+    padding: var(--spacing-md) var(--spacing-md);
     color: var(--p-text-color);
     text-decoration: none;
     border-radius: var(--p-border-radius);
@@ -411,20 +414,20 @@ const isActiveRoute = (path: string) => {
 }
 
 .nav-item:hover {
-    background: var(--p-primary-50);
-    color: var(--p-primary-600);
+    background: var(--p-sky-50);
+    color: var(--p-sky-600);
     transform: translateX(4px);
 }
 
 .nav-item.active {
-    background: linear-gradient(90deg, var(--p-primary-500) 0%, var(--p-primary-600) 100%);
+    background: linear-gradient(90deg, var(--p-sky-500) 0%, var(--p-sky-600) 100%);
     color: white;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }
 
 .nav-item.active:hover {
     transform: translateX(4px);
-    background: linear-gradient(90deg, var(--p-primary-600) 0%, var(--p-primary-700) 100%);
+    background: linear-gradient(90deg, var(--p-sky-600) 0%, var(--p-sky-700) 100%);
 }
 
 .nav-icon {
@@ -536,7 +539,7 @@ const isActiveRoute = (path: string) => {
     gap: var(--spacing-sm);
     font-size: var(--font-size-lg);
     font-weight: 600;
-    color: var(--p-primary-500);
+    color: var(--p-sky-500);
 }
 
 .search-dialog-header i {
@@ -603,14 +606,14 @@ const isActiveRoute = (path: string) => {
 }
 
 .result-item:hover {
-    background: var(--p-primary-50);
-    border-color: var(--p-primary-200);
+    background: var(--p-sky-50);
+    border-color: var(--p-sky-200);
     transform: translateX(4px);
 }
 
 .result-icon {
     font-size: 1.25rem;
-    color: var(--p-primary-500);
+    color: var(--p-sky-500);
 }
 
 .result-info {

@@ -4,7 +4,7 @@
             <h2>Account Details</h2>
             <div class="flex gap-2">
                 <Button icon="pi pi-chart-line" label="See account history" @click="visitHistory" />
-                <Button icon="pi pi-external-link" :disabled="accountObject?.isSpecial" label="Explore Virtual Blockchain" @click="visitVb" />
+                <Button icon="pi pi-link" :disabled="accountObject?.isSpecial" label="Explore Virtual Blockchain" @click="visitVb" />
             </div>
         </div>
         <div v-if="loading" class="loading">
@@ -20,7 +20,7 @@
                 </div>
                 <div class="detail-section">
                     <h3>Type</h3>
-                    <p class="mono">{{ accountObject.type }}</p>
+                    {{ accountObject.type }}
                 </div>
                 <div class="detail-section">
                     <h3>Public Key</h3>
@@ -28,11 +28,19 @@
                 </div>
                 <div class="detail-section">
                     <h3>Spendable</h3>
-                    <p class="mono">{{ accountObject.spendable }}</p>
+                    {{ accountObject.spendable }}
                 </div>
                 <div class="detail-section">
                     <h3>Staked</h3>
-                    <p class="mono">{{ accountObject.staked }}</p>
+                    {{ accountObject.staked }}
+                </div>
+                <div class="detail-section">
+                    <h3>Vested</h3>
+                    {{ accountObject.vested }}
+                </div>
+                <div class="detail-section">
+                    <h3>Escrowed</h3>
+                    {{ accountObject.escrowed }}
                 </div>
             </div>
         </div>
@@ -59,6 +67,8 @@ const accountObject = ref<{
     pk: string;
     spendable: string;
     staked: string;
+    vested: string;
+    escrowed: string;
     isSpecial: boolean;
 } | null>(null)
 
@@ -77,6 +87,8 @@ onMounted(async () => {
         const balanceAvaibility = getBalanceAvailability(account);
         const spendable = balanceAvaibility.getSpendable();
         const staked = balanceAvaibility.getStaked();
+        const vested = balanceAvaibility.getVested();
+        const escrowed = vested // !!! balanceAvaibility.getEscrowed();
         const accountType = Economics.getAccountTypeFromIdentifier(Utils.binaryFromHexa(account.id));
 
         accountObject.value = {
@@ -85,6 +97,14 @@ onMounted(async () => {
             isSpecial: accountType !== ACCOUNT_STANDARD,
             pk: account.publicKey,
             staked: staked.toString(
+                TokenUnit.TOKEN,
+                { locale: "system", grouping: true, decimalPlaces: 2 }
+            ),
+            vested: vested.toString(
+                TokenUnit.TOKEN,
+                { locale: "system", grouping: true, decimalPlaces: 2 }
+            ),
+            escrowed: escrowed.toString(
                 TokenUnit.TOKEN,
                 { locale: "system", grouping: true, decimalPlaces: 2 }
             ),

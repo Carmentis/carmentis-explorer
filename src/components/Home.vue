@@ -15,13 +15,10 @@
             </div>
             <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden w-180">
                 <div class="px-6 py-3 bg-gray-50 border-b border-gray-200">
-                    <div class="flex items-center gap-2 text-sm font-medium text-gray-700">
-                        <i class="pi pi-gauge text-xl leading-none"></i>
-                        <span>
-                            <span class="font-bold">Statistics</span>
-                            (last {{ STATS_BLOCKS }} blocks)
-                        </span>
-                    </div>
+                    <span>
+                        <span class="font-bold">Statistics</span>
+                        <span class="text-gray-500 ml-2">(last {{ STATS_BLOCKS }} blocks)</span>
+                    </span>
                 </div>
                 <div class="flex divide-x divide-gray-200">
                     <!-- Min Gas Price -->
@@ -316,9 +313,10 @@ async function synchronize() {
             height_gte: knownHeight - STATS_BLOCKS,
         })
         isGasPriceConsistent.value = gasPrice.data.average !== null
-        minGasPrice.value = gasPrice.data.min
-        maxGasPrice.value = gasPrice.data.max
-        avgGasPrice.value = gasPrice.data.average
+        console.log(gasPrice.data);
+        minGasPrice.value = Math.round(gasPrice.data.min)
+        maxGasPrice.value = Math.round(gasPrice.data.max)
+        avgGasPrice.value = Math.round(gasPrice.data.average)
         microblocksCount.value = gasPrice.data.microblocks
     } finally {
         if (isMounted.value) {
@@ -350,7 +348,7 @@ onUnmounted(() => {
 
 <style scoped>
 .home {
-    padding: var(--spacing-xl) 0;
+    padding: 0;
 }
 
 h1 {

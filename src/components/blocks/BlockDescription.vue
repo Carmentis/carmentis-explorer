@@ -260,7 +260,7 @@ onMounted(async () => {
     margin: 0 0 var(--spacing-sm) 0;
     font-size: var(--font-size-sm);
     font-weight: 600;
-    color: var(--p-primary-500);
+    color: var(--p-sky-500);
 }
 
 .transaction-item p,

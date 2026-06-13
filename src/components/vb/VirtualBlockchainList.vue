@@ -35,7 +35,7 @@
                 <template #body="{ data }">
                     <a
                         class="font-mono text-sm text-gray-900 truncate font-medium"
-                        @click="(e) => visitMicroblock(e, data.id, data.lastMicroblockHash)"
+                        @click="(e) => visitMicroblock(e, data.lastMicroblockHash)"
                     >
                         {{ shortenHash(data.lastMicroblockHash) }}
                     </a>
@@ -69,9 +69,9 @@ export interface Vb {
     lastMicroblockHash: string
 }
 
-function visitMicroblock(e: Event, vbId: string, microblockHash: string) {
+function visitMicroblock(e: Event, microblockHash: string) {
     e.stopPropagation()
-    router.push(`/vb/${vbId}/mb/${microblockHash}`)
+    router.push(`/vb/mb/${microblockHash}`)
 }
 
 const onRowClick = (event: DataTableRowClickEvent) => {

@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import Home from '../components/Home.vue'
+import Stats from '../components/stats/Stats.vue'
 import NodeList from '../components/nodes/NodeList.vue'
 import ValidatorNodeList from '../components/nodes/ValidatorNodeList.vue'
 import NodeDescription from '../components/nodes/NodeDescription.vue'
@@ -23,6 +24,12 @@ const router = createRouter({
             path: '/',
             component: Home,
             name: 'Home',
+        },
+        {
+            path: '/stats',
+            component: Stats,
+            name: 'Stats',
+            meta: { title: 'Carmentis Explorer - Stats & Charts' },
         },
         {
             path: '/nodes',
@@ -119,11 +126,26 @@ const router = createRouter({
             meta: { title: 'Virtual Blockchain' },
         },
         {
-            path: '/vb/:vbId/mb/:mbHash',
+            path: '/vb/mb/:mbHash',
+            component: MicroblockInVirtualBlockchain,
+            meta: { title: 'Microblock' },
+        },
+        {
+            path: '/vb/mb/:mbHash/:sectionIndex',
             component: MicroblockInVirtualBlockchain,
             meta: { title: 'Microblock' },
         },
     ],
+    scrollBehavior(to) {
+        if (to.hash) {
+            console.log("scrollBehavior scrolling to", to.hash);
+            return {
+                el: to.hash,
+                behavior: 'smooth',
+            }
+        }
+        return { top: 0 }
+    },
 })
 
 router.afterEach((to) => {

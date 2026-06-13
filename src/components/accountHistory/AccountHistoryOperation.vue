@@ -20,19 +20,19 @@
                 </div>
                 <div class="detail-section">
                     <h3>Time</h3>
-                    <p class="mono">{{ formatTime(operation.timestamp) }}</p>
+                    {{ formatTime(operation.timestamp) }}
                 </div>
                 <div class="detail-section">
                     <h3>Type</h3>
-                    <p class="mono">{{ operation.type }}</p>
+                    {{ operation.type }}
                 </div>
                 <div class="detail-section">
                     <h3>Amount</h3>
-                    <p class="mono">{{ operation.amount }}</p>
+                    {{ operation.amount }}
                 </div>
                 <div class="detail-section">
                     <h3>Public reference</h3>
-                    <p class="mono">{{ operation.publicReference }}</p>
+                    {{ operation.publicReference }}
                 </div>
             </div>
         </div>
@@ -78,7 +78,7 @@ onMounted(async () => {
             type: BK_NAMES[entry.type],
             amount: CMTSToken.createAtomic(entry.amount).toString(
                 TokenUnit.TOKEN,
-                { locale: "system", grouping: true, decimalPlaces: 2 }
+                { locale: "system", grouping: true, decimalPlaces: 3 }
             ),
             publicReference: entry.publicReference,
         }

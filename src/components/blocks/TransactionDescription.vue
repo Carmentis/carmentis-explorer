@@ -12,13 +12,7 @@ const options = ref(['Formatted', 'Raw'])
 const props = defineProps(['index', 'tx'])
 
 async function visitMicroblock(microblockHash: string) {
-    const microblocks = await api.appControllerGetMicroblocks({ hash: microblockHash });
-    if (microblocks.data.items.length === 0) {
-        throw new Error('Microblock not found');
-    }
-    const microblock = microblocks.data.items[0];
-    const vbId = microblock.virtualBlockchainId;
-    return router.push(`/vb/${vbId}/mb/${microblockHash}`)
+    return router.push(`/vb/mb/${microblockHash}`)
 }
 
 const tx = props.tx

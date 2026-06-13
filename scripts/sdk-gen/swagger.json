@@ -1407,7 +1407,7 @@
           },
           "content": {
             "type": "string",
-            "description": "Returned only if include_content=true"
+            "description": "Base64 representation of the microblock content. Returned only if include_content was set to true."
           }
         },
         "required": [
@@ -1706,7 +1706,8 @@
             "type": "number"
           },
           "chainReference": {
-            "type": "string"
+            "type": "string",
+            "description": "Base64 representation of the CBOR-encoded chain reference."
           },
           "publicReference": {
             "type": "string"

@@ -43,7 +43,7 @@ const getDaysRemaining = (dayNumber: number): number | null => {
 }
 
 const navigateToMicroblock = (mbHash: string) => {
-    router.push(`/vb/${vbId.value}/mb/${mbHash}`)
+    router.push(`/vb/mb/${mbHash}`)
 }
 
 onMounted(async () => {
@@ -178,7 +178,7 @@ onMounted(async () => {
 
 .microblock-item:hover {
     background: var(--p-surface-100);
-    border-color: var(--p-primary-400);
+    border-color: var(--p-sky-400);
     transform: translateY(-1px);
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
@@ -187,7 +187,7 @@ onMounted(async () => {
     margin: 0 0 var(--spacing-sm) 0;
     font-size: var(--font-size-sm);
     font-weight: 600;
-    color: var(--p-primary-500);
+    color: var(--p-sky-500);
 }
 
 .microblock-item p {

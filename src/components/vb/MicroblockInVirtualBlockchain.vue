@@ -2,7 +2,7 @@
     <div class="page">
         <div class="flex flex-row justify-between items-center">
             <h2>Microblock Details</h2>
-            <Button icon="pi pi-link" label="Explore Virtual Blockchain" @click="visitVB" />
+            <Button icon="pi pi-link" label="Explore Virtual Blockchain" @click="visitVB(microblock.header.vbId)" />
         </div>
 
         <div v-if="loading" class="loading">
@@ -20,16 +20,20 @@
                         <p class="mono">{{ microblock.header.hash }}</p>
                     </div>
                     <div class="detail-section">
+                        <h4>Virtual Blockchain ID</h4>
+                        <p class="mono">{{ microblock.header.vbId }}</p>
+                    </div>
+                    <div class="detail-section">
+                        <h4>Size</h4>
+                        {{ microblock.header.size }} bytes
+                    </div>
+                    <div class="detail-section">
                         <h4>Gas Price</h4>
-                        <p class="mono">
-                            {{ microblock.header.gasPrice }}
-                        </p>
+                        {{ microblock.header.gasPrice }}
                     </div>
                     <div class="detail-section">
                         <h4>Paid fees</h4>
-                        <p class="mono">
-                            {{ microblock.header.paidFees }}
-                        </p>
+                        {{ microblock.header.paidFees }}
                     </div>
                     <div class="detail-section">
                         <h4>Previous Hash</h4>
@@ -44,10 +48,13 @@
                         <p>{{ formatTime(microblock.header.timestamp) }}</p>
                     </div>
                     <div class="detail-section">
-                        <h4>Signer</h4>
-                        <a :href="`/accounts/${microblock.header.signer}`">{{
-                            microblock.header.signer
-                        }}</a>
+                        <h4>Signed by</h4>
+                        <p class="mono">
+                            <a :href="`/accounts/${microblock.header.signer}`">{{
+                                microblock.header.signer
+                            }}
+                            </a>
+                        </p>
                     </div>
                     <div class="detail-section">
                         <h4>Signature</h4>
@@ -65,7 +72,8 @@
                         <div
                             v-for="(tx, index) in microblock.body.transactions"
                             :key="index"
-                            class="transaction-item"
+                            :id="`section-${index}`"
+                            :class="['transaction-item', { 'active-section': index === sectionIndex }]"
                         >
                             <MicroblockInVirtualBlockchainSection
                                 :serializedMb="microblock.serializedMb"
@@ -96,6 +104,8 @@ import * as api from "@/indexer-sdk/indexer-api";
 interface MicroblockData {
     serializedMb: Uint8Array
     header: {
+        vbId: string
+        size: number
         gasPrice: string
         paidFees: string
         hash: string
@@ -112,11 +122,12 @@ interface MicroblockData {
 const router = useRouter()
 const route = useRoute()
 const mbHash = ref(route.params.mbHash as string)
+const sectionIndex = ref(parseInt((route.params?.sectionIndex ?? "") as string))
 const loading = ref(true)
 const microblock = ref<MicroblockData | null>(null)
 
-function visitVB() {
-    router.push(`/vb/${route.params.vbId}`)
+function visitVB(vbId: string) {
+    router.push(`/vb/${vbId}`)
 }
 
 onMounted(async () => {
@@ -140,6 +151,8 @@ onMounted(async () => {
         microblock.value = {
             serializedMb: mb.serialize().microblockData,
             header: {
+                vbId: requestedMicroblock.virtualBlockchainId,
+                size: serializedData.length,
                 gasPrice,
                 paidFees,
                 hash: mb.getHash().encode(),
@@ -156,12 +169,25 @@ onMounted(async () => {
     } catch (error) {
         console.error('Error fetching microblock:', error)
     } finally {
+        setTimeout(
+            () => {
+                const el = document.getElementById(`section-${sectionIndex.value}`);
+                if (el) {
+                    el.scrollIntoView({ behavior: 'smooth' })
+                }
+            },
+            100
+        );
         loading.value = false
-    }
+}
 })
 </script>
 
 <style scoped>
+.transaction-item.active-section {
+    border: 3px solid var(--p-surface-500);
+}
+
 .details-container {
     display: flex;
     flex-direction: column;
@@ -186,7 +212,7 @@ onMounted(async () => {
     margin: 0 0 var(--spacing-sm) 0;
     font-size: var(--font-size-sm);
     font-weight: 600;
-    color: var(--p-primary-500);
+    color: var(--p-sky-500);
 }
 
 .transaction-item p {

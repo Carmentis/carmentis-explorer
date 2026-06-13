@@ -10,6 +10,9 @@
       </div>
     </template>
     <template #end>
+      <div class="navbar-info mr-2">
+        <Tag :value="cmtsPrice" severity="secondary" class="api-url" />
+      </div>
       <div class="navbar-info">
         <Tag :value="connection" severity="secondary" class="api-url" />
       </div>
@@ -25,12 +28,23 @@ import Tag from 'primevue/tag'
 import { getApiBaseUrl } from '@/indexer-sdk/http-client/http-client'
 import * as api from "@/indexer-sdk/indexer-api";
 
+const CMTS_PRICE = 0.01;
+
 const connection = ref("")
+const cmtsPrice = ref("")
 const toggleSidebar = inject<() => void>('toggleSidebar')
 
 onMounted(async () => {
     const apiUrl = getApiBaseUrl();
     const chainInfo = await api.appControllerGetChain();
+    const numberFormat = Intl.NumberFormat(
+        undefined,
+        {
+            minimumFractionDigits: 3,
+            maximumFractionDigits: 3,
+        }
+    );
+    cmtsPrice.value = `CMTS Price: €${numberFormat.format(CMTS_PRICE)}`;
     connection.value = chainInfo.data.network + " @ " + apiUrl;
 });
 </script>

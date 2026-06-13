@@ -50,7 +50,17 @@
                 <template #body="{ data }">
                     <i v-if="data.incoming" class="pi pi-arrow-down-left mr-1"></i>
                     <i v-if="!data.incoming" class="pi pi-arrow-up-right mr-1"></i>
-                    <span class="mono-cell" :title="data.type">{{ data.type }}</span>
+                    <span class="mono-cell ml-2" :title="data.type">{{ data.type }}</span>
+                </template>
+            </Column>
+            <Column field="chainReference" header="Chain ref.">
+                <template #body="{ data }">
+                    <a
+                        class="text-sm text-gray-900 truncate font-medium"
+                        @click="(e) => router.push(data.chainRefLink)"
+                    >
+                        {{ data.chainRefName }}
+                    </a>
                 </template>
             </Column>
             <Column field="amount" header="Amount" />
@@ -66,7 +76,16 @@ import type { DataTableRowClickEvent } from 'primevue/datatable'
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
 import ProgressSpinner from 'primevue/progressspinner'
-import { BK_NAMES, BK_PLUS, CMTSToken, TokenUnit } from '@cmts-dev/carmentis-sdk-core'
+import {
+    BK_NAMES,
+    BK_PLUS,
+    CMTSToken,
+    TokenUnit,
+    Utils,
+    BlockchainUtils,
+    Base64,
+    ChainReferenceType,
+} from '@cmts-dev/carmentis-sdk-core'
 import { getTimeAgo } from '@/utils/formatTime'
 import * as api from '@/indexer-sdk/indexer-api.ts'
 
@@ -82,6 +101,8 @@ export interface AccountHistory {
     timestamp: Date
     incoming: boolean
     type: string
+    chainRefName: string
+    chainRefLink: string
     amount: string
 }
 
@@ -106,6 +127,29 @@ onMounted(async () => {
         history.value = []
         fetchedHistory.data.items.sort((a, b) => b.timestamp - a.timestamp || b.height - a.height)
         for (const entry of fetchedHistory.data.items) {
+            const encodedChainRef = Base64.decodeBinary(entry.chainReference, Base64.BASE64);
+            const chainRef = BlockchainUtils.decodeChainReference(encodedChainRef);
+            let chainRefName = "(unknown)";
+            let chainRefLink = "";
+
+            switch (chainRef.type) {
+                case ChainReferenceType.BLOCK: {
+                    chainRefName = `Block ${chainRef.height}`;
+                    chainRefLink = `/block/height/${chainRef.height}`;
+                    break;
+                }
+                case ChainReferenceType.MICROBLOCK: {
+                    chainRefName = "Microblock";
+                    chainRefLink = `/vb/mb/${Utils.binaryToHexa(chainRef.microblockHash)}`;
+                    break;
+                }
+                case ChainReferenceType.SECTION: {
+                    chainRefName = "Section";
+                    chainRefLink = `/vb/mb/${Utils.binaryToHexa(chainRef.microblockHash)}/${chainRef.sectionIndex}`;
+                    break;
+                }
+            }
+
             history.value.push({
                 accountId: entry.accountId,
                 height: entry.height,
@@ -113,9 +157,11 @@ onMounted(async () => {
                 timestamp: new Date(entry.timestamp * 1000),
                 incoming: !!(entry.type & BK_PLUS),
                 type: BK_NAMES[entry.type],
+                chainRefName,
+                chainRefLink,
                 amount: CMTSToken.createAtomic(entry.amount).toString(
                     TokenUnit.TOKEN,
-                    { locale: "system", grouping: true, decimalPlaces: 2 }
+                    { locale: "system", grouping: true, decimalPlaces: 3 }
                 ),
             })
         }
