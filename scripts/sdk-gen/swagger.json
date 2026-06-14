@@ -391,6 +391,74 @@
         ]
       }
     },
+    "/api/v1/microblock-stats": {
+      "get": {
+        "operationId": "AppController_getMicroblockStats",
+        "parameters": [
+          {
+            "name": "vb_type",
+            "required": false,
+            "in": "query",
+            "description": "Limits the stats to a specific virtual blockchain type.",
+            "schema": {
+              "type": "number",
+              "enum": [
+                0,
+                1,
+                2,
+                3,
+                4,
+                5
+              ]
+            }
+          },
+          {
+            "name": "is_genesis",
+            "required": false,
+            "in": "query",
+            "description": "Limits the stats to either genesis or non-genesis microblocks.",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "timestamp_gte",
+            "required": false,
+            "in": "query",
+            "description": "Minimum timestamp in seconds (inclusive). Resolution is 1 hour; minutes and seconds are ignored.",
+            "schema": {
+              "example": 1780300800,
+              "type": "number"
+            }
+          },
+          {
+            "name": "timestamp_lte",
+            "required": false,
+            "in": "query",
+            "description": "Maximum timestamp in seconds (inclusive). Resolution is 1 hour; minutes and seconds are ignored.",
+            "schema": {
+              "example": 1780315200,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MicroblockStatsResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "App"
+        ]
+      }
+    },
     "/api/v1/accounts": {
       "get": {
         "operationId": "AppController_getAccounts",
@@ -1527,6 +1595,39 @@
           "block",
           "microblock",
           "virtualBlockchain"
+        ]
+      },
+      "MicroblockCountDto": {
+        "type": "object",
+        "properties": {
+          "vbType": {
+            "type": "number"
+          },
+          "isGenesis": {
+            "type": "boolean"
+          },
+          "count": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "vbType",
+          "isGenesis",
+          "count"
+        ]
+      },
+      "MicroblockStatsResponseDto": {
+        "type": "object",
+        "properties": {
+          "stats": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MicroblockCountDto"
+            }
+          }
+        },
+        "required": [
+          "stats"
         ]
       },
       "EscrowLockDto": {

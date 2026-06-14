@@ -16,6 +16,7 @@ import type {
   AppControllerGetBlocksParams,
   AppControllerGetGasPriceParams,
   AppControllerGetMicroblockProofParams,
+  AppControllerGetMicroblockStatsParams,
   AppControllerGetMicroblocksParams,
   AppControllerGetNodeStatusParams,
   AppControllerGetOrganizationsParams,
@@ -29,6 +30,7 @@ import type {
   GasPriceResponseDto,
   MicroblockListResponseDto,
   MicroblockProofResponseDto,
+  MicroblockStatsResponseDto,
   NodeStatusResponseDto,
   OrganizationListResponseDto,
   SearchListResponseDto,
@@ -294,6 +296,46 @@ export const getAppControllerGetMicroblockProofUrl = (params: AppControllerGetMi
 export const appControllerGetMicroblockProof = async (params: AppControllerGetMicroblockProofParams, options?: RequestInit): Promise<appControllerGetMicroblockProofResponse> => {
 
   return customFetch<appControllerGetMicroblockProofResponse>(getAppControllerGetMicroblockProofUrl(params),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+export type appControllerGetMicroblockStatsResponse200 = {
+  data: MicroblockStatsResponseDto
+  status: 200
+}
+
+export type appControllerGetMicroblockStatsResponseSuccess = (appControllerGetMicroblockStatsResponse200) & {
+  headers: Headers;
+};
+;
+
+export type appControllerGetMicroblockStatsResponse = (appControllerGetMicroblockStatsResponseSuccess)
+
+export const getAppControllerGetMicroblockStatsUrl = (params?: AppControllerGetMicroblockStatsParams,) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value))
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `/api/v1/microblock-stats?${stringifiedParams}` : `/api/v1/microblock-stats`
+}
+
+export const appControllerGetMicroblockStats = async (params?: AppControllerGetMicroblockStatsParams, options?: RequestInit): Promise<appControllerGetMicroblockStatsResponse> => {
+
+  return customFetch<appControllerGetMicroblockStatsResponse>(getAppControllerGetMicroblockStatsUrl(params),
   {
     ...options,
     method: 'GET'

@@ -9,8 +9,8 @@ importers:
   .:
     dependencies:
       '@cmts-dev/carmentis-sdk-core':
-        specifier: ^1.2.23
-        version: 1.2.23(typescript@5.9.3)
+        specifier: ^1.2.24
+        version: 1.2.24(typescript@5.9.3)
       '@cosmjs/tendermint-rpc':
         specifier: ^0.38.1
         version: 0.38.1
@@ -296,8 +296,8 @@ packages:
     cpu: [x64]
     os: [win32]
 
-  '@cmts-dev/carmentis-sdk-core@1.2.23':
-    resolution: {integrity: sha512-vfdTKqIiw2JEsGP4I/r03NMrjECqDd3xKM8x9Jxh6F0eVfFrwLQP1uCb2keIcaY0JLW+nK9r7tdA+QaPsZ6b4g==}
+  '@cmts-dev/carmentis-sdk-core@1.2.24':
+    resolution: {integrity: sha512-ltCWUQQwXZ+a6bzkSZByoM3cb2pJx8cAlPhbyRBNszUsG53u6wk/aWY3ujwBozVVU2XHmaYuqWyUrMDoDpCBcQ==}
 
   '@commander-js/extra-typings@14.0.0':
     resolution: {integrity: sha512-hIn0ncNaJRLkZrxBIp5AsW/eXEHNKYQBh0aPdoUqNgD+Io3NIykQqpKFyKcuasZhicGaEZJX/JBSIkZ4e5x8Dg==}
@@ -3254,7 +3254,7 @@ snapshots:
   '@cbor-extract/cbor-extract-win32-x64@2.2.2':
     optional: true
 
-  '@cmts-dev/carmentis-sdk-core@1.2.23(typescript@5.9.3)':
+  '@cmts-dev/carmentis-sdk-core@1.2.24(typescript@5.9.3)':
     dependencies:
       '@logtape/logtape': 1.3.10
       '@noble/ciphers': 1.3.0

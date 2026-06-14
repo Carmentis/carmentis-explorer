@@ -88,7 +88,7 @@ onMounted(async () => {
         const spendable = balanceAvaibility.getSpendable();
         const staked = balanceAvaibility.getStaked();
         const vested = balanceAvaibility.getVested();
-        const escrowed = vested // !!! balanceAvaibility.getEscrowed();
+        const escrowed = balanceAvaibility.getEscrowed();
         const accountType = Economics.getAccountTypeFromIdentifier(Utils.binaryFromHexa(account.id));
 
         accountObject.value = {

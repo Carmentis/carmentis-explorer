@@ -313,13 +313,11 @@ const menuItems = [
         icon: 'pi pi-home',
         path: '/',
     },
-/*
     {
         label: 'Statistics',
         icon: 'pi pi-chart-bar',
         path: '/stats',
     },
-*/
     {
         label: 'Nodes',
         icon: 'pi pi-server',
