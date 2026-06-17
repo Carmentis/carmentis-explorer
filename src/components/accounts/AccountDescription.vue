@@ -31,15 +31,15 @@
                     {{ accountObject.spendable }}
                 </div>
                 <div class="detail-section">
-                    <h3>Staked</h3>
+                    <h3>Staking</h3>
                     {{ accountObject.staked }}
                 </div>
                 <div class="detail-section">
-                    <h3>Vested</h3>
+                    <h3>Vesting</h3>
                     {{ accountObject.vested }}
                 </div>
                 <div class="detail-section">
-                    <h3>Escrowed</h3>
+                    <h3>Locked in Escrows</h3>
                     {{ accountObject.escrowed }}
                 </div>
             </div>

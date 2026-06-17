@@ -57,7 +57,7 @@
             <Column field="votingPower" header="Voting Power">
                 <template #body="{ data }">
                     <span class="mono-cell">
-                        {{ Intl.NumberFormat().format(data.votingPower) }}
+                        <NumberDisplay :value="data.votingPower" />
                     </span>
                 </template>
             </Column>
@@ -69,11 +69,12 @@
 import { ref, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import DataTable from 'primevue/datatable'
-import type { DataTableRowClickEvent } from 'primevue/datatable';
+import type { DataTableRowClickEvent } from 'primevue/datatable'
+import NumberDisplay from '@/components/utils/NumberDisplay.vue'
 import Column from 'primevue/column'
 import Button from 'primevue/button'
 import ProgressSpinner from 'primevue/progressspinner'
-import * as api from "@/indexer-sdk/indexer-api";
+import * as api from "@/indexer-sdk/indexer-api"
 
 const router = useRouter()
 const loading = ref(true)

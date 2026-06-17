@@ -4,6 +4,8 @@
             {{ route.params.accountId !== undefined ? 'Account History' : 'Latest Operations' }}
         </h2>
 
+        <!-- ToggleSwitch v-model="checked" / -->
+
         <DataTable
             :value="history"
             :loading="loading"
@@ -76,6 +78,7 @@ import type { DataTableRowClickEvent } from 'primevue/datatable'
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
 import ProgressSpinner from 'primevue/progressspinner'
+import ToggleSwitch from 'primevue/toggleswitch'
 import {
     BK_NAMES,
     BK_PLUS,

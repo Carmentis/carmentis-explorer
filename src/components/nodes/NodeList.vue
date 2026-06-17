@@ -51,13 +51,10 @@
             </Column>
             <Column field="votingPower" header="Voting Power">
                 <template #body="{ data }">
-                    <span class="mono-cell">
-                        {{
-                            data.isValidator
-                                ? Intl.NumberFormat().format(data.votingPower)
-                                : 'Replicator'
-                        }}
+                    <span v-if="data.isValidator" class="mono-cell">
+                        <NumberDisplay :value="data.votingPower" />
                     </span>
+                    <span v-else class="mono-cell">Replicator</span>
                 </template>
             </Column>
         </DataTable>
@@ -68,6 +65,7 @@
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { shortenHash } from '@/utils/shortenHash'
+import NumberDisplay from '@/components/utils/NumberDisplay.vue'
 import DataTable from 'primevue/datatable'
 import type { DataTableRowClickEvent } from 'primevue/datatable';
 import Column from 'primevue/column'

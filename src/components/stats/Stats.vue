@@ -25,7 +25,7 @@
                             Blocks
                         </div>
                         <div class="text-xl font-semibold text-gray-900">
-                            {{ stats.blockCount }}
+                            <NumberDisplay :value="stats.blockCount" />
                         </div>
                     </div>
 
@@ -34,7 +34,7 @@
                             Virtual Blockchains (total)
                         </div>
                         <div class="text-xl font-semibold text-gray-900">
-                            {{ stats.vbCount }}
+                            <NumberDisplay :value="stats.vbCount" />
                         </div>
                     </div>
 
@@ -43,7 +43,7 @@
                             Virtual Blockchains (24h)
                         </div>
                         <div class="text-xl font-semibold text-gray-900">
-                            {{ stats.vbCount24h }}
+                            <NumberDisplay :value="stats.vbCount24h" />
                         </div>
                     </div>
 
@@ -52,7 +52,7 @@
                             Microblocks (total)
                         </div>
                         <div class="text-xl font-semibold text-gray-900">
-                            {{ stats.mbCount }}
+                            <NumberDisplay :value="stats.mbCount" />
                         </div>
                     </div>
 
@@ -61,7 +61,7 @@
                             Microblocks (24h)
                         </div>
                         <div class="text-xl font-semibold text-gray-900">
-                            {{ stats.mbCount24h }}
+                            <NumberDisplay :value="stats.mbCount24h" />
                         </div>
                     </div>
 
@@ -71,7 +71,7 @@
                             Accounts
                         </div>
                         <div class="text-xl font-semibold text-gray-900">
-                            {{ stats.vbTypeCount[VirtualBlockchainType.ACCOUNT_VIRTUAL_BLOCKCHAIN] }}
+                            <NumberDisplay :value="stats.vbTypeCount[VirtualBlockchainType.ACCOUNT_VIRTUAL_BLOCKCHAIN]" />
                         </div>
                     </div>
 
@@ -80,7 +80,7 @@
                             Organizations
                         </div>
                         <div class="text-xl font-semibold text-gray-900">
-                            {{ stats.vbTypeCount[VirtualBlockchainType.ORGANIZATION_VIRTUAL_BLOCKCHAIN] }}
+                            <NumberDisplay :value="stats.vbTypeCount[VirtualBlockchainType.ORGANIZATION_VIRTUAL_BLOCKCHAIN]" />
                         </div>
                     </div>
 
@@ -89,7 +89,7 @@
                             Nodes
                         </div>
                         <div class="text-xl font-semibold text-gray-900">
-                            {{ stats.vbTypeCount[VirtualBlockchainType.NODE_VIRTUAL_BLOCKCHAIN] }}
+                            <NumberDisplay :value="stats.vbTypeCount[VirtualBlockchainType.NODE_VIRTUAL_BLOCKCHAIN]" />
                         </div>
                     </div>
 
@@ -98,7 +98,7 @@
                             Applications
                         </div>
                         <div class="text-xl font-semibold text-gray-900">
-                            {{ stats.vbTypeCount[VirtualBlockchainType.APPLICATION_VIRTUAL_BLOCKCHAIN] }}
+                            <NumberDisplay :value="stats.vbTypeCount[VirtualBlockchainType.APPLICATION_VIRTUAL_BLOCKCHAIN]" />
                         </div>
                     </div>
 
@@ -107,7 +107,7 @@
                             Application Ledgers
                         </div>
                         <div class="text-xl font-semibold text-gray-900">
-                            {{ stats.vbTypeCount[VirtualBlockchainType.APP_LEDGER_VIRTUAL_BLOCKCHAIN] }}
+                            <NumberDisplay :value="stats.vbTypeCount[VirtualBlockchainType.APP_LEDGER_VIRTUAL_BLOCKCHAIN]" />
                         </div>
                     </div>
                 </div>
@@ -117,7 +117,7 @@
             <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
 
                 <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-                    <div class="px-6 py-3 bg-gray-50 border-b border-gray-200">
+                    <div class="px-6 py-3 bg-gray-50 border-b border-gray-200 font-bold">
                         Microblocks per Hour
                     </div>
                     <div class="p-6 h-96">
@@ -126,7 +126,7 @@
                 </div>
 
                 <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-                    <div class="px-6 py-3 bg-gray-50 border-b border-gray-200">
+                    <div class="px-6 py-3 bg-gray-50 border-b border-gray-200 font-bold">
                         Virtual Blockchains per Day
                     </div>
                     <div class="p-6 h-96">
@@ -141,6 +141,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import LineChart from '@/components/charts/LineChart.vue'
+import NumberDisplay from '@/components/utils/NumberDisplay.vue'
 import { type ChartData } from '@/components/charts/ChartData'
 import { VirtualBlockchainType } from '@cmts-dev/carmentis-sdk-core'
 import * as api from "@/indexer-sdk/indexer-api";
