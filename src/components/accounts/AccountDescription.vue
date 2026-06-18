@@ -31,11 +31,11 @@
                     {{ accountObject.spendable }}
                 </div>
                 <div class="detail-section">
-                    <h3>Staking</h3>
+                    <h3>Locked in Staking</h3>
                     {{ accountObject.staked }}
                 </div>
                 <div class="detail-section">
-                    <h3>Vesting</h3>
+                    <h3>Locked in Vesting</h3>
                     {{ accountObject.vested }}
                 </div>
                 <div class="detail-section">
@@ -52,10 +52,16 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { getBalanceAvailability } from '@/utils/accountBalanceAvailability.ts'
 import Button from 'primevue/button'
 import * as api from "@/indexer-sdk/indexer-api";
-import { TokenUnit, Utils, Economics, ACCOUNT_NAMES, ACCOUNT_STANDARD } from '@cmts-dev/carmentis-sdk-core'
+import {
+    CMTSToken,
+    TokenUnit,
+    Utils,
+    Economics,
+    ACCOUNT_NAMES,
+    ACCOUNT_STANDARD,
+} from '@cmts-dev/carmentis-sdk-core'
 
 const router = useRouter()
 const route = useRoute()
@@ -84,11 +90,10 @@ onMounted(async () => {
     try {
         const accounts = await api.appControllerGetAccounts({ id: accountHash });
         const account = accounts.data.items[0];
-        const balanceAvaibility = getBalanceAvailability(account);
-        const spendable = balanceAvaibility.getSpendable();
-        const staked = balanceAvaibility.getStaked();
-        const vested = balanceAvaibility.getVested();
-        const escrowed = balanceAvaibility.getEscrowed();
+        const spendable = CMTSToken.createAtomic(account.spendable);
+        const staked = CMTSToken.createAtomic(account.lockedInStaking);
+        const vested = CMTSToken.createAtomic(account.lockedInVesting);
+        const escrowed = CMTSToken.createAtomic(account.lockedInEscrows);
         const accountType = Economics.getAccountTypeFromIdentifier(Utils.binaryFromHexa(account.id));
 
         accountObject.value = {

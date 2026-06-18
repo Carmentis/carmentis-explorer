@@ -425,9 +425,9 @@
             "name": "timestamp_gte",
             "required": false,
             "in": "query",
-            "description": "Minimum timestamp in seconds (inclusive). Resolution is 1 hour; minutes and seconds are ignored.",
+            "description": "Minimum timestamp in milliseconds (inclusive). Resolution is 1 hour.",
             "schema": {
-              "example": 1780300800,
+              "example": 1780300800000,
               "type": "number"
             }
           },
@@ -435,9 +435,9 @@
             "name": "timestamp_lte",
             "required": false,
             "in": "query",
-            "description": "Maximum timestamp in seconds (inclusive). Resolution is 1 hour; minutes and seconds are ignored.",
+            "description": "Maximum timestamp in milliseconds (inclusive). Resolution is 1 hour.",
             "schema": {
-              "example": 1780315200,
+              "example": 1780315200000,
               "type": "number"
             }
           }
@@ -497,6 +497,16 @@
               "enum": [
                 "balance"
               ]
+            }
+          },
+          {
+            "name": "public_key",
+            "required": false,
+            "in": "query",
+            "description": "Public key of the account",
+            "schema": {
+              "example": "SIG:SECP256K1:PK{03ff351698a1b18d21dac31b7a9c77b09d9cfec11a649cf573f0aa1477a49aaa79}",
+              "type": "string"
             }
           },
           {
@@ -981,6 +991,57 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ValidatorNodeListResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "App"
+        ]
+      }
+    },
+    "/api/v1/validator-stats": {
+      "get": {
+        "operationId": "AppController_getValidatorStats",
+        "parameters": [
+          {
+            "name": "node_id",
+            "required": false,
+            "in": "query",
+            "description": "Node virtual blockchain ID",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "timestamp_gte",
+            "required": false,
+            "in": "query",
+            "description": "Minimum timestamp in milliseconds (inclusive). Resolution is 1 hour.",
+            "schema": {
+              "example": 1780300800000,
+              "type": "number"
+            }
+          },
+          {
+            "name": "timestamp_lte",
+            "required": false,
+            "in": "query",
+            "description": "Maximum timestamp in milliseconds (inclusive). Resolution is 1 hour.",
+            "schema": {
+              "example": 1780315200000,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidatorStatsResponseDto"
                 }
               }
             }
@@ -1630,64 +1691,6 @@
           "stats"
         ]
       },
-      "EscrowLockDto": {
-        "type": "object",
-        "properties": {
-          "amount": {
-            "type": "number"
-          },
-          "escrowIdentifier": {
-            "type": "string"
-          },
-          "fundEmitterAccountId": {
-            "type": "string"
-          },
-          "transferAuthorizerAccountId": {
-            "type": "string"
-          },
-          "startTimestamp": {
-            "type": "number"
-          },
-          "durationDays": {
-            "type": "number"
-          }
-        },
-        "required": [
-          "amount",
-          "escrowIdentifier",
-          "fundEmitterAccountId",
-          "transferAuthorizerAccountId",
-          "startTimestamp",
-          "durationDays"
-        ]
-      },
-      "VestingLockDto": {
-        "type": "object",
-        "properties": {
-          "amount": {
-            "type": "number"
-          },
-          "initialVestedAmountInAtomics": {
-            "type": "number"
-          },
-          "cliffStartTimestamp": {
-            "type": "number"
-          },
-          "cliffDurationDays": {
-            "type": "number"
-          },
-          "vestingDurationDays": {
-            "type": "number"
-          }
-        },
-        "required": [
-          "amount",
-          "initialVestedAmountInAtomics",
-          "cliffStartTimestamp",
-          "cliffDurationDays",
-          "vestingDurationDays"
-        ]
-      },
       "StakingLockDto": {
         "type": "object",
         "properties": {
@@ -1723,6 +1726,64 @@
           "plannedSlashingTimestamp"
         ]
       },
+      "VestingLockDto": {
+        "type": "object",
+        "properties": {
+          "amount": {
+            "type": "number"
+          },
+          "initialVestedAmountInAtomics": {
+            "type": "number"
+          },
+          "cliffStartTimestamp": {
+            "type": "number"
+          },
+          "cliffDurationDays": {
+            "type": "number"
+          },
+          "vestingDurationDays": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "amount",
+          "initialVestedAmountInAtomics",
+          "cliffStartTimestamp",
+          "cliffDurationDays",
+          "vestingDurationDays"
+        ]
+      },
+      "EscrowLockDto": {
+        "type": "object",
+        "properties": {
+          "amount": {
+            "type": "number"
+          },
+          "escrowIdentifier": {
+            "type": "string"
+          },
+          "fundEmitterAccountId": {
+            "type": "string"
+          },
+          "transferAuthorizerAccountId": {
+            "type": "string"
+          },
+          "startTimestamp": {
+            "type": "number"
+          },
+          "durationDays": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "amount",
+          "escrowIdentifier",
+          "fundEmitterAccountId",
+          "transferAuthorizerAccountId",
+          "startTimestamp",
+          "durationDays"
+        ]
+      },
       "AccountDto": {
         "type": "object",
         "properties": {
@@ -1738,10 +1799,22 @@
           "balance": {
             "type": "number"
           },
-          "escrowLocks": {
+          "spendable": {
+            "type": "number"
+          },
+          "lockedInStaking": {
+            "type": "number"
+          },
+          "lockedInVesting": {
+            "type": "number"
+          },
+          "lockedInEscrows": {
+            "type": "number"
+          },
+          "stakingLocks": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/EscrowLockDto"
+              "$ref": "#/components/schemas/StakingLockDto"
             }
           },
           "vestingLocks": {
@@ -1750,10 +1823,10 @@
               "$ref": "#/components/schemas/VestingLockDto"
             }
           },
-          "stakingLocks": {
+          "escrowLocks": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/StakingLockDto"
+              "$ref": "#/components/schemas/EscrowLockDto"
             }
           }
         },
@@ -1762,9 +1835,13 @@
           "publicKey",
           "height",
           "balance",
-          "escrowLocks",
+          "spendable",
+          "lockedInStaking",
+          "lockedInVesting",
+          "lockedInEscrows",
+          "stakingLocks",
           "vestingLocks",
-          "stakingLocks"
+          "escrowLocks"
         ]
       },
       "AccountListResponseDto": {
@@ -2030,6 +2107,39 @@
         "required": [
           "items",
           "hasMore"
+        ]
+      },
+      "ValidatorStatsCountDto": {
+        "type": "object",
+        "properties": {
+          "nodeId": {
+            "type": "string"
+          },
+          "proposedBlocks": {
+            "type": "number"
+          },
+          "signedBlocks": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "nodeId",
+          "proposedBlocks",
+          "signedBlocks"
+        ]
+      },
+      "ValidatorStatsResponseDto": {
+        "type": "object",
+        "properties": {
+          "stats": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ValidatorStatsCountDto"
+            }
+          }
+        },
+        "required": [
+          "stats"
         ]
       },
       "NodeStatusResponseDto": {

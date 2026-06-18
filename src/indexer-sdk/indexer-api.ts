@@ -21,6 +21,7 @@ import type {
   AppControllerGetNodeStatusParams,
   AppControllerGetOrganizationsParams,
   AppControllerGetValidatorNodesParams,
+  AppControllerGetValidatorStatsParams,
   AppControllerGetVirtualBlockchainsParams,
   AppControllerGetVotingPowersParams,
   AppControllerSearchParams,
@@ -35,6 +36,7 @@ import type {
   OrganizationListResponseDto,
   SearchListResponseDto,
   ValidatorNodeListResponseDto,
+  ValidatorStatsResponseDto,
   VirtualBlockchainListResponseDto,
   VotingPowerListResponseDto
 } from './model';
@@ -576,6 +578,46 @@ export const getAppControllerGetValidatorNodesUrl = (params?: AppControllerGetVa
 export const appControllerGetValidatorNodes = async (params?: AppControllerGetValidatorNodesParams, options?: RequestInit): Promise<appControllerGetValidatorNodesResponse> => {
 
   return customFetch<appControllerGetValidatorNodesResponse>(getAppControllerGetValidatorNodesUrl(params),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+export type appControllerGetValidatorStatsResponse200 = {
+  data: ValidatorStatsResponseDto
+  status: 200
+}
+
+export type appControllerGetValidatorStatsResponseSuccess = (appControllerGetValidatorStatsResponse200) & {
+  headers: Headers;
+};
+;
+
+export type appControllerGetValidatorStatsResponse = (appControllerGetValidatorStatsResponseSuccess)
+
+export const getAppControllerGetValidatorStatsUrl = (params?: AppControllerGetValidatorStatsParams,) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value))
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `/api/v1/validator-stats?${stringifiedParams}` : `/api/v1/validator-stats`
+}
+
+export const appControllerGetValidatorStats = async (params?: AppControllerGetValidatorStatsParams, options?: RequestInit): Promise<appControllerGetValidatorStatsResponse> => {
+
+  return customFetch<appControllerGetValidatorStatsResponse>(getAppControllerGetValidatorStatsUrl(params),
   {
     ...options,
     method: 'GET'

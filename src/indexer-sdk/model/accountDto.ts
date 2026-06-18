@@ -14,7 +14,11 @@ export interface AccountDto {
   publicKey: string;
   height: number;
   balance: number;
-  escrowLocks: EscrowLockDto[];
-  vestingLocks: VestingLockDto[];
+  spendable: number;
+  lockedInStaking: number;
+  lockedInVesting: number;
+  lockedInEscrows: number;
   stakingLocks: StakingLockDto[];
+  vestingLocks: VestingLockDto[];
+  escrowLocks: EscrowLockDto[];
 }

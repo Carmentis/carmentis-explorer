@@ -29,7 +29,7 @@
                         <p class="mono">{{ block.header.chainId }}</p>
                     </div>
                     <div class="detail-section">
-                        <h4>CometBFT Address</h4>
+                        <h4>Proposer Address</h4>
                         <p class="mono">{{ block.header.proposerAddress }}</p>
                     </div>
                 </div>

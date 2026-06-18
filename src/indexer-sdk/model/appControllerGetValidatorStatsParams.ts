@@ -5,17 +5,12 @@
  * Documentation for the Carmentis indexer API.
  * OpenAPI spec version: 1.0
  */
-import type { AppControllerGetMicroblockStatsVbType } from './appControllerGetMicroblockStatsVbType';
 
-export type AppControllerGetMicroblockStatsParams = {
+export type AppControllerGetValidatorStatsParams = {
 /**
- * Limits the stats to a specific virtual blockchain type.
+ * Node virtual blockchain ID
  */
-vb_type?: AppControllerGetMicroblockStatsVbType;
-/**
- * Limits the stats to either genesis or non-genesis microblocks.
- */
-is_genesis?: boolean;
+node_id?: string;
 /**
  * Minimum timestamp in milliseconds (inclusive). Resolution is 1 hour.
  */

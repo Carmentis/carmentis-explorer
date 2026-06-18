@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
+import StackedBarChart from '@/components/charts/StackedBarChart.vue'
+import { type StackedBarChartData } from '@/components/charts/ChartData'
 import { useRoute } from 'vue-router'
 import { CMTSToken, TokenUnit, Utils } from '@cmts-dev/carmentis-sdk-core'
 import { getBalanceAvailability } from '@/utils/accountBalanceAvailability.ts'
@@ -33,6 +35,8 @@ type StakeInfo = {
 const nodeHash = route.params.nodeId as string
 const nodeObject = ref<NodeInfo | null>(null)
 const stakeObject = ref<StakeInfo | null>(null)
+const stats = ref<{ blocksChart: StackedBarChartData } | null>(null)
+
 function visitVb() {
     router.push(`/vb/${nodeHash}`)
 }
@@ -82,6 +86,37 @@ onMounted(async () => {
             }
         }
 
+        const now = new Date;
+        const blocksChart = {
+            labels: [],
+            datasets: [
+                { label: "signed", data: [], backgroundColor: "#93c5fd" },
+                { label: "proposed", data: [], backgroundColor: "#2563eb" },
+            ]
+        };
+
+        for (let n = 24; n--;) {
+            const hour = Date.UTC(
+                now.getUTCFullYear(),
+                now.getUTCMonth(),
+                now.getUTCDate(),
+                now.getUTCHours() - n,
+            );
+            const res = await api.appControllerGetValidatorStats({
+                node_id: nodeHash,
+                timestamp_gte: hour,
+                timestamp_lte: hour,
+            });
+            blocksChart.labels.push(
+                new Intl.DateTimeFormat(
+                    undefined,
+                    { hour: "numeric", minute: "numeric" }
+                ).format(hour)
+            );
+            blocksChart.datasets[0].data.push(res.data.stats?.[0]?.signedBlocks ?? 0);
+            blocksChart.datasets[1].data.push(res.data.stats?.[0]?.proposedBlocks ?? 0);
+        }
+        stats.value = { blocksChart }
     } catch (error) {
         console.error('Error fetching node:', error)
     } finally {
@@ -106,60 +141,70 @@ onMounted(async () => {
             <p>Loading node details...</p>
         </div>
 
-        <div v-if="nodeObject !== null && !loading" class="details-card">
-            <div class="cards-grid">
-                <div class="detail-section">
-                    <h3>Hash</h3>
-                    <p class="mono">{{ nodeObject.hash }}</p>
-                </div>
-
-                <div class="detail-section">
-                    <h3>Status</h3>
-                    <p class="mono">{{ nodeObject.status }}</p>
-                </div>
-
-                <div class="detail-section">
-                    <h3>CometBFT Public Key</h3>
-                    <p class="mono">{{ nodeObject.publicKey }}</p>
-                </div>
-
-                <div class="detail-section">
-                    <h3>RPC Endpoint</h3>
-                    <p class="mono">{{ nodeObject.rpc }}</p>
-                </div>
-
-                <div class="detail-section">
-                    <h3>Node Owner</h3>
-                    <p class="mono">{{ nodeObject.nodeOwnerName }} ({{ nodeObject.nodeOwnerOrgId }})</p>
-                    <Button
-                        label="Explore organization"
-                        icon="pi pi-building"
-                        @click="router.push(`/organizations/${nodeObject.nodeOwnerOrgId}`)"
-                    />
-                </div>
-
-                <div v-if="stakeObject !== null" class="flex flex-col gap-8">
+        <div v-if="nodeObject !== null && !loading">
+            <div class="details-card mb-8">
+                <div class="cards-grid">
                     <div class="detail-section">
-                        <h3>Staked</h3>
-                        <p class="mono">{{ stakeObject.staked }}</p>
+                        <h3>Hash</h3>
+                        <p class="mono">{{ nodeObject.hash }}</p>
                     </div>
 
-                    <div class="detail-section" v-if="stakeObject.unstaked">
-                        <h3>Unstaking</h3>
-                        <p class="mono">
-                            {{ stakeObject.unstaked.unstakingAt }} - {{ stakeObject.unstaked.unstaked }}
-                        </p>
-                    </div>
-                </div>
-                <div v-else>
                     <div class="detail-section">
-                        <h3>Staked</h3>
-                        <p class="mono">No stake</p>
+                        <h3>Status</h3>
+                        <p class="mono">{{ nodeObject.status }}</p>
+                    </div>
+
+                    <div class="detail-section">
+                        <h3>CometBFT Public Key</h3>
+                        <p class="mono">{{ nodeObject.publicKey }}</p>
+                    </div>
+
+                    <div class="detail-section">
+                        <h3>RPC Endpoint</h3>
+                        <p class="mono">{{ nodeObject.rpc }}</p>
+                    </div>
+
+                    <div class="detail-section">
+                        <h3>Node Owner</h3>
+                        <p class="mono">{{ nodeObject.nodeOwnerName }} ({{ nodeObject.nodeOwnerOrgId }})</p>
+                        <Button
+                            label="Explore organization"
+                            icon="pi pi-building"
+                            @click="router.push(`/organizations/${nodeObject.nodeOwnerOrgId}`)"
+                        />
+                    </div>
+
+                    <div v-if="stakeObject !== null" class="flex flex-col gap-8">
+                        <div class="detail-section">
+                            <h3>Staked</h3>
+                            <p class="mono">{{ stakeObject.staked }}</p>
+                        </div>
+
+                        <div class="detail-section" v-if="stakeObject.unstaked">
+                            <h3>Unstaking</h3>
+                            <p class="mono">
+                                {{ stakeObject.unstaked.unstakingAt }} - {{ stakeObject.unstaked.unstaked }}
+                            </p>
+                        </div>
+                    </div>
+                    <div v-else>
+                        <div class="detail-section">
+                            <h3>Staked</h3>
+                            <p class="mono">No stake</p>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
 
+            <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+                <div class="px-6 py-3 bg-gray-50 border-b border-gray-200 font-bold">
+                    Proposed and Signed Blocks per Hour
+                </div>
+                <div class="p-6 h-96">
+                    <StackedBarChart :chart-data="stats.blocksChart" />
+                </div>
+            </div>
+        </div>
         <p v-else-if="!loading" class="empty">Node not found.</p>
     </div>
 </template>

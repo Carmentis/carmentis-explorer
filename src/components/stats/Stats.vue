@@ -141,9 +141,9 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import LineChart from '@/components/charts/LineChart.vue'
-import NumberDisplay from '@/components/utils/NumberDisplay.vue'
-import { type ChartData } from '@/components/charts/ChartData'
+import { type LineChartData } from '@/components/charts/ChartData'
 import { VirtualBlockchainType } from '@cmts-dev/carmentis-sdk-core'
+import NumberDisplay from '@/components/utils/NumberDisplay.vue'
 import * as api from "@/indexer-sdk/indexer-api";
 
 const loading = ref(true)
@@ -154,8 +154,8 @@ const stats = ref<{
     vbCount: number
     vbCount24h: number
     vbTypeCount: number[]
-    mbChart: ChartData
-    vbChart: ChartData
+    mbChart: LineChartData
+    vbChart: LineChartData
 } | null>(null)
 
 onMounted(async () => {
