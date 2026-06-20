@@ -1,6 +1,6 @@
 <template>
     <div class="home">
-        <div class="flex justify-between items-start mb-8">
+        <div class="flex flex-wrap justify-between items-start mb-8">
             <div>
                 <h2>Latest Blocks</h2>
                 <p>Real-time blockchain activity</p>
@@ -139,8 +139,8 @@
                             </div>
                         </div>
 
-                        <!-- Reward -->
-                        <div class="flex flex-col items-end min-w-[120px]">
+                        <!-- Fees -->
+                        <div v-if="minWidth(800)" class="flex flex-col items-end min-w-[120px]">
                             <div class="text-xs text-gray-500 uppercase tracking-wider mb-1">
                                 Fees
                             </div>
@@ -161,8 +161,8 @@ import { useRouter } from 'vue-router'
 import DataView from 'primevue/dataview'
 import Tag from 'primevue/tag'
 import Skeleton from 'primevue/skeleton'
-import { CMTSToken } from '@cmts-dev/carmentis-sdk-core'
 import * as api from '@/indexer-sdk/indexer-api'
+import { minWidth } from '@/utils/minWidth'
 import { formatTime, getTimeAgo } from '@/utils/formatTime'
 import { appControllerGetGasPrice } from '@/indexer-sdk/indexer-api'
 import AmountDisplay from '@/components/utils/AmountDisplay.vue'

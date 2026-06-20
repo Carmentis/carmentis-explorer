@@ -22,7 +22,7 @@
                     <span class="mono-cell mono" :title="data.hash">{{ shortenHash(data.hash) }}</span>
                 </template>
             </Column>
-            <Column field="pk" header="Public Key">
+            <Column v-if="minWidth(1000)" field="pk" header="Public Key">
                 <template #body="{ data }">
                     <span class="mono-cell mono" :title="data.pk">{{ shortenHash(data.pk, 20, 4) || "(none)" }}</span>
                 </template>
@@ -40,6 +40,7 @@
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { CMTSToken, TokenUnit } from '@cmts-dev/carmentis-sdk-core'
+import { minWidth } from '@/utils/minWidth'
 import { shortenHash } from '@/utils/shortenHash'
 import DataTable from 'primevue/datatable'
 import type { DataTableRowClickEvent } from 'primevue/datatable';

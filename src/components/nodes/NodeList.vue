@@ -24,7 +24,7 @@
             <template #loading>
                 <ProgressSpinner />
             </template>
-            <Column field="hash" header="ID">
+            <Column v-if="minWidth(1000)" field="hash" header="ID">
                 <template #body="{ data }">
                     <span class="mono-cell mono" :title="data.hash">{{ shortenHash(data.hash) }}</span>
                 </template>
@@ -64,6 +64,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+import { minWidth } from '@/utils/minWidth'
 import { shortenHash } from '@/utils/shortenHash'
 import NumberDisplay from '@/components/utils/NumberDisplay.vue'
 import DataTable from 'primevue/datatable'

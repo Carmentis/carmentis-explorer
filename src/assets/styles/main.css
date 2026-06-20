@@ -447,3 +447,7 @@ td.mono-cell {
 .center-header .p-datatable-column-header-content {
     justify-content: center;
 }
+
+.p-selectbutton {
+    flex-wrap: wrap;
+}

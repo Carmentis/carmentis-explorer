@@ -29,7 +29,7 @@
                     <span class="mono-cell" :title="data.moniker">{{ data.moniker }}</span>
                 </template>
             </Column>
-            <Column field="url" header="RPC URL">
+            <Column v-if="minWidth(1000)" field="url" header="RPC URL">
                 <template #body="{ data }">
                     <span class="mono-cell">{{ data.url }}</span>
                 </template>
@@ -54,7 +54,7 @@
                     <span class="mono-cell">{{ data.txInMempool }}</span>
                 </template>
             </Column>
-            <Column field="votingPower" header="Voting Power">
+            <Column v-if="minWidth(1000)" field="votingPower" header="Voting Power">
                 <template #body="{ data }">
                     <span class="mono-cell">
                         <NumberDisplay :value="data.votingPower" />
@@ -70,6 +70,7 @@ import { ref, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import DataTable from 'primevue/datatable'
 import type { DataTableRowClickEvent } from 'primevue/datatable'
+import { minWidth } from '@/utils/minWidth'
 import NumberDisplay from '@/components/utils/NumberDisplay.vue'
 import Column from 'primevue/column'
 import Button from 'primevue/button'

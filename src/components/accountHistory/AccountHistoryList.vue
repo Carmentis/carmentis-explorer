@@ -31,7 +31,7 @@
                     </a>
                 </template>
             </Column>
-            <Column field="linkedAccountId" header="Linked Account">
+            <Column v-if="minWidth(1200)" field="linkedAccountId" header="Linked Account">
                 <template #body="{ data }">
                     <a
                         class="mono text-sm text-gray-900 truncate font-medium"
@@ -55,7 +55,7 @@
                     <span class="mono-cell ml-2" :title="data.type">{{ data.type }}</span>
                 </template>
             </Column>
-            <Column field="chainReference" header="Chain ref.">
+            <Column v-if="minWidth(1000)" field="chainReference" header="Chain ref.">
                 <template #body="{ data }">
                     <a
                         class="text-sm text-gray-900 truncate font-medium"
@@ -73,12 +73,12 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { minWidth } from '@/utils/minWidth'
 import { shortenHash } from '@/utils/shortenHash.ts'
 import type { DataTableRowClickEvent } from 'primevue/datatable'
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
 import ProgressSpinner from 'primevue/progressspinner'
-import ToggleSwitch from 'primevue/toggleswitch'
 import {
     BK_NAMES,
     BK_PLUS,
