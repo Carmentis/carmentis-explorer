@@ -1,13 +1,12 @@
 <template>
     <div class="page">
-        <div class="flex justify-between items-center">
-            <h2>Organization Details</h2>
-            <Button
-                label="Explore Virtual Blockchain"
-                icon="pi pi-link"
-                @click="visitVb"
-            />
-        </div>
+        <h2>Organization Details</h2>
+        <Button
+            class="mr-3 mb-3 h-8"
+            label="Explore Virtual Blockchain"
+            icon="pi pi-link"
+            @click="visitVb"
+        />
 
         <div v-if="loading" class="loading">
             <div class="spinner"></div>

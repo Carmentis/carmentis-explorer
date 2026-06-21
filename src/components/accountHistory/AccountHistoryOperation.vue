@@ -20,7 +20,7 @@
                 </div>
                 <div class="detail-section">
                     <h3>Time</h3>
-                    {{ formatTime(operation.timestamp) }}
+                    {{ formatDate(operation.timestamp) }}
                 </div>
                 <div class="detail-section">
                     <h3>Type</h3>
@@ -45,7 +45,7 @@
 import { ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import * as api from "@/indexer-sdk/indexer-api";
-import { formatTime } from '@/utils/formatTime'
+import { formatDate } from '@/utils/formatTime'
 import { BK_NAMES, BK_PLUS, CMTSToken, TokenUnit } from '@cmts-dev/carmentis-sdk-core'
 
 const route = useRoute()

@@ -56,6 +56,7 @@ const options = {
             },
         },
         y: {
+            beginAtZero: true,
             grid: {
                 color: '#f3f4f6',
             },

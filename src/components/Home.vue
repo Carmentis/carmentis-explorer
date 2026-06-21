@@ -22,7 +22,7 @@
                 </div>
                 <div class="flex divide-x divide-gray-200">
                     <!-- Min Gas Price -->
-                    <div class="flex-1 px-6 py-4">
+                    <div v-if="minWidth(800)" class="flex-1 px-6 py-4">
                         <div class="text-xs text-gray-500 uppercase tracking-wider mb-2">
                             Min Gas Price
                         </div>
@@ -48,7 +48,7 @@
                     </div>
 
                     <!-- Max Gas Price -->
-                    <div class="flex-1 px-6 py-4">
+                    <div v-if="minWidth(800)" class="flex-1 px-6 py-4">
                         <div class="text-xs text-gray-500 uppercase tracking-wider mb-2">
                             Max Gas Price
                         </div>
@@ -112,14 +112,14 @@
                             <div class="text-lg font-semibold text-gray-900">
                                 {{ block.height }}
                             </div>
-                            <div class="text-sm text-gray-500" :title="formatTime(block.time)">
+                            <div class="text-sm text-gray-500" :title="formatDate(block.time)">
                                 {{ getTimeAgo(block.time) }}
                             </div>
                         </div>
 
                         <!-- Proposer & Transactions -->
                         <div class="flex flex-col flex-1 min-w-0">
-                            <div class="text-sm text-gray-500">
+                            <div v-if="minWidth(800)" class="text-sm text-gray-500">
                                 <a
                                     class="font-mono text-sm text-gray-900 truncate font-medium"
                                     @click="(e) => visitNode(e, block.nodeId)"
@@ -163,7 +163,7 @@ import Tag from 'primevue/tag'
 import Skeleton from 'primevue/skeleton'
 import * as api from '@/indexer-sdk/indexer-api'
 import { minWidth } from '@/utils/minWidth'
-import { formatTime, getTimeAgo } from '@/utils/formatTime'
+import { formatDate, getTimeAgo } from '@/utils/formatTime'
 import { appControllerGetGasPrice } from '@/indexer-sdk/indexer-api'
 import AmountDisplay from '@/components/utils/AmountDisplay.vue'
 

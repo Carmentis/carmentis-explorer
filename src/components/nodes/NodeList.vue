@@ -1,13 +1,12 @@
 <template>
     <div class="page">
-        <div class="flex justify-between items-center">
-            <h2>Nodes</h2>
-            <Button
-                label="See real-time activity of validators"
-                icon="pi pi-chart-bar"
-                @click="visitValidators"
-            />
-        </div>
+        <h2>Nodes</h2>
+        <Button
+            class="mr-3 mb-3 h-8"
+            label="See real-time activity of validators"
+            icon="pi pi-chart-bar"
+            @click="visitValidators"
+        />
 
         <DataTable
             :value="nodes"

@@ -248,5 +248,5 @@ const countryCodes = {
 };
 
 export function getCountry(code: string) {
-    return countryCodes[code] || "unknown";
+    return countryCodes[code] || `unknown${code.trim() ? ` (${code})` : ''}`;
 }

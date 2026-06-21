@@ -1,12 +1,8 @@
 <template>
     <div class="page">
-        <div class="flex justify-between items-center">
-            <h2>Account Details</h2>
-            <div class="flex gap-2">
-                <Button icon="pi pi-chart-line" label="See account history" @click="visitHistory" />
-                <Button icon="pi pi-link" :disabled="accountObject?.isSpecial" label="Explore Virtual Blockchain" @click="visitVb" />
-            </div>
-        </div>
+        <h2>Account Details</h2>
+        <Button class="mr-3 mb-3 h-8" icon="pi pi-chart-line" label="See account history" @click="visitHistory" />
+        <Button class="mr-3 mb-3 h-8" icon="pi pi-link" :disabled="accountObject?.isSpecial" label="Explore Virtual Blockchain" @click="visitVb" />
         <div v-if="loading" class="loading">
             <div class="spinner"></div>
             <p>Loading account details...</p>

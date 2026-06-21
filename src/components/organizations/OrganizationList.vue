@@ -25,7 +25,7 @@
             <Column field="name" header="Name" />
             <Column field="country" header="Country">
                 <template #body="{ data }">
-                    <span class="mono-cell">{{ data.countryCode }} - {{ data.country }}</span>
+                    <span class="mono-cell">{{ data.country }}</span>
                 </template>
             </Column>
             <Column field="city" header="City" />
@@ -52,7 +52,6 @@ const organizations = ref<Organization[]>([])
 export interface Organization {
     hash: string
     name: string
-    countryCode: string
     country: string
     city: string
 }
@@ -69,7 +68,6 @@ onMounted(async () => {
             organizations.value.push({
                 hash: org.virtualBlockchainId,
                 name: org.name,
-                countryCode: org.countryCode,
                 country: getCountry(org.countryCode),
                 city: org.city,
             })

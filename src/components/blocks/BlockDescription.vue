@@ -22,7 +22,7 @@
                     </div>
                     <div class="detail-section">
                         <h4>Time</h4>
-                        <p>{{ formatTime(block.header.time) }}</p>
+                        <p>{{ formatDate(block.header.time) }}</p>
                     </div>
                     <div class="detail-section">
                         <h4>Chain ID</h4>
@@ -112,11 +112,11 @@
                 >
                     <h5>Signature {{ index + 1 }}</h5>
                     <p class="mono"><strong>Type:</strong> {{ sig.blockIdFlag }}</p>
-                    <p class="mono"><strong>Validator:</strong> {{ sig.validatorAddress }}</p>
-                    <p class="mono">
-                        <strong>Timestamp:</strong> {{ formatTime(sig.timestamp) }}
+                    <p v-if="sig.blockIdFlag === 2" class="mono"><strong>Validator:</strong> {{ sig.validatorAddress }}</p>
+                    <p v-if="sig.blockIdFlag === 2" class="mono">
+                        <strong>Timestamp:</strong> {{ formatDate(sig.timestamp) }}
                     </p>
-                    <p class="mono"><strong>Signature:</strong> {{ sig.signature }}</p>
+                    <p v-if="sig.blockIdFlag === 2" class="mono"><strong>Signature:</strong> {{ sig.signature }}</p>
                 </div>
             </div>
         </div>
@@ -131,7 +131,7 @@ import { useRoute } from 'vue-router'
 import ProgressSpinner from 'primevue/progressspinner'
 import TransactionDescription from '@/components/blocks/TransactionDescription.vue'
 import CollapsibleCard from '@/components/utils/CollapsibleCard.vue'
-import { formatTime } from "@/utils/formatTime"
+import { formatDate } from "@/utils/formatTime"
 import * as api from "@/indexer-sdk/indexer-api";
 
 interface BlockData {

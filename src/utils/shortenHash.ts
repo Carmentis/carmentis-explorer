@@ -1,4 +1,4 @@
-export function shortenHash(hash: string, head = 16, tail = 4) {
+export function shortenHash(hash: string, head = 16, tail = 4): string {
     if (hash.length <= head + tail) {
         return hash;
     }

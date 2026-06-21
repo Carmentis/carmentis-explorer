@@ -1,9 +1,7 @@
 <template>
     <div class="page">
-        <div class="flex flex-row justify-between items-center">
-            <h2>Microblock Details</h2>
-            <Button icon="pi pi-link" label="Explore Virtual Blockchain" @click="visitVB(microblock.header.vbId)" />
-        </div>
+        <h2>Microblock Details</h2>
+        <Button class="mr-3 mb-3 h-8" icon="pi pi-link" label="Explore Virtual Blockchain" @click="visitVB(microblock.header.vbId)" />
 
         <div v-if="loading" class="loading">
             <ProgressSpinner />
@@ -45,7 +43,7 @@
                     </div>
                     <div class="detail-section">
                         <h4>Timestamp</h4>
-                        <p>{{ formatTime(microblock.header.timestamp) }}</p>
+                        <p>{{ formatDate(microblock.header.timestamp) }}</p>
                     </div>
                     <div class="detail-section">
                         <h4>Signed by</h4>
@@ -98,7 +96,7 @@ import { Base64, Microblock, Utils } from '@cmts-dev/carmentis-sdk-core'
 import ProgressSpinner from 'primevue/progressspinner'
 import Button from 'primevue/button'
 import MicroblockInVirtualBlockchainSection from '@/components/vb/MicroblockInVirtualBlockchainSection.vue'
-import { formatTime } from "@/utils/formatTime"
+import { formatDate } from "@/utils/formatTime"
 import * as api from "@/indexer-sdk/indexer-api";
 
 interface MicroblockData {

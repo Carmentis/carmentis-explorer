@@ -1,9 +1,7 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import {
-    VirtualBlockchainLabel,
-} from '@cmts-dev/carmentis-sdk-core'
+import { VB_NAME } from '@cmts-dev/carmentis-sdk-core'
 import ProgressSpinner from 'primevue/progressspinner'
 import * as api from "@/indexer-sdk/indexer-api";
 
@@ -105,7 +103,7 @@ onMounted(async () => {
                     </div>
                     <div class="detail-section">
                         <h4>Type</h4>
-                        <p class="mono">{{ VirtualBlockchainLabel.getVirtualBlockchainLabelFromVirtualBlockchainType(vbData.type) }}</p>
+                        <p>{{ VB_NAME[vbData.type] }}</p>
                     </div>
                     <div class="detail-section">
                         <h4>Creation</h4>

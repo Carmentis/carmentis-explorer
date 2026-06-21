@@ -4,6 +4,7 @@ import { Microblock, Base64 } from '@cmts-dev/carmentis-sdk-core'
 import Button from 'primevue/button'
 import SelectButton from 'primevue/selectbutton'
 import { useRouter } from 'vue-router'
+import { minWidth } from '@/utils/minWidth'
 
 const router = useRouter()
 const value = ref('Info')
@@ -27,7 +28,8 @@ onMounted(async () => {
 <template>
     <div class="flex flex-row items-center justify-between mb-8">
         <div>
-            <h5>Transaction {{ index + 1 }}</h5>
+            <h5 v-if="minWidth(700)">Transaction {{ index + 1 }}</h5>
+            <h5 v-else>#{{ index + 1 }}</h5>
         </div>
         <div class="flex flex-row items-center gap-2">
             <Button label="Explore" size="small" @click="visitMicroblock(hash)" />

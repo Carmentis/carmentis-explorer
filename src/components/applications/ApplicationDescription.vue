@@ -1,9 +1,7 @@
 <template>
     <div class="page">
-        <div class="flex justify-between items-center">
-            <h2>Application Details</h2>
-            <Button icon="pi pi-link" label="Explore Virtual Blockchain" @click="visitVb" />
-        </div>
+        <h2>Application Details</h2>
+        <Button class="mr-3 mb-3 h-8" icon="pi pi-link" label="Explore Virtual Blockchain" @click="visitVb" />
 
         <div v-if="loading" class="loading">
             <div class="spinner"></div>
@@ -31,15 +29,13 @@
                 </div>
                 <div class="detail-section">
                     <h3>Owner</h3>
-                    <p>
-                        {{ application.orgName }} (<button
-                            @click="() => goToOrganization(application!.orgId)"
-                            type="button"
-                            class="link-button"
-                        >
-                            {{ application.orgId }}</button
-                        >)
-                    </p>
+                    <p>{{ application.orgName }}</p>
+                    <Button
+                        class="h-8 mt-3"
+                        label="See organization"
+                        icon="pi pi-building"
+                        @click="() => goToOrganization(application!.orgId)"
+                    />
                 </div>
             </div>
         </div>

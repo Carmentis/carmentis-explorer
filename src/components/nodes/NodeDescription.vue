@@ -3,6 +3,7 @@ import { ref, onMounted } from 'vue'
 import StackedBarChart from '@/components/charts/StackedBarChart.vue'
 import { type StackedBarChartData } from '@/components/charts/ChartData'
 import { useRoute } from 'vue-router'
+import { formatHour } from '@/utils/formatTime'
 import { CMTSToken, TokenUnit, Utils } from '@cmts-dev/carmentis-sdk-core'
 import { getBalanceAvailability } from '@/utils/accountBalanceAvailability.ts'
 import Button from 'primevue/button'
@@ -16,6 +17,7 @@ const loading = ref(true)
 type NodeInfo = {
     hash: string
     status: string
+    moniker: string
     rpc: string
     nodeOwnerName: string
     nodeOwnerOrgId: string
@@ -57,6 +59,7 @@ onMounted(async () => {
         nodeObject.value = {
             hash: nodeHash,
             status: node.currentVotingPower > 0 ? 'Validator' : 'Replicator',
+            moniker: node.moniker,
             rpc: node.rpcEndpoint,
             nodeOwnerName: owner.name,
             nodeOwnerOrgId: node.organizationId,
@@ -107,12 +110,7 @@ onMounted(async () => {
                 timestamp_gte: hour,
                 timestamp_lte: hour,
             });
-            blocksChart.labels.push(
-                new Intl.DateTimeFormat(
-                    undefined,
-                    { hour: "numeric", minute: "numeric" }
-                ).format(hour)
-            );
+            blocksChart.labels.push(formatHour(new Date(hour)));
             blocksChart.datasets[0].data.push(res.data.stats?.[0]?.signedBlocks ?? 0);
             blocksChart.datasets[1].data.push(res.data.stats?.[0]?.proposedBlocks ?? 0);
         }
@@ -127,14 +125,13 @@ onMounted(async () => {
 
 <template>
     <div class="page">
-        <div class="flex items-center justify-between">
-            <h2>Node Details</h2>
-            <Button
-                label="Explore Virtual Blockchain"
-                icon="pi pi-link"
-                @click="visitVb"
-            />
-        </div>
+        <h2>Node Details</h2>
+        <Button
+            class="mr-3 mb-3 h-8"
+            label="Explore Virtual Blockchain"
+            icon="pi pi-link"
+            @click="visitVb"
+        />
 
         <div v-if="loading" class="loading">
             <div class="spinner"></div>
@@ -151,7 +148,12 @@ onMounted(async () => {
 
                     <div class="detail-section">
                         <h3>Status</h3>
-                        <p class="mono">{{ nodeObject.status }}</p>
+                        <p>{{ nodeObject.status }}</p>
+                    </div>
+
+                    <div class="detail-section">
+                        <h3>Moniker</h3>
+                        <p class="mono">{{ nodeObject.moniker }}</p>
                     </div>
 
                     <div class="detail-section">
@@ -161,14 +163,15 @@ onMounted(async () => {
 
                     <div class="detail-section">
                         <h3>RPC Endpoint</h3>
-                        <p class="mono">{{ nodeObject.rpc }}</p>
+                        <p>{{ nodeObject.rpc }}</p>
                     </div>
 
                     <div class="detail-section">
-                        <h3>Node Owner</h3>
-                        <p class="mono">{{ nodeObject.nodeOwnerName }} ({{ nodeObject.nodeOwnerOrgId }})</p>
+                        <h3>Owner</h3>
+                        <p>{{ nodeObject.nodeOwnerName }}</p>
                         <Button
-                            label="Explore organization"
+                            class="h-8 mt-3"
+                            label="See organization"
                             icon="pi pi-building"
                             @click="router.push(`/organizations/${nodeObject.nodeOwnerOrgId}`)"
                         />
@@ -177,7 +180,7 @@ onMounted(async () => {
                     <div v-if="stakeObject !== null" class="flex flex-col gap-8">
                         <div class="detail-section">
                             <h3>Staked</h3>
-                            <p class="mono">{{ stakeObject.staked }}</p>
+                            <p>{{ stakeObject.staked }}</p>
                         </div>
 
                         <div class="detail-section" v-if="stakeObject.unstaked">

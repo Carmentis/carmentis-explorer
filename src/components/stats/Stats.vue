@@ -143,6 +143,7 @@ import { ref, onMounted } from 'vue'
 import LineChart from '@/components/charts/LineChart.vue'
 import { type LineChartData } from '@/components/charts/ChartData'
 import { VirtualBlockchainType } from '@cmts-dev/carmentis-sdk-core'
+import { formatHour, formatDay } from '@/utils/formatTime'
 import NumberDisplay from '@/components/utils/NumberDisplay.vue'
 import * as api from "@/indexer-sdk/indexer-api";
 
@@ -183,7 +184,7 @@ onMounted(async () => {
         const now = new Date;
         const mbChart = { label: "microblocks", labels: [], data: [] };
 
-        for (let n = 24; n--;) {
+        for (let n = 24; n-- > 1;) {
             const hour = Date.UTC(
                 now.getUTCFullYear(),
                 now.getUTCMonth(),
@@ -195,12 +196,7 @@ onMounted(async () => {
                 timestamp_lte: hour,
             });
             const mbCount = res.data.stats.reduce((total, s) => total + s.count, 0);
-            mbChart.labels.push(
-                new Intl.DateTimeFormat(
-                    undefined,
-                    { hour: "numeric", minute: "numeric" }
-                ).format(hour)
-            );
+            mbChart.labels.push(formatHour(new Date(hour)));
             mbChart.data.push(mbCount);
         }
 
@@ -217,12 +213,7 @@ onMounted(async () => {
                 timestamp_lte: day + 23 * 60 * 60 * 1000,
             });
             const vbCount = res.data.stats.reduce((total, s) => s.isGenesis ? total + s.count : total, 0);
-            vbChart.labels.push(
-                new Intl.DateTimeFormat(
-                    undefined,
-                    { day: "numeric", month: "short" }
-                ).format(day)
-            );
+            vbChart.labels.push(formatDay(new Date(day)));
             vbChart.data.push(vbCount);
         }
 
