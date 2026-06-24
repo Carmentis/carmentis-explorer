@@ -7,7 +7,14 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": ""
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RootResponseDto"
+                }
+              }
+            }
           }
         },
         "tags": [
@@ -1231,6 +1238,66 @@
           "App"
         ]
       }
+    },
+    "/api/v1/node-reward": {
+      "get": {
+        "operationId": "AppController_getNodeReward",
+        "parameters": [
+          {
+            "name": "node_id",
+            "required": true,
+            "in": "query",
+            "description": "Node virtual blockchain ID",
+            "schema": {
+              "example": "511d98d94eac50e6bd5df8dad285c90c309c55a57bdf9db8c57d0ec931c7c57a",
+              "type": "string"
+            }
+          },
+          {
+            "name": "payer_account_id",
+            "required": true,
+            "in": "query",
+            "description": "Reward payer account ID",
+            "schema": {
+              "example": "c4807cb71556c183ad79880be6c2732ae8b82089bbb27845f4452f27222900bc",
+              "type": "string"
+            }
+          },
+          {
+            "name": "start_time",
+            "required": true,
+            "in": "query",
+            "description": "Start timestamp in milliseconds",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "end_time",
+            "required": true,
+            "in": "query",
+            "description": "End timestamp in milliseconds",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NodeRewardResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "App"
+        ]
+      }
     }
   },
   "info": {
@@ -1250,6 +1317,29 @@
       }
     },
     "schemas": {
+      "RootResponseDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "swagger": {
+            "type": "string"
+          },
+          "openapi": {
+            "type": "string"
+          },
+          "currentNode": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "swagger",
+          "openapi",
+          "currentNode"
+        ]
+      },
       "ObjectCountDto": {
         "type": "object",
         "properties": {
@@ -1461,6 +1551,12 @@
             "items": {
               "$ref": "#/components/schemas/BlockSignatureDto"
             }
+          },
+          "microblocks": {
+            "type": "number"
+          },
+          "feesInAtomics": {
+            "type": "number"
           }
         },
         "required": [
@@ -1485,7 +1581,9 @@
           "lastResultsHash",
           "evidenceHash",
           "proposerAddress",
-          "signatures"
+          "signatures",
+          "microblocks",
+          "feesInAtomics"
         ]
       },
       "BlockListResponseDto": {
@@ -2276,6 +2374,63 @@
         "required": [
           "items",
           "hasMore"
+        ]
+      },
+      "NodePeriodRewardDto": {
+        "type": "object",
+        "properties": {
+          "startTime": {
+            "type": "number"
+          },
+          "endTime": {
+            "type": "number"
+          },
+          "votingPower": {
+            "type": "number"
+          },
+          "uptimeHours": {
+            "type": "number"
+          },
+          "downtimeHours": {
+            "type": "number"
+          },
+          "rewardInAtomics": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "startTime",
+          "endTime",
+          "votingPower",
+          "uptimeHours",
+          "downtimeHours",
+          "rewardInAtomics"
+        ]
+      },
+      "NodeRewardResponseDto": {
+        "type": "object",
+        "properties": {
+          "accruedRewardInAtomics": {
+            "type": "number"
+          },
+          "paidRewardInAtomics": {
+            "type": "number"
+          },
+          "unpaidRewardInAtomics": {
+            "type": "number"
+          },
+          "periods": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/NodePeriodRewardDto"
+            }
+          }
+        },
+        "required": [
+          "accruedRewardInAtomics",
+          "paidRewardInAtomics",
+          "unpaidRewardInAtomics",
+          "periods"
         ]
       }
     }

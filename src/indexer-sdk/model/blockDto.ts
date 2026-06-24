@@ -30,4 +30,6 @@ export interface BlockDto {
   evidenceHash: string;
   proposerAddress: string;
   signatures: BlockSignatureDto[];
+  microblocks: number;
+  feesInAtomics: number;
 }

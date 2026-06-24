@@ -282,9 +282,6 @@ async function synchronize() {
         knownHeight = blocks.data.items[0].height
         blocks.data.items.reverse()
         for (const block of blocks.data.items) {
-            const microblocks = await api.appControllerGetMicroblocks({
-                block_height: block.height,
-            })
             const {
                 nodeId,
                 nodeOwnerId,
@@ -293,19 +290,16 @@ async function synchronize() {
             } = await getNodeInfoFromAddress(
                 block.proposerAddress,
             )
-            const feesInAtomics = microblocks.data.items.reduce((total, mb) => {
-                return total + mb.gas * mb.gasPrice
-            }, 0)
             const newBlock: Block = {
                 height: block.height,
                 hash: block.hash,
                 time: new Date(block.milliseconds),
-                numTxs: microblocks.data.items.length,
+                numTxs: block.microblocks,
                 nodeId,
                 nodeOwnerName,
                 nodeOwnerId,
                 nodeMoniker,
-                fees: feesInAtomics,
+                fees: block.feesInAtomics,
             }
             addBlock(newBlock)
         }

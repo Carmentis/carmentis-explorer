@@ -18,6 +18,7 @@ import type {
   AppControllerGetMicroblockProofParams,
   AppControllerGetMicroblockStatsParams,
   AppControllerGetMicroblocksParams,
+  AppControllerGetNodeRewardParams,
   AppControllerGetNodeStatusParams,
   AppControllerGetOrganizationsParams,
   AppControllerGetValidatorNodesParams,
@@ -32,8 +33,10 @@ import type {
   MicroblockListResponseDto,
   MicroblockProofResponseDto,
   MicroblockStatsResponseDto,
+  NodeRewardResponseDto,
   NodeStatusResponseDto,
   OrganizationListResponseDto,
+  RootResponseDto,
   SearchListResponseDto,
   ValidatorNodeListResponseDto,
   ValidatorStatsResponseDto,
@@ -43,7 +46,7 @@ import type {
 
 import { customFetch } from './http-client/http-client';
 export type appControllerGetRootResponse200 = {
-  data: void
+  data: RootResponseDto
   status: 200
 }
 
@@ -738,6 +741,46 @@ export const getAppControllerGetVotingPowersUrl = (params?: AppControllerGetVoti
 export const appControllerGetVotingPowers = async (params?: AppControllerGetVotingPowersParams, options?: RequestInit): Promise<appControllerGetVotingPowersResponse> => {
 
   return customFetch<appControllerGetVotingPowersResponse>(getAppControllerGetVotingPowersUrl(params),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+export type appControllerGetNodeRewardResponse200 = {
+  data: NodeRewardResponseDto
+  status: 200
+}
+
+export type appControllerGetNodeRewardResponseSuccess = (appControllerGetNodeRewardResponse200) & {
+  headers: Headers;
+};
+;
+
+export type appControllerGetNodeRewardResponse = (appControllerGetNodeRewardResponseSuccess)
+
+export const getAppControllerGetNodeRewardUrl = (params: AppControllerGetNodeRewardParams,) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value))
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `/api/v1/node-reward?${stringifiedParams}` : `/api/v1/node-reward`
+}
+
+export const appControllerGetNodeReward = async (params: AppControllerGetNodeRewardParams, options?: RequestInit): Promise<appControllerGetNodeRewardResponse> => {
+
+  return customFetch<appControllerGetNodeRewardResponse>(getAppControllerGetNodeRewardUrl(params),
   {
     ...options,
     method: 'GET'
