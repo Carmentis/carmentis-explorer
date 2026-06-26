@@ -1981,6 +1981,9 @@
           "amount": {
             "type": "number"
           },
+          "newBalance": {
+            "type": "number"
+          },
           "chainReference": {
             "type": "string",
             "description": "Base64 representation of the CBOR-encoded chain reference."
@@ -1999,6 +2002,7 @@
           "timestamp",
           "linkedAccountId",
           "amount",
+          "newBalance",
           "chainReference",
           "publicReference",
           "privateReference"

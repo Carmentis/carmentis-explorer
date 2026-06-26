@@ -128,7 +128,9 @@ onMounted(async () => {
             order: 'DESC',
         })
         history.value = []
-        fetchedHistory.data.items.sort((a, b) => b.timestamp - a.timestamp || b.height - a.height)
+        fetchedHistory.data.items.sort((a, b) =>
+            accountId ? b.height - a.height : b.timestamp - a.timestamp || b.height - a.height
+        )
         for (const entry of fetchedHistory.data.items) {
             const encodedChainRef = Base64.decodeBinary(entry.chainReference, Base64.BASE64);
             const chainRef = BlockchainUtils.decodeChainReference(encodedChainRef);

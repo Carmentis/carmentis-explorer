@@ -56,7 +56,7 @@ const options = {
             },
         },
         y: {
-            beginAtZero: true,
+            beginAtZero: props.chartData?.beginAtZero ?? true,
             grid: {
                 color: '#f3f4f6',
             },

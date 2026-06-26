@@ -48,7 +48,7 @@
                     <span :class="['mono-cell', { 'opacity-50': data.statusIsExpired }]"><i :class="data.statusIcon"></i> {{ data.statusLabel }}</span>
                 </template>
             </Column>
-            <Column field="votingPower" header="Voting Power">
+            <Column field="votingPower" header="Staking">
                 <template #body="{ data }">
                     <span v-if="data.isValidator" class="mono-cell">
                         <NumberDisplay :value="data.votingPower" />
