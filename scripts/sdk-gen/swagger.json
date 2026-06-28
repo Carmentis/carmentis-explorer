@@ -379,6 +379,15 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "node_url",
+            "required": false,
+            "in": "query",
+            "description": "Node URL from which to obtain the proof. Chosen by the indexer if not specified.",
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "responses": {
@@ -739,6 +748,15 @@
             "required": true,
             "in": "query",
             "description": "Account ID",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "node_url",
+            "required": false,
+            "in": "query",
+            "description": "Node URL from which to obtain the proof. Chosen by the indexer if not specified.",
             "schema": {
               "type": "string"
             }
@@ -1737,7 +1755,7 @@
           "radixProof"
         ]
       },
-      "MicroblockProofResponseDto": {
+      "MicroblockProofWrapperDto": {
         "type": "object",
         "properties": {
           "block": {
@@ -1754,6 +1772,21 @@
           "block",
           "microblock",
           "virtualBlockchain"
+        ]
+      },
+      "MicroblockProofResponseDto": {
+        "type": "object",
+        "properties": {
+          "nodeUrl": {
+            "type": "string"
+          },
+          "proof": {
+            "$ref": "#/components/schemas/MicroblockProofWrapperDto"
+          }
+        },
+        "required": [
+          "nodeUrl",
+          "proof"
         ]
       },
       "MicroblockCountDto": {
@@ -2026,7 +2059,7 @@
           "hasMore"
         ]
       },
-      "AccountProofResponseDto": {
+      "AccountProofWrapperDto": {
         "type": "object",
         "properties": {
           "block": {
@@ -2039,6 +2072,21 @@
         "required": [
           "block",
           "account"
+        ]
+      },
+      "AccountProofResponseDto": {
+        "type": "object",
+        "properties": {
+          "nodeUrl": {
+            "type": "string"
+          },
+          "proof": {
+            "$ref": "#/components/schemas/AccountProofWrapperDto"
+          }
+        },
+        "required": [
+          "nodeUrl",
+          "proof"
         ]
       },
       "OrganizationDto": {

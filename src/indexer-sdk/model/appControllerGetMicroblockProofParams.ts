@@ -11,4 +11,8 @@ export type AppControllerGetMicroblockProofParams = {
  * Microblock hash
  */
 hash: string;
+/**
+ * Node URL from which to obtain the proof. Chosen by the indexer if not specified.
+ */
+node_url?: string;
 };

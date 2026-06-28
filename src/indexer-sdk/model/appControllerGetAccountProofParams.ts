@@ -11,4 +11,8 @@ export type AppControllerGetAccountProofParams = {
  * Account ID
  */
 account_id: string;
+/**
+ * Node URL from which to obtain the proof. Chosen by the indexer if not specified.
+ */
+node_url?: string;
 };

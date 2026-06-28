@@ -5,10 +5,9 @@
  * Documentation for the Carmentis indexer API.
  * OpenAPI spec version: 1.0
  */
-import type { MicroblockProofVirtualBlockchainDto } from './microblockProofVirtualBlockchainDto';
-import type { ProofBlockDto } from './proofBlockDto';
+import type { AccountProofWrapperDto } from './accountProofWrapperDto';
 
 export interface AccountProofResponseDto {
-  block: ProofBlockDto;
-  account: MicroblockProofVirtualBlockchainDto;
+  nodeUrl: string;
+  proof: AccountProofWrapperDto;
 }

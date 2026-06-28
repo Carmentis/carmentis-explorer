@@ -2,6 +2,7 @@
     <div class="page">
         <h2>Microblock Details</h2>
         <Button class="mr-3 mb-3 h-8" icon="pi pi-link" label="Explore Virtual Blockchain" @click="visitVB(microblock.header.vbId)" />
+        <Button class="mr-3 mb-3 h-8" icon="pi pi-check-circle" label="Verify Anchoring Proof" @click="showProof()" />
 
         <div v-if="loading" class="loading">
             <ProgressSpinner />
@@ -86,6 +87,11 @@
         </div>
 
         <p v-else-if="!loading" class="empty">Microblock not found.</p>
+
+        <MicroblockProofCheckDialog
+            v-model:open="showProofDialog"
+            :mbHash="mbHash"
+        />
     </div>
 </template>
 
@@ -96,6 +102,7 @@ import { Base64, Microblock, Utils } from '@cmts-dev/carmentis-sdk-core'
 import ProgressSpinner from 'primevue/progressspinner'
 import Button from 'primevue/button'
 import MicroblockInVirtualBlockchainSection from '@/components/vb/MicroblockInVirtualBlockchainSection.vue'
+import MicroblockProofCheckDialog from '@/components/vb/MicroblockProofCheckDialog.vue'
 import { formatDate } from "@/utils/formatTime"
 import * as api from "@/indexer-sdk/indexer-api";
 
@@ -122,10 +129,15 @@ const route = useRoute()
 const mbHash = ref(route.params.mbHash as string)
 const sectionIndex = ref(parseInt((route.params?.sectionIndex ?? "") as string))
 const loading = ref(true)
+const showProofDialog = ref<boolean>(false)
 const microblock = ref<MicroblockData | null>(null)
 
 function visitVB(vbId: string) {
     router.push(`/vb/${vbId}`)
+}
+
+function showProof() {
+    showProofDialog.value = true
 }
 
 onMounted(async () => {
@@ -177,7 +189,7 @@ onMounted(async () => {
             100
         );
         loading.value = false
-}
+    }
 })
 </script>
 
