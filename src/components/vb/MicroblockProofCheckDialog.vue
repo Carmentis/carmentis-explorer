@@ -10,10 +10,15 @@ import * as api from "@/indexer-sdk/indexer-api";
 import { type ValidatorNodeDto } from "@/indexer-sdk/model/validatorNodeDto"
 import { StateChecker, type JsonMicroblockProof, Utils } from "@cmts-dev/carmentis-sdk-core"
 
+const PENDING = 0;
+const INVALID = 1;
+const MATCH = 2;
+const MISMATCH = 3;
+
 interface VerifierNode {
     url: string,
     vbId: string,
-    confirmed?: boolean,
+    status: number,
 }
 
 const router = useRouter()
@@ -51,7 +56,7 @@ function visitNode(vbId: string) {
 async function addVerifier() {
     const url = verifierInput.value;
     verifierInput.value = '';
-    const newNode = { url, vbId: "" };
+    const newNode = { url, vbId: "", status: PENDING };
     verifierList.value.push(newNode);
     verificationResult.value = null;
     await verifyAppHash(newNode);
@@ -105,6 +110,7 @@ async function processProof() {
         verifierList.value = nodeList.slice(0, 3).map((node) => ({
             url: node.rpcEndpoint.replace(/\/*$/, ""),
             vbId: node.virtualBlockchainId,
+            status: PENDING,
         }));
         const promises = verifierList.value.map((node) => verifyAppHash(node));
         await Promise.allSettled(promises);
@@ -120,13 +126,19 @@ async function processProof() {
 }
 
 function updateResult() {
-    const nodeCount = verifierList.value.length;
-    const confirmations = verifierList.value.reduce((total, node) => node.confirmed ? total + 1 : total, 0);
+    const nodeCount = verifierList.value.reduce((total, node) =>
+        node.status !== INVALID ? total + 1 : total,
+        0
+    );
+    const confirmations = verifierList.value.reduce((total, node) =>
+        node.status === MATCH ? total + 1 : total,
+        0
+    );
     const success = confirmations === nodeCount;
     verificationResult.value = {
         success,
         message: success ? 'Confirmed' : `Inconsistent responses from nodes`,
-        info: success ? null : `Confirmed by ${confirmations} node(s) out of ${nodeCount}`,
+        info: `${confirmations} node(s) of ${nodeCount} agree with the proof provider`,
     };
 }
 
@@ -134,15 +146,15 @@ async function verifyAppHash(node: VerifierNode) {
     try {
         const response = await fetch(node.url + "/block?height=" + height)
         if (!response.ok) {
-            node.confirmed = false;
+            node.status = INVALID;
             return;
         }
         const data = await response.json();
-        console.log("verifyAppHash", node.url, data);
-        node.confirmed = data?.result?.block?.header?.app_hash === appHash;
+        const nodeAppHash = data?.result?.block?.header?.app_hash;
+        node.status = nodeAppHash === undefined ? INVALID : nodeAppHash === appHash ? MATCH : MISMATCH;
     }
     catch {
-        node.confirmed = false;
+        node.status = INVALID;
     }
 }
 
@@ -192,12 +204,13 @@ function shuffleNodeList(list: ValidatorNodeDto[]) {
                         <h4>Crossed-checked against</h4>
                         <div v-for="(node) in verifierList">
                             <p>
-                                <i v-if="node.confirmed === true" class="pi pi-check-circle mr-1 text-green-500"></i>
-                                <i v-else-if="node.confirmed === false" class="pi pi-times-circle mr-1 text-red-500"></i>
-                                <i v-else class="pi pi-wifi mr-1 text-gray-500"></i>
+                                <i v-if="node.status === MATCH" class="pi pi-check-circle mr-1 text-green-500"></i>
+                                <i v-else-if="node.status === MISMATCH" class="pi pi-times-circle mr-1 text-red-500"></i>
+                                <i v-else-if="node.status === PENDING" class="pi pi-wifi mr-1 text-gray-500"></i>
+                                <i v-else class="pi pi-exclamation-triangle mr-1 text-gray-500"></i>
                                 {{ node.url }}
                                 <span v-if="node.vbId !== ''">
-                                    (<a class="cursor-pointer" @click="visitNode(node.vbId)">see validator page</a>)
+                                    (<a class="cursor-pointer" @click="visitNode(node.vbId)">see node page</a>)
                                 </span>
                             </p>
                         </div>
