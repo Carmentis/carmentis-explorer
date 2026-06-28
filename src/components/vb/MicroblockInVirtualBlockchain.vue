@@ -2,7 +2,7 @@
     <div class="page">
         <h2>Microblock Details</h2>
         <Button class="mr-3 mb-3 h-8" icon="pi pi-link" label="Explore Virtual Blockchain" @click="visitVB(microblock.header.vbId)" />
-        <Button class="mr-3 mb-3 h-8" icon="pi pi-check-circle" label="Verify Anchoring Proof" @click="showProof()" />
+        <Button class="mr-3 mb-3 h-8" icon="pi pi-check-circle" label="Microblock Proof" @click="showProof()" />
 
         <div v-if="loading" class="loading">
             <ProgressSpinner />

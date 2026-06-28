@@ -54,13 +54,16 @@ function visitNode(vbId: string) {
 }
 
 async function addVerifier() {
-    const url = verifierInput.value;
+    const url = verifierInput.value.trim();
     verifierInput.value = '';
-    const newNode = { url, vbId: "", status: PENDING };
-    verifierList.value.push(newNode);
-    verificationResult.value = null;
-    await verifyAppHash(newNode);
-    updateResult();
+
+    if (url !== "") {
+        const newNode = { url, vbId: "", status: PENDING };
+        verifierList.value.push(newNode);
+        verificationResult.value = null;
+        await verifyAppHash(newNode);
+        updateResult();
+    }
 }
 
 function getProofAsJson() {
@@ -68,9 +71,9 @@ function getProofAsJson() {
 }
 
 async function copyToClipboard() {
-  await navigator.clipboard.writeText(getProofAsJson());
-  copied.value = true;
-  setTimeout(() => copied.value = false, 1000);
+    await navigator.clipboard.writeText(getProofAsJson());
+    copied.value = true;
+    setTimeout(() => copied.value = false, 1000);
 }
 
 function download() {
@@ -185,9 +188,9 @@ function shuffleNodeList(list: ValidatorNodeDto[]) {
 
         <div class="flex flex-col gap-4">
             <p class="text-sm text-muted-color m-0">
-                The anchoring proof cryptographically demonstrates that this microblock and its content are included
-                in the Carmentis blockchain state. The resulting application hash is automatically verified against
-                multiple nodes.
+                The anchoring proof cryptographically demonstrates that this microblock and its content are
+                included in the Carmentis blockchain state. The resulting state hash is automatically verified
+                against multiple nodes.
             </p>
 
             <div class="flex flex-col gap-2">
