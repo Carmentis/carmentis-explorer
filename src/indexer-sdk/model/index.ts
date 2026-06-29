@@ -10,6 +10,7 @@ export * from './accountDto';
 export * from './accountHistoryDto';
 export * from './accountHistoryListResponseDto';
 export * from './accountListResponseDto';
+export * from './accountProofAccountDto';
 export * from './accountProofResponseDto';
 export * from './accountProofWrapperDto';
 export * from './appControllerGetAccountHistoryOrder';

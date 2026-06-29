@@ -88,9 +88,13 @@
 
         <p v-else-if="!loading" class="empty">Microblock not found.</p>
 
-        <MicroblockProofCheckDialog
+        <ProofDialog
             v-model:open="showProofDialog"
-            :mbHash="mbHash"
+            :hash="mbHash"
+            :type="`microblock`"
+            :title="`Microblock Anchoring Proof`"
+            :identifierName="`Microblock Hash`"
+            :description="`The anchoring proof cryptographically demonstrates that this microblock and its content are included in the Carmentis blockchain state. The resulting state hash is automatically verified against multiple nodes.`"
         />
     </div>
 </template>
@@ -102,7 +106,7 @@ import { Base64, Microblock, Utils } from '@cmts-dev/carmentis-sdk-core'
 import ProgressSpinner from 'primevue/progressspinner'
 import Button from 'primevue/button'
 import MicroblockInVirtualBlockchainSection from '@/components/vb/MicroblockInVirtualBlockchainSection.vue'
-import MicroblockProofCheckDialog from '@/components/vb/MicroblockProofCheckDialog.vue'
+import ProofDialog from '@/components/proofs/ProofDialog.vue'
 import { formatDate } from "@/utils/formatTime"
 import * as api from "@/indexer-sdk/indexer-api";
 

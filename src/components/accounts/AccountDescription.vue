@@ -3,6 +3,7 @@
         <h2>Account Details</h2>
         <Button class="mr-3 mb-3 h-8" icon="pi pi-chart-line" label="See account history" @click="visitHistory" />
         <Button class="mr-3 mb-3 h-8" icon="pi pi-link" :disabled="accountObject?.isSpecial" label="Explore Virtual Blockchain" @click="visitVb" />
+        <Button class="mr-3 mb-3 h-8" icon="pi pi-check-circle" label="Account Proof" @click="showProof()" />
         <div v-if="loading" class="loading">
             <div class="spinner"></div>
             <p>Loading account details...</p>
@@ -57,7 +58,16 @@
         </div>
 
         <p v-else-if="!loading" class="empty">Account not found.</p>
-    </div>
+
+        <ProofDialog
+            v-model:open="showProofDialog"
+            :hash="accountHash"
+            :type="`account`"
+            :title="`Account Proof`"
+            :identifierName="`Account ID`"
+            :description="`The account proof cryptographically demonstrates that the current state of this account is consistent with the Carmentis blockchain state. The resulting state hash is automatically verified against multiple nodes.`"
+        />
+</div>
 </template>
 
 <script setup lang="ts">
@@ -66,6 +76,7 @@ import LineChart from '@/components/charts/LineChart.vue'
 import { type LineChartData } from '@/components/charts/ChartData'
 import { useRoute, useRouter } from 'vue-router'
 import Button from 'primevue/button'
+import ProofDialog from '@/components/proofs/ProofDialog.vue'
 import * as api from "@/indexer-sdk/indexer-api";
 import {
     CMTSToken,
@@ -92,6 +103,11 @@ const accountObject = ref<{
     isSpecial: boolean;
 } | null>(null)
 const stats = ref<{ balanceChart: LineChartData } | null>(null)
+const showProofDialog = ref<boolean>(false)
+
+function showProof() {
+    showProofDialog.value = true
+}
 
 function visitHistory() {
     router.push(`/account-history/${accountHash}`)

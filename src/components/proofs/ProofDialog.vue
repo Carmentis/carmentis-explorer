@@ -8,7 +8,12 @@ import InputText from 'primevue/inputtext'
 import { shortenHash } from '@/utils/shortenHash'
 import * as api from "@/indexer-sdk/indexer-api";
 import { type ValidatorNodeDto } from "@/indexer-sdk/model/validatorNodeDto"
-import { StateChecker, type JsonMicroblockProof, Utils } from "@cmts-dev/carmentis-sdk-core"
+import {
+    StateChecker,
+    type JsonAccountProof,
+    type JsonMicroblockProof,
+    Utils,
+} from "@cmts-dev/carmentis-sdk-core"
 
 const PENDING = 0;
 const INVALID = 1;
@@ -23,10 +28,16 @@ interface VerifierNode {
 
 const router = useRouter()
 const open = defineModel<boolean>("open")
-const props = defineProps<{ mbHash: string }>()
+const props = defineProps<{
+    hash: string,
+    type: string,
+    title: string,
+    identifierName: string,
+    description: string,
+}>()
 const verificationResult = ref<{ success: boolean; message: string; info?: string } | null>(null)
 const proofProvider = ref<string>("")
-const proof = ref<JsonMicroblockProof | null>(null)
+const proof = ref<JsonAccountProof | JsonMicroblockProof | null>(null)
 const copied = ref(false);
 const verifierList = ref<VerifierNode[]>([])
 const verifierInput = ref<string>('')
@@ -38,14 +49,15 @@ watch(
     (v) => {
         if (open.value === true) {
             processProof();
+        } else {
+            verifierList.value.length = 0;
+            verifierInput.value = '';
+            verificationResult.value = null;
         }
     }
 );
 
 function closeDialog() {
-    verifierList.value.length = 0;
-    verifierInput.value = '';
-    verificationResult.value = null;
     open.value = false;
 }
 
@@ -87,7 +99,7 @@ function download() {
 
     const a = document.createElement('a');
     a.href = url;
-    a.download = `anchoring-proof-${props.mbHash}.json`;
+    a.download = `${props.type}-proof-${props.hash}.json`;
 
     document.body.appendChild(a);
     a.click();
@@ -98,20 +110,34 @@ function download() {
 
 async function processProof() {
     try {
-        const response = await api.appControllerGetMicroblockProof({ hash: props.mbHash });
-        proofProvider.value = response.data.nodeUrl.replace(/\/*$/, "");
-        proof.value = response.data.proof;
-        const rawAppHash = StateChecker.verifyMicroblockProofFromJson(proof.value);
+        let rawAppHash: Uint8Array;
+
+        if (props.type === "account") {
+            const response = await api.appControllerGetAccountProof({ account_id: props.hash });
+            proofProvider.value = normalizeNodeUrl(response.data.nodeUrl);
+            proof.value = response.data.proof;
+            rawAppHash = StateChecker.verifyAccountProofFromJson(proof.value);
+        }
+        else if (props.type === "microblock") {
+            const response = await api.appControllerGetMicroblockProof({ hash: props.hash });
+            proofProvider.value = normalizeNodeUrl(response.data.nodeUrl);
+            proof.value = response.data.proof;
+            rawAppHash = StateChecker.verifyMicroblockProofFromJson(proof.value);
+        } else {
+            throw new Error(`invalid proof type`);
+        }
+
+        height = proof.value.block.height;
         appHash = Utils.binaryToHexa(rawAppHash);
+
         if (appHash !== proof.value.block.appHash) {
             throw new Error(`inconsistent appHash within the proof itself`);
         }
-        height = response.data.proof.block.height;
         const nodes = await api.appControllerGetValidatorNodes();
         const nodeList = nodes.data.items;
         shuffleNodeList(nodeList);
         verifierList.value = nodeList.slice(0, 3).map((node) => ({
-            url: node.rpcEndpoint.replace(/\/*$/, ""),
+            url: normalizeNodeUrl(node.rpcEndpoint),
             vbId: node.virtualBlockchainId,
             status: PENDING,
         }));
@@ -126,6 +152,10 @@ async function processProof() {
             info: String(err),
         };
     }
+}
+
+function normalizeNodeUrl(url: string) {
+    return url.replace(/\/*$/, "");
 }
 
 function updateResult() {
@@ -175,29 +205,25 @@ function shuffleNodeList(list: ValidatorNodeDto[]) {
     <Dialog
         modal
         v-model:visible="open"
-        header="Microblock Anchoring Proof"
+        :header=title
         :style="{ width: '40rem' }"
         :closable="true"
     >
         <template #header>
             <div class="flex items-center gap-2 text-lg font-semibold text-primary-500">
                 <i class="pi pi-shield text-2xl"></i>
-                <span>Microblock Anchoring Proof</span>
+                <span>{{ title }}</span>
             </div>
         </template>
 
         <div class="flex flex-col gap-4">
-            <p class="text-sm text-muted-color m-0">
-                The anchoring proof cryptographically demonstrates that this microblock and its content are
-                included in the Carmentis blockchain state. The resulting state hash is automatically verified
-                against multiple nodes.
-            </p>
+            <p class="text-sm text-muted-color m-0">{{  description }}</p>
 
             <div class="flex flex-col gap-2">
                 <div class="cards-grid">
                     <div class="detail-section">
-                        <h4>Microblock Hash</h4>
-                        <p class="mono">{{ shortenHash(mbHash, 32, 8) }}</p>
+                        <h4>{{ identifierName }}</h4>
+                        <p class="mono">{{ shortenHash(hash, 32, 8) }}</p>
                     </div>
                     <div class="detail-section">
                         <h4>Proof provided by</h4>

@@ -2059,6 +2059,28 @@
           "hasMore"
         ]
       },
+      "AccountProofAccountDto": {
+        "type": "object",
+        "properties": {
+          "virtualBlockchainId": {
+            "type": "string"
+          },
+          "serializedState": {
+            "type": "string"
+          },
+          "radixProof": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "virtualBlockchainId",
+          "serializedState",
+          "radixProof"
+        ]
+      },
       "AccountProofWrapperDto": {
         "type": "object",
         "properties": {
@@ -2066,7 +2088,7 @@
             "$ref": "#/components/schemas/ProofBlockDto"
           },
           "account": {
-            "$ref": "#/components/schemas/MicroblockProofVirtualBlockchainDto"
+            "$ref": "#/components/schemas/AccountProofAccountDto"
           }
         },
         "required": [
