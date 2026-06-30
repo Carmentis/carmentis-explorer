@@ -13,6 +13,7 @@ import {
     type JsonAccountProof,
     type JsonMicroblockProof,
     Utils,
+    ProviderFactory,
 } from "@cmts-dev/carmentis-sdk-core"
 
 const PENDING = 0;
@@ -167,24 +168,48 @@ function updateResult() {
         node.status === MATCH ? total + 1 : total,
         0
     );
-    const success = confirmations === nodeCount;
-    verificationResult.value = {
-        success,
-        message: success ? 'Confirmed' : `Inconsistent responses from nodes`,
-        info: `${confirmations} node(s) of ${nodeCount} agree with the proof provider`,
-    };
+    if (nodeCount === 0) {
+        verificationResult.value = {
+            success: false,
+            message: 'Unconfirmed',
+            info: `No node found to validate the state computed from the proof provider`,
+        };
+    }
+    else {
+        const success = confirmations === nodeCount;
+        verificationResult.value = {
+            success,
+            message: success ? 'Confirmed' : `Inconsistent responses from nodes`,
+            info: `${confirmations} node(s) of ${nodeCount} agree with the proof provider`,
+        };
+    }
 }
 
 async function verifyAppHash(node: VerifierNode) {
+    let network = "";
     try {
-        const response = await fetch(node.url + "/block?height=" + height)
-        if (!response.ok) {
-            node.status = INVALID;
-            return;
+        const provider = ProviderFactory.createInMemoryProviderWithExternalProvider(node.url);
+        const blockInfo = await provider.getBlockInformation(height);
+        const nodeAppHash = Utils.binaryToHexa(blockInfo.applicationStateHashes.appHash);
+
+        if (nodeAppHash === appHash) {
+            node.status = MATCH;
+        } else {
+            // if we have a mistmatch, make sure that this node belongs to the correct network
+            // if not, return INVALID rather than MISMATCH
+            if (network === "") {
+                const chainInfo = await api.appControllerGetChain();
+                network = chainInfo.data.network;
+            }
+            const response = await fetch(node.url + "/status");
+            if (!response.ok) {
+                node.status = INVALID;
+                return;
+            }
+            const data = await response.json();
+            const nodeNetwork = data?.result?.node_info?.network;
+            node.status = nodeNetwork === network ? MISMATCH : INVALID;
         }
-        const data = await response.json();
-        const nodeAppHash = data?.result?.block?.header?.app_hash;
-        node.status = nodeAppHash === undefined ? INVALID : nodeAppHash === appHash ? MATCH : MISMATCH;
     }
     catch {
         node.status = INVALID;
