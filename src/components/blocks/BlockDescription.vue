@@ -14,7 +14,7 @@
                 <div class="cards-grid">
                     <div class="detail-section">
                         <h4>Height</h4>
-                        <p class="mono">{{ block.header.height }}</p>
+                        <p>{{ block.header.height }}</p>
                     </div>
                     <div class="detail-section">
                         <h4>Block Hash</h4>
@@ -26,7 +26,7 @@
                     </div>
                     <div class="detail-section">
                         <h4>Chain ID</h4>
-                        <p class="mono">{{ block.header.chainId }}</p>
+                        <p>{{ block.header.chainId }}</p>
                     </div>
                     <div class="detail-section">
                         <h4>Proposer Address</h4>

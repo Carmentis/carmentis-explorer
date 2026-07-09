@@ -10,6 +10,16 @@
         </div>
 
         <div v-if="microblock && !loading" class="details-container">
+            <!-- Block -->
+            <div class="details-card">
+                <h3>Block</h3>
+                <div class="cards-grid">
+                    <div class="detail-section">
+                        <h4>Height</h4>
+                        <p><a class="cursor-pointer" @click="visitBlock(microblock.blockHeight)">{{ microblock.blockHeight }}</a></p>
+                    </div>
+                </div>
+            </div>
             <!-- Microblock Header -->
             <div class="details-card">
                 <h3>Microblock Header</h3>
@@ -112,6 +122,7 @@ import * as api from "@/indexer-sdk/indexer-api";
 
 interface MicroblockData {
     serializedMb: Uint8Array
+    blockHeight: number
     header: {
         vbId: string
         size: number
@@ -140,6 +151,10 @@ function visitVB(vbId: string) {
     router.push(`/vb/${vbId}`)
 }
 
+function visitBlock(height: number) {
+    router.push(`/block/height/${height}`)
+}
+
 function showProof() {
     showProofDialog.value = true
 }
@@ -164,6 +179,7 @@ onMounted(async () => {
 
         microblock.value = {
             serializedMb: mb.serialize().microblockData,
+            blockHeight: requestedMicroblock.blockHeight,
             header: {
                 vbId: requestedMicroblock.virtualBlockchainId,
                 size: serializedData.length,
