@@ -240,7 +240,7 @@ const performSearch = async () => {
                     type: 'Microblock',
                     id: result.id,
                     icon: 'pi pi-file',
-                    route: `/mb/${result.id}`,
+                    route: `/vb/mb/${result.id}`,
                     matchedFieldName: result.matchedFieldName,
                     matchedFieldValue: result.matchedFieldValue,
                 })

@@ -118,21 +118,25 @@ const router = createRouter({
         {
             path: '/vb',
             component: VirtualBlockchainList,
+            name: 'VirtualBlockchainList',
             meta: { title: 'Virtual Blockchains' },
         },
         {
             path: '/vb/:vbId',
             component: VirtualBlockchain,
+            name: 'VirtualBlockchain',
             meta: { title: 'Virtual Blockchain' },
         },
         {
             path: '/vb/mb/:mbHash',
             component: MicroblockInVirtualBlockchain,
+            name: 'Microblock',
             meta: { title: 'Microblock' },
         },
         {
             path: '/vb/mb/:mbHash/:sectionIndex',
             component: MicroblockInVirtualBlockchain,
+            name: 'MicroblockSection',
             meta: { title: 'Microblock' },
         },
     ],
@@ -147,6 +151,7 @@ const router = createRouter({
         return { top: 0 }
     },
 })
+
 
 router.afterEach((to) => {
     const title = to.meta.title as string;

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { onMounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import Button from 'primevue/button'
 import Dialog from 'primevue/dialog'
@@ -10,8 +10,11 @@ import * as api from "@/indexer-sdk/indexer-api";
 import { type ValidatorNodeDto } from "@/indexer-sdk/model/validatorNodeDto"
 import {
     StateChecker,
-    type JsonAccountProof,
-    type JsonMicroblockProof,
+    type AccountProofEntry,
+    type MicroblockProofEntry,
+    AccountProofWrapper,
+    MicroblockProofWrapper,
+    ProofWrapper,
     Utils,
     ProviderFactory,
 } from "@cmts-dev/carmentis-sdk-core"
@@ -38,12 +41,13 @@ const props = defineProps<{
 }>()
 const verificationResult = ref<{ success: boolean; message: string; info?: string } | null>(null)
 const proofProvider = ref<string>("")
-const proof = ref<JsonAccountProof | JsonMicroblockProof | null>(null)
+const proof = ref<AccountProofEntry | MicroblockProofEntry | null>(null)
 const copied = ref(false);
 const verifierList = ref<VerifierNode[]>([])
 const verifierInput = ref<string>('')
 let appHash: string
 let height: number
+const network = ref("");
 
 watch(
     () => open.value,
@@ -57,6 +61,11 @@ watch(
         }
     }
 );
+
+onMounted(async () => {
+    const chainInfo = await api.appControllerGetChain();
+    network.value = chainInfo.data.network;
+});
 
 function closeDialog() {
     open.value = false;
@@ -80,7 +89,22 @@ async function addVerifier() {
 }
 
 function getProofAsJson() {
-    return JSON.stringify(proof.value, null, 2);
+    let wrappedProof: ProofWrapper;
+    if (props.type === "account") {
+        const wrappedAccountProof = AccountProofWrapper.createEmptyProof(network.value);
+        wrappedAccountProof.addAccount(proof.value as AccountProofEntry);
+        wrappedProof = wrappedAccountProof;
+    } else if (props.type === "microblock") {
+        const wrappedMicroblockProof = MicroblockProofWrapper.createEmptyProof(network.value);
+        console.log('wrappedMicroblockProof', wrappedMicroblockProof, wrappedMicroblockProof.addMicroblock);
+        wrappedMicroblockProof.addMicroblock(proof.value as MicroblockProofEntry);
+        wrappedProof = wrappedMicroblockProof;
+    } else {
+        throw new Error(`invalid proof type`);
+    }
+    wrappedProof.setAuthor("Carmentis Indexer");
+    wrappedProof.setChainId(network.value);
+    return JSON.stringify(wrappedProof.getObject(), null, 2);
 }
 
 async function copyToClipboard() {
@@ -112,14 +136,12 @@ function download() {
 async function processProof() {
     try {
         let rawAppHash: Uint8Array;
-
         if (props.type === "account") {
             const response = await api.appControllerGetAccountProof({ account_id: props.hash });
             proofProvider.value = normalizeNodeUrl(response.data.nodeUrl);
             proof.value = response.data.proof;
             rawAppHash = StateChecker.verifyAccountProofFromJson(proof.value);
-        }
-        else if (props.type === "microblock") {
+        } else if (props.type === "microblock") {
             const response = await api.appControllerGetMicroblockProof({ hash: props.hash });
             proofProvider.value = normalizeNodeUrl(response.data.nodeUrl);
             proof.value = response.data.proof;
@@ -186,7 +208,6 @@ function updateResult() {
 }
 
 async function verifyAppHash(node: VerifierNode) {
-    let network = "";
     try {
         const provider = ProviderFactory.createInMemoryProviderWithExternalProvider(node.url);
         const blockInfo = await provider.getBlockInformation(height);
@@ -197,10 +218,6 @@ async function verifyAppHash(node: VerifierNode) {
         } else {
             // if we have a mistmatch, make sure that this node belongs to the correct network
             // if not, return INVALID rather than MISMATCH
-            if (network === "") {
-                const chainInfo = await api.appControllerGetChain();
-                network = chainInfo.data.network;
-            }
             const response = await fetch(node.url + "/status");
             if (!response.ok) {
                 node.status = INVALID;
@@ -208,7 +225,7 @@ async function verifyAppHash(node: VerifierNode) {
             }
             const data = await response.json();
             const nodeNetwork = data?.result?.node_info?.network;
-            node.status = nodeNetwork === network ? MISMATCH : INVALID;
+            node.status = nodeNetwork === network.value ? MISMATCH : INVALID;
         }
     }
     catch {

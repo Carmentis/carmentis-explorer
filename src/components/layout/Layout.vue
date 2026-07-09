@@ -7,6 +7,7 @@
                 <router-view :key="$route.fullPath" />
             </div>
         </main>
+        <ServiceUnavailable />
     </div>
 </template>
 
@@ -14,6 +15,7 @@
 import { ref, provide } from 'vue'
 import Navbar from './Navbar.vue'
 import Sidebar from './Sidebar.vue'
+import ServiceUnavailable from './ServiceUnavailable.vue'
 
 const sidebarOpen = ref(false)
 

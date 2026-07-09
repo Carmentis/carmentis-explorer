@@ -7,4 +7,3 @@ import Layout from './components/layout/Layout.vue'
     <router-view />
   </Layout>
 </template>
-
