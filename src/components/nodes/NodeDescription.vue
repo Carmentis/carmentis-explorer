@@ -7,8 +7,10 @@ import { formatHour } from '@/utils/formatTime'
 import { CMTSToken, TokenUnit, Utils } from '@cmts-dev/carmentis-sdk-core'
 import { getBalanceAvailability } from '@/utils/accountBalanceAvailability.ts'
 import Button from 'primevue/button'
-import router from '@/router'
 import * as api from "@/indexer-sdk/indexer-api";
+import { useNavigation } from '@/router/navigation'
+
+const navigation = useNavigation();
 
 const route = useRoute()
 const loading = ref(true)
@@ -22,6 +24,7 @@ type NodeInfo = {
     nodeOwnerName: string
     nodeOwnerOrgId: string
     publicKey: string
+    address: string
 }
 
 type StakeInfo = {
@@ -38,10 +41,6 @@ const nodeHash = route.params.nodeId as string
 const nodeObject = ref<NodeInfo | null>(null)
 const stakeObject = ref<StakeInfo | null>(null)
 const stats = ref<{ blocksChart: StackedBarChartData } | null>(null)
-
-function visitVb() {
-    router.push(`/vb/${nodeHash}`)
-}
 
 onMounted(async () => {
     try {
@@ -64,6 +63,7 @@ onMounted(async () => {
             nodeOwnerName: owner.name,
             nodeOwnerOrgId: node.organizationId,
             publicKey: node.cometPublicKey,
+            address: node.address,
         }
 
         if (nodeStakingLock) {
@@ -130,7 +130,7 @@ onMounted(async () => {
             class="mr-3 mb-3 h-8"
             label="Explore Virtual Blockchain"
             icon="pi pi-link"
-            @click="visitVb"
+            @click="navigation.virtualBlockchain(nodeHash)"
         />
 
         <div v-if="loading" class="loading">
@@ -162,6 +162,11 @@ onMounted(async () => {
                     </div>
 
                     <div class="detail-section">
+                        <h3>CometBFT Address</h3>
+                        <p class="mono">{{ nodeObject.address }}</p>
+                    </div>
+
+                    <div class="detail-section">
                         <h3>RPC Endpoint</h3>
                         <p>{{ nodeObject.rpc }}</p>
                     </div>
@@ -173,7 +178,7 @@ onMounted(async () => {
                             class="h-8 mt-3"
                             label="See organization"
                             icon="pi pi-building"
-                            @click="router.push(`/organizations/${nodeObject.nodeOwnerOrgId}`)"
+                            @click="navigation.organization(nodeObject.nodeOwnerOrgId)"
                         />
                     </div>
 

@@ -1,7 +1,12 @@
 <template>
     <div class="page">
         <h2>Application Details</h2>
-        <Button class="mr-3 mb-3 h-8" icon="pi pi-link" label="Explore Virtual Blockchain" @click="visitVb" />
+        <Button
+            class="mr-3 mb-3 h-8"
+            icon="pi pi-link"
+            label="Explore Virtual Blockchain"
+            @click="navigation.virtualBlockchain(appHash)"
+        />
 
         <div v-if="loading" class="loading">
             <div class="spinner"></div>
@@ -34,7 +39,7 @@
                         class="h-8 mt-3"
                         label="See organization"
                         icon="pi pi-building"
-                        @click="() => goToOrganization(application!.orgId)"
+                        @click="navigation.organization(application!.orgId)"
                     />
                 </div>
             </div>
@@ -46,11 +51,13 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import { useRoute } from 'vue-router'
 import Button from 'primevue/button'
 import * as api from "@/indexer-sdk/indexer-api";
+import { useNavigation } from '@/router/navigation'
 
-const router = useRouter()
+const navigation = useNavigation();
+
 const route = useRoute()
 const appHash = route.params.applicationId as string
 const loading = ref(true)
@@ -62,14 +69,6 @@ const application = ref<{
     orgName: string
     website: string
 } | null>(null)
-
-function goToOrganization(orgId: string) {
-    router.push(`/organizations/${orgId}`)
-}
-
-function visitVb() {
-    router.push(`/vb/${appHash}`)
-}
 
 onMounted(async () => {
     try {

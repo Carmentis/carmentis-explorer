@@ -25,7 +25,7 @@
                 <template #body="{ data }">
                     <a
                         class="mono text-sm text-gray-900 truncate font-medium"
-                        @click="(e) => visitAccount(e, data.accountId)"
+                        @click.stop="navigation.account(data.accountId)"
                     >
                         {{ shortenHash(data.accountId) }}
                     </a>
@@ -35,7 +35,7 @@
                 <template #body="{ data }">
                     <a
                         class="mono text-sm text-gray-900 truncate font-medium"
-                        @click="(e) => visitAccount(e, data.linkedAccountId)"
+                        @click.stop="navigation.account(data.linkedAccountId)"
                     >
                         {{ shortenHash(data.linkedAccountId) }}
                     </a>
@@ -59,7 +59,7 @@
                 <template #body="{ data }">
                     <a
                         class="text-sm text-gray-900 truncate font-medium"
-                        @click="(e) => router.push(data.chainRefLink)"
+                        @click.stop="navigation.route(data.chainRefLink)"
                     >
                         {{ data.chainRefName }}
                     </a>
@@ -72,7 +72,7 @@
 
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import { useRoute } from 'vue-router'
 import { minWidth } from '@/utils/minWidth'
 import { shortenHash } from '@/utils/shortenHash.ts'
 import type { DataTableRowClickEvent } from 'primevue/datatable'
@@ -91,9 +91,11 @@ import {
 } from '@cmts-dev/carmentis-sdk-core'
 import { getTimeAgo } from '@/utils/formatTime'
 import * as api from '@/indexer-sdk/indexer-api.ts'
+import { useNavigation } from '@/router/navigation'
+
+const navigation = useNavigation();
 
 const route = useRoute()
-const router = useRouter()
 const loading = ref(true)
 const history = ref<AccountHistory[]>([])
 
@@ -110,12 +112,7 @@ export interface AccountHistory {
 }
 
 const onRowClick = (event: DataTableRowClickEvent) => {
-    router.push(`/account-history/${event.data.accountId}/${event.data.height}`)
-}
-
-function visitAccount(e: Event, accountId: string) {
-    e.stopPropagation()
-    router.push(`/accounts/${accountId}`)
+    navigation.accountHistoryHeight(event.data.accountId, event.data.height)
 }
 
 onMounted(async () => {

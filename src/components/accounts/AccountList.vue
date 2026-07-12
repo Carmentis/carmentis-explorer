@@ -38,7 +38,6 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
 import { CMTSToken, TokenUnit } from '@cmts-dev/carmentis-sdk-core'
 import { minWidth } from '@/utils/minWidth'
 import { shortenHash } from '@/utils/shortenHash'
@@ -47,8 +46,10 @@ import type { DataTableRowClickEvent } from 'primevue/datatable';
 import Column from 'primevue/column'
 import ProgressSpinner from 'primevue/progressspinner'
 import * as api from "@/indexer-sdk/indexer-api";
+import { useNavigation } from '@/router/navigation'
 
-const router = useRouter()
+const navigation = useNavigation();
+
 const loading = ref(true)
 const accounts = ref<Account[]>([])
 
@@ -59,7 +60,7 @@ export interface Account {
 }
 
 const onRowClick = (event: DataTableRowClickEvent) => {
-    router.push(`/accounts/${event.data.hash}`)
+    navigation.account(event.data.hash)
 }
 
 onMounted(async () => {

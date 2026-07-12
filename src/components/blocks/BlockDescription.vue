@@ -30,7 +30,11 @@
                     </div>
                     <div class="detail-section">
                         <h4>Proposer Address</h4>
-                        <p class="mono">{{ block.header.proposerAddress }}</p>
+                        <p class="mono">
+                            <a class="cursor-pointer" @click.stop="navigation.node(block.header.proposerId)">
+                                {{ block.header.proposerAddress }}
+                            </a>
+                        </p>
                     </div>
                 </div>
             </div>
@@ -133,6 +137,9 @@ import TransactionDescription from '@/components/blocks/TransactionDescription.v
 import CollapsibleCard from '@/components/utils/CollapsibleCard.vue'
 import { formatDate } from "@/utils/formatTime"
 import * as api from "@/indexer-sdk/indexer-api";
+import { useNavigation } from '@/router/navigation'
+
+const navigation = useNavigation();
 
 interface BlockData {
     blockHash: string
@@ -153,6 +160,7 @@ interface BlockData {
         lastResultsHash: string
         evidenceHash: string
         proposerAddress: string
+        proposerId: string
     }
     abci: {
         vbRadixHash: string
@@ -189,6 +197,8 @@ onMounted(async () => {
             include_content: true,
         });
         const txs = microblocks.data.items.map((mb) => mb.content);
+        const node = await api.appControllerGetValidatorNodes({ address: requestedBlock.proposerAddress });
+        const proposerId = node?.data?.items?.[0]?.virtualBlockchainId ?? "";
 
         block.value = {
             blockHash: requestedBlock.hash,
@@ -209,6 +219,7 @@ onMounted(async () => {
                 lastResultsHash: requestedBlock.lastResultsHash,
                 evidenceHash: requestedBlock.evidenceHash,
                 proposerAddress: requestedBlock.proposerAddress,
+                proposerId,
             },
             abci: {
                 vbRadixHash: requestedBlock.appVbRadixHash,

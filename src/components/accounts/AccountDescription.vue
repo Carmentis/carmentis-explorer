@@ -1,9 +1,25 @@
 <template>
     <div class="page">
         <h2>Account Details</h2>
-        <Button class="mr-3 mb-3 h-8" icon="pi pi-chart-line" label="See account history" @click="visitHistory" />
-        <Button class="mr-3 mb-3 h-8" icon="pi pi-link" :disabled="accountObject?.isSpecial" label="Explore Virtual Blockchain" @click="visitVb" />
-        <Button class="mr-3 mb-3 h-8" icon="pi pi-check-circle" label="Account Proof" @click="showProof()" />
+        <Button
+            class="mr-3 mb-3 h-8"
+            icon="pi pi-chart-line"
+            label="See account history"
+            @click="navigation.accountHistory(accountHash)"
+        />
+        <Button
+            class="mr-3 mb-3 h-8"
+            icon="pi pi-link"
+            :disabled="accountObject?.isSpecial"
+            label="Explore Virtual Blockchain"
+            @click="navigation.virtualBlockchain(accountHash)"
+        />
+        <Button
+            class="mr-3 mb-3 h-8"
+            icon="pi pi-check-circle"
+            label="Account Proof"
+            @click="showProof()"
+        />
         <div v-if="loading" class="loading">
             <div class="spinner"></div>
             <p>Loading account details...</p>
@@ -49,7 +65,7 @@
 
             <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
                 <div class="px-6 py-3 bg-gray-50 border-b border-gray-200 font-bold">
-                    Balance Evolution
+                    Balance Evolution {{ `(last ${stats.balanceChart.data.length} operation${stats.balanceChart.data.length === 1 ? "" : "s"})` }}
                 </div>
                 <div class="p-6 h-96">
                     <LineChart :chart-data="stats.balanceChart" />
@@ -74,7 +90,7 @@
 import { ref, onMounted } from 'vue'
 import LineChart from '@/components/charts/LineChart.vue'
 import { type LineChartData } from '@/components/charts/ChartData'
-import { useRoute, useRouter } from 'vue-router'
+import { useRoute } from 'vue-router'
 import Button from 'primevue/button'
 import ProofDialog from '@/components/proofs/ProofDialog.vue'
 import * as api from "@/indexer-sdk/indexer-api";
@@ -86,8 +102,10 @@ import {
     ACCOUNT_NAMES,
     ACCOUNT_STANDARD,
 } from '@cmts-dev/carmentis-sdk-core'
+import { useNavigation } from '@/router/navigation'
 
-const router = useRouter()
+const navigation = useNavigation();
+
 const route = useRoute()
 const accountHash = route.params.accountId as string
 const loading = ref(true)
@@ -107,14 +125,6 @@ const showProofDialog = ref<boolean>(false)
 
 function showProof() {
     showProofDialog.value = true
-}
-
-function visitHistory() {
-    router.push(`/account-history/${accountHash}`)
-}
-
-function visitVb() {
-    router.push(`/vb/${accountHash}`)
 }
 
 onMounted(async () => {

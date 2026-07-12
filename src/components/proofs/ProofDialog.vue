@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { onMounted, ref, watch } from 'vue'
-import { useRouter } from 'vue-router'
 import Button from 'primevue/button'
 import Dialog from 'primevue/dialog'
 import Message from 'primevue/message'
@@ -18,6 +17,9 @@ import {
     Utils,
     ProviderFactory,
 } from "@cmts-dev/carmentis-sdk-core"
+import { useNavigation } from '@/router/navigation'
+
+const navigation = useNavigation();
 
 const PENDING = 0;
 const INVALID = 1;
@@ -30,7 +32,6 @@ interface VerifierNode {
     status: number,
 }
 
-const router = useRouter()
 const open = defineModel<boolean>("open")
 const props = defineProps<{
     hash: string,
@@ -69,10 +70,6 @@ onMounted(async () => {
 
 function closeDialog() {
     open.value = false;
-}
-
-function visitNode(vbId: string) {
-    router.push(`/nodes/${vbId}`)
 }
 
 async function addVerifier() {
@@ -281,7 +278,7 @@ function shuffleNodeList(list: ValidatorNodeDto[]) {
                                 <i v-else class="pi pi-exclamation-triangle mr-1 text-gray-500"></i>
                                 {{ node.url }}
                                 <span v-if="node.vbId !== ''">
-                                    (<a class="cursor-pointer" @click="visitNode(node.vbId)">see node page</a>)
+                                    (<a class="cursor-pointer" @click.stop="navigation.node(node.vbId)">see node page</a>)
                                 </span>
                             </p>
                         </div>

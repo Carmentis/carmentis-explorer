@@ -115,7 +115,7 @@
 
 <script setup lang="ts">
 import { inject, ref } from 'vue'
-import { useRouter, useRoute } from 'vue-router'
+import { useRoute } from 'vue-router'
 import Divider from 'primevue/divider'
 import Dialog from 'primevue/dialog'
 import InputText from 'primevue/inputtext'
@@ -126,6 +126,9 @@ import IconField from 'primevue/iconfield'
 import InputIcon from 'primevue/inputicon'
 import * as api from "@/indexer-sdk/indexer-api";
 import { AppControllerSearchType } from "@/indexer-sdk/model/appControllerSearchType";
+import { useNavigation } from '@/router/navigation'
+
+const navigation = useNavigation();
 
 const showSearchDialog = ref(false)
 const searchQuery = ref('')
@@ -143,7 +146,6 @@ const searchResults = ref<
 >([])
 let searchTimeout = null
 
-const router = useRouter()
 const route = useRoute()
 const isOpen = inject<{ value: boolean }>('sidebarOpen')
 const closeSidebar = inject<() => void>('closeSidebar')
@@ -293,7 +295,7 @@ const performSearch = async () => {
 const navigateToResult = (e: Event, result: { route: string }) => {
     e.stopPropagation();
     closeSearchDialog();
-    router.push(result.route);
+    navigation.route(result.route);
 }
 
 const navigateToFirstResult = (e: Event) => {

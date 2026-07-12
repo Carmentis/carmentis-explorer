@@ -3,17 +3,14 @@ import { onMounted, ref } from 'vue'
 import { Microblock, Base64 } from '@cmts-dev/carmentis-sdk-core'
 import Button from 'primevue/button'
 import SelectButton from 'primevue/selectbutton'
-import { useRouter } from 'vue-router'
 import { minWidth } from '@/utils/minWidth'
+import { useNavigation } from '@/router/navigation'
 
-const router = useRouter()
+const navigation = useNavigation();
+
 const value = ref('Info')
 const options = ref(['Info', 'Raw Data'])
 const props = defineProps(['index', 'tx'])
-
-async function visitMicroblock(microblockHash: string) {
-    return router.push(`/vb/mb/${microblockHash}`)
-}
 
 const tx = props.tx
 const hash = ref<string>('')
@@ -32,7 +29,7 @@ onMounted(async () => {
             <h5 v-else>#{{ index + 1 }}</h5>
         </div>
         <div class="flex flex-row items-center gap-2">
-            <Button label="Explore" size="small" @click="visitMicroblock(hash)" />
+            <Button label="Explore" size="small" @click="navigation.microblock(hash)" />
             <SelectButton v-model="value" :options="options" :allow-empty="false" />
         </div>
     </div>

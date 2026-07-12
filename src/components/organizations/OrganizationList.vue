@@ -35,7 +35,6 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
 import { minWidth } from '@/utils/minWidth'
 import { shortenHash } from '@/utils/shortenHash'
 import { getCountry } from '@/utils/countryCodes'
@@ -44,8 +43,10 @@ import type { DataTableRowClickEvent } from 'primevue/datatable';
 import Column from 'primevue/column'
 import ProgressSpinner from 'primevue/progressspinner'
 import * as api from "@/indexer-sdk/indexer-api";
+import { useNavigation } from '@/router/navigation'
 
-const router = useRouter()
+const navigation = useNavigation();
+
 const loading = ref(true)
 const organizations = ref<Organization[]>([])
 
@@ -57,7 +58,7 @@ export interface Organization {
 }
 
 const onRowClick = (event: DataTableRowClickEvent) => {
-    router.push(`/organizations/${event.data.hash}`)
+    navigation.organization(event.data.hash)
 }
 
 onMounted(async () => {

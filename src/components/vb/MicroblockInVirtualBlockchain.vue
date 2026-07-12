@@ -1,8 +1,18 @@
 <template>
     <div class="page">
         <h2>Microblock Details</h2>
-        <Button class="mr-3 mb-3 h-8" icon="pi pi-link" label="Explore Virtual Blockchain" @click="visitVB(microblock.header.vbId)" />
-        <Button class="mr-3 mb-3 h-8" icon="pi pi-check-circle" label="Microblock Proof" @click="showProof()" />
+        <Button
+            class="mr-3 mb-3 h-8"
+            icon="pi pi-link"
+            label="Explore Virtual Blockchain"
+            @click="navigation.virtualBlockchain(microblock.header.vbId)"
+        />
+        <Button
+            class="mr-3 mb-3 h-8"
+            icon="pi pi-check-circle"
+            label="Microblock Proof"
+            @click="showProof()"
+        />
 
         <div v-if="loading" class="loading">
             <ProgressSpinner />
@@ -16,7 +26,11 @@
                 <div class="cards-grid">
                     <div class="detail-section">
                         <h4>Height</h4>
-                        <p><a class="cursor-pointer" @click="visitBlock(microblock.blockHeight)">{{ microblock.blockHeight }}</a></p>
+                        <p>
+                            <a class="cursor-pointer" @click.stop="navigation.blockByHeight(microblock.blockHeight)">
+                                {{ microblock.blockHeight }}
+                            </a>
+                        </p>
                     </div>
                 </div>
             </div>
@@ -59,9 +73,8 @@
                     <div class="detail-section">
                         <h4>Signed by</h4>
                         <p class="mono">
-                            <a :href="`/accounts/${microblock.header.signer}`">{{
-                                microblock.header.signer
-                            }}
+                            <a class="cursor-pointer" @click.stop="navigation.account(microblock.header.signer)">
+                                {{ microblock.header.signer }}
                             </a>
                         </p>
                     </div>
@@ -110,7 +123,7 @@
 </template>
 
 <script setup lang="ts">
-import { useRoute, useRouter } from 'vue-router'
+import { useRoute } from 'vue-router'
 import { onMounted, ref } from 'vue'
 import { Base64, Microblock, Utils } from '@cmts-dev/carmentis-sdk-core'
 import ProgressSpinner from 'primevue/progressspinner'
@@ -119,6 +132,9 @@ import MicroblockInVirtualBlockchainSection from '@/components/vb/MicroblockInVi
 import ProofDialog from '@/components/proofs/ProofDialog.vue'
 import { formatDate } from "@/utils/formatTime"
 import * as api from "@/indexer-sdk/indexer-api";
+import { useNavigation } from '@/router/navigation'
+
+const navigation = useNavigation();
 
 interface MicroblockData {
     serializedMb: Uint8Array
@@ -139,21 +155,12 @@ interface MicroblockData {
         transactions: string[]
     }
 }
-const router = useRouter()
 const route = useRoute()
 const mbHash = ref(route.params.mbHash as string)
 const sectionIndex = ref(parseInt((route.params?.sectionIndex ?? "") as string))
 const loading = ref(true)
 const showProofDialog = ref<boolean>(false)
 const microblock = ref<MicroblockData | null>(null)
-
-function visitVB(vbId: string) {
-    router.push(`/vb/${vbId}`)
-}
-
-function visitBlock(height: number) {
-    router.push(`/block/height/${height}`)
-}
 
 function showProof() {
     showProofDialog.value = true

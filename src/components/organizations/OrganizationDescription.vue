@@ -5,7 +5,7 @@
             class="mr-3 mb-3 h-8"
             label="Explore Virtual Blockchain"
             icon="pi pi-link"
-            @click="visitVb"
+            @click="navigation.virtualBlockchain(orgHash)"
         />
 
         <div v-if="loading" class="loading">
@@ -37,13 +37,13 @@
                 <div class="detail-section">
                     <h3>Account</h3>
                     <p>
-                        <button
-                            @click="() => goToAccount(organization!.accountId)"
+                        <a
+                            @click.stop="navigation.account(organization!.accountId)"
+                            class="cursor-pointer"
                             type="button"
-                            class="link-button"
                         >
                             {{ organization.accountId }}
-                        </button>
+                        </a>
                     </p>
                 </div>
             </div>
@@ -55,11 +55,13 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import { useRoute } from 'vue-router'
 import Button from 'primevue/button'
 import * as api from "@/indexer-sdk/indexer-api";
+import { useNavigation } from '@/router/navigation'
 
-const router = useRouter()
+const navigation = useNavigation();
+
 const route = useRoute()
 const orgHash = route.params.organizationId as string
 const loading = ref(true)
@@ -70,14 +72,6 @@ const organization = ref<{
     website: string
     accountId: string
 } | null>(null)
-
-function visitVb() {
-    router.push(`/vb/${orgHash}`)
-}
-
-function goToAccount(accountId: string) {
-    router.push(`/accounts/${accountId}`)
-}
 
 onMounted(async () => {
     try {

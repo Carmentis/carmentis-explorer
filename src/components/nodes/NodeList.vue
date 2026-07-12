@@ -5,7 +5,7 @@
             class="mr-3 mb-3 h-8"
             label="See real-time activity of validators"
             icon="pi pi-chart-bar"
-            @click="visitValidators"
+            @click="navigation.validators()"
         />
 
         <DataTable
@@ -37,7 +37,7 @@
                 <template #body="{ data }">
                     <a
                         class="font-mono text-sm text-gray-900 truncate font-medium"
-                        @click="(e) => visitOrganization(e, data.ownerVbId)"
+                        @click="navigation.organization(data.ownerVbId)"
                     >
                         {{ data.ownerName }}
                     </a>
@@ -62,7 +62,6 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
 import { minWidth } from '@/utils/minWidth'
 import { shortenHash } from '@/utils/shortenHash'
 import NumberDisplay from '@/components/utils/NumberDisplay.vue'
@@ -72,8 +71,10 @@ import Column from 'primevue/column'
 import Button from 'primevue/button'
 import ProgressSpinner from 'primevue/progressspinner'
 import * as api from "@/indexer-sdk/indexer-api";
+import { useNavigation } from '@/router/navigation'
 
-const router = useRouter()
+const navigation = useNavigation();
+
 const loading = ref(true)
 const nodes = ref<Node[]>([])
 
@@ -91,17 +92,7 @@ export interface Node {
 }
 
 function onRowClick(event: DataTableRowClickEvent) {
-    router.push(`/nodes/${event.data.hash}`)
-}
-
-function visitOrganization(e: Event, organizationId: string) {
-    e.stopPropagation()
-    router.push(`/organizations/${organizationId}`)
-}
-
-function visitValidators(e: Event) {
-    e.stopPropagation()
-    router.push(`/nodes/validators`)
+    navigation.node(event.data.hash)
 }
 
 const NodeStatus = {

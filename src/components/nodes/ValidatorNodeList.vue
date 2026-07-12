@@ -5,7 +5,7 @@
             class="mr-3 mb-3 h-8"
             label="See all nodes"
             icon="pi pi-server"
-            @click="visitNodes"
+            @click="navigation.nodes()"
         />
 
         <DataTable
@@ -66,7 +66,6 @@
 
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue'
-import { useRouter } from 'vue-router'
 import DataTable from 'primevue/datatable'
 import type { DataTableRowClickEvent } from 'primevue/datatable'
 import { minWidth } from '@/utils/minWidth'
@@ -75,8 +74,10 @@ import Column from 'primevue/column'
 import Button from 'primevue/button'
 import ProgressSpinner from 'primevue/progressspinner'
 import * as api from "@/indexer-sdk/indexer-api"
+import { useNavigation } from '@/router/navigation'
 
-const router = useRouter()
+const navigation = useNavigation();
+
 const loading = ref(true)
 const nodes = ref<Node[]>([])
 const isMounted = ref(false);
@@ -95,17 +96,7 @@ export interface Node {
 }
 
 function onRowClick(event: DataTableRowClickEvent) {
-    router.push(`/nodes/${event.data.hash}`)
-}
-
-function visitOrganization(e: Event, organizationId: string) {
-    e.stopPropagation()
-    router.push(`/organizations/${organizationId}`)
-}
-
-function visitNodes(e: Event) {
-    e.stopPropagation()
-    router.push(`/nodes`)
+    navigation.node(event.data.hash)
 }
 
 const NodeStatus = {

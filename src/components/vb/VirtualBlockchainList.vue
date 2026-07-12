@@ -43,7 +43,7 @@
                 <template #body="{ data }">
                     <a
                         class="font-mono text-sm text-gray-900 truncate font-medium"
-                        @click="(e) => visitMicroblock(e, data.lastMicroblockHash)"
+                        @click.stop="navigation.microblock(data.lastMicroblockHash)"
                     >
                         {{ shortenHash(data.lastMicroblockHash) }}
                     </a>
@@ -55,7 +55,6 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
 import { minWidth } from '@/utils/minWidth'
 import { shortenHash } from '@/utils/shortenHash'
 import DataTable from 'primevue/datatable'
@@ -66,8 +65,10 @@ import SelectButton from 'primevue/selectbutton'
 import { VB_NAME, VirtualBlockchainType } from '@cmts-dev/carmentis-sdk-core'
 import { getTimeAgo } from "@/utils/formatTime"
 import * as api from '@/indexer-sdk/indexer-api'
+import { useNavigation } from '@/router/navigation'
 
-const router = useRouter()
+const navigation = useNavigation();
+
 const loading = ref(true)
 const vbs = ref<Vb[]>([])
 interface Option {
@@ -102,13 +103,8 @@ async function vbSelect(event: any) {
     }
 }
 
-function visitMicroblock(e: Event, microblockHash: string) {
-    e.stopPropagation()
-    router.push(`/vb/mb/${microblockHash}`)
-}
-
 const onRowClick = (event: DataTableRowClickEvent) => {
-    router.push(`/vb/${event.data.id}`)
+    navigation.virtualBlockchain(event.data.id)
 }
 
 async function load(type: number) {

@@ -1,9 +1,12 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import { useRoute } from 'vue-router'
 import { VB_NAME } from '@cmts-dev/carmentis-sdk-core'
 import ProgressSpinner from 'primevue/progressspinner'
 import * as api from "@/indexer-sdk/indexer-api";
+import { useNavigation } from '@/router/navigation'
+
+const navigation = useNavigation();
 
 interface MicroblockData {
     hash: string
@@ -21,7 +24,6 @@ interface VirtualBlockchainData {
 }
 
 const route = useRoute()
-const router = useRouter()
 const vbId = ref(route.params.vbId as string)
 const vbData = ref<VirtualBlockchainData | null>(null)
 const loading = ref(true)
@@ -38,10 +40,6 @@ const getDaysRemaining = (dayNumber: number): number | null => {
     const diffTime = expirationDate.getTime() - now.getTime()
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
     return diffDays
-}
-
-const navigateToMicroblock = (mbHash: string) => {
-    router.push(`/vb/mb/${mbHash}`)
 }
 
 onMounted(async () => {
@@ -137,7 +135,7 @@ onMounted(async () => {
                         v-for="({hash, height}) in vbData.microblockData"
                         :key="height"
                         class="microblock-item"
-                        @click="navigateToMicroblock(hash)"
+                        @click.stop="navigation.microblock(hash)"
                     >
                         <h5>Microblock #{{ height }}</h5>
                         <p class="mono">{{ hash }}</p>

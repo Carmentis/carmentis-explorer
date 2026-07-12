@@ -91,10 +91,10 @@
             <template #list="{ items }">
                 <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
                     <div
-                        v-for="(block, index) in items"
+                        v-for="(block) in items"
                         :key="block.height"
                         class="flex items-center gap-6 px-6 py-4 hover:bg-gray-50 transition-colors cursor-pointer border-b border-gray-100 last:border-b-0"
-                        @click="onBlockClick(block)"
+                        @click.stop="navigation.blockByHeight(block.height)"
                     >
                         <!-- Icon -->
                         <div class="flex-shrink-0">
@@ -122,14 +122,14 @@
                             <div v-if="minWidth(800)" class="text-sm text-gray-500">
                                 <a
                                     class="font-mono text-sm text-gray-900 truncate font-medium"
-                                    @click="(e) => visitNode(e, block.nodeId)"
+                                    @click.stop="navigation.node(block.nodeId)"
                                 >
                                     {{ block.nodeMoniker }}
                                 </a>
                                 owned by
                                 <a
                                     class="font-mono text-sm text-gray-900 truncate font-medium"
-                                    @click="(e) => visitOrganization(e, block.nodeOwnerId)"
+                                    @click.stop="navigation.organization(block.nodeOwnerId)"
                                 >
                                     {{ block.nodeOwnerName }}
                                 </a>
@@ -157,7 +157,6 @@
 
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue'
-import { useRouter } from 'vue-router'
 import DataView from 'primevue/dataview'
 import Tag from 'primevue/tag'
 import Skeleton from 'primevue/skeleton'
@@ -166,6 +165,9 @@ import { minWidth } from '@/utils/minWidth'
 import { formatDate, getTimeAgo } from '@/utils/formatTime'
 import { appControllerGetGasPrice } from '@/indexer-sdk/indexer-api'
 import AmountDisplay from '@/components/utils/AmountDisplay.vue'
+import { useNavigation } from '@/router/navigation'
+
+const navigation = useNavigation();
 
 interface Block {
     height: number
@@ -182,7 +184,6 @@ interface Block {
 const MAX_BLOCKS = 10
 const STATS_BLOCKS = 100
 
-const router = useRouter()
 const loading = ref(true)
 const blocks = ref<Block[]>([])
 const connectionStatus = ref<string>('')
@@ -197,10 +198,6 @@ const microblocksCount = ref(0)
 const isMounted = ref(false);
 const nodeCache = new Map()
 
-const onBlockClick = (block: Block) => {
-    router.push(`/block/height/${block.height}`)
-}
-
 const addBlock = (block: Block) => {
     // Add new block at the beginning
     blocks.value.unshift(block)
@@ -208,16 +205,6 @@ const addBlock = (block: Block) => {
     if (blocks.value.length > MAX_BLOCKS) {
         blocks.value = blocks.value.slice(0, MAX_BLOCKS)
     }
-}
-
-function visitNode(e: Event, nodeId: string) {
-    e.stopPropagation()
-    router.push(`/nodes/${nodeId}`)
-}
-
-function visitOrganization(e: Event, organizationId: string) {
-    e.stopPropagation()
-    router.push(`/organizations/${organizationId}`)
 }
 
 function scheduleNextSynchronization() {

@@ -26,7 +26,7 @@
                 <template #body="{ data }">
                     <a
                         class="mono text-sm text-gray-900 truncate font-medium"
-                        @click="(e) => visitOrganization(e, data.organizationId)"
+                        @click.stop="navigation.organization(data.organizationId)"
                     >
                         {{ data.organizationName }}
                     </a>
@@ -39,15 +39,16 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
 import { shortenHash } from '@/utils/shortenHash'
 import DataTable from 'primevue/datatable'
 import type { DataTableRowClickEvent } from 'primevue/datatable'
 import Column from 'primevue/column'
 import ProgressSpinner from 'primevue/progressspinner'
 import * as api from '@/indexer-sdk/indexer-api'
+import { useNavigation } from '@/router/navigation'
 
-const router = useRouter()
+const navigation = useNavigation();
+
 const loading = ref(true)
 const applications = ref<Application[]>([])
 
@@ -58,13 +59,8 @@ export interface Application {
     name: string
 }
 
-function visitOrganization(e: Event, organizationId: string) {
-    e.stopPropagation()
-    router.push(`/organizations/${organizationId}`)
-}
-
 const onRowClick = (event: DataTableRowClickEvent) => {
-    router.push(`/applications/${event.data.hash}`)
+    navigation.application(event.data.hash)
 }
 
 onMounted(async () => {
