@@ -38,9 +38,9 @@ onMounted(async () => {
     </div>
     <div v-else>
         <div>
-            <p class="mb-2">Microblock Hash</p>
+            <h4>Microblock Hash</h4>
             <p class="mono">{{ hash }}</p>
-            <p class="mb-2">Microblock Size</p>
+            <h4>Microblock Size</h4>
             <p class="mono">{{ size }} bytes</p>
         </div>
     </div>

@@ -168,7 +168,12 @@ onMounted(async () => {
 
                     <div class="detail-section">
                         <h3>RPC Endpoint</h3>
-                        <p>{{ nodeObject.rpc }}</p>
+                        <p>
+                            <a :href="nodeObject.rpc" target="_blank">
+                                {{ nodeObject.rpc }}
+                                <i class="pi pi-external-link"></i>
+                            </a>
+                        </p>
                     </div>
 
                     <div class="detail-section">

@@ -31,7 +31,7 @@
                     <div class="detail-section">
                         <h4>Proposer Address</h4>
                         <p class="mono">
-                            <a class="cursor-pointer" @click.stop="navigation.node(block.header.proposerId)">
+                            <a class="cursor-pointer" @click.stop="nodeByAddress(block.header.proposerAddress)">
                                 {{ block.header.proposerAddress }}
                             </a>
                         </p>
@@ -160,7 +160,6 @@ interface BlockData {
         lastResultsHash: string
         evidenceHash: string
         proposerAddress: string
-        proposerId: string
     }
     abci: {
         vbRadixHash: string
@@ -181,6 +180,14 @@ const route = useRoute()
 const loading = ref(true)
 const block = ref<BlockData | null>(null)
 
+async function nodeByAddress(address: string) {
+    const node = await api.appControllerGetValidatorNodes({ address });
+    const nodeId = node?.data?.items?.[0]?.virtualBlockchainId;
+    if (nodeId) {
+        navigation.node(nodeId);
+    }
+}
+
 onMounted(async () => {
     try {
         if (!route.params.blockHeight) {
@@ -197,8 +204,6 @@ onMounted(async () => {
             include_content: true,
         });
         const txs = microblocks.data.items.map((mb) => mb.content);
-        const node = await api.appControllerGetValidatorNodes({ address: requestedBlock.proposerAddress });
-        const proposerId = node?.data?.items?.[0]?.virtualBlockchainId ?? "";
 
         block.value = {
             blockHash: requestedBlock.hash,
@@ -219,7 +224,6 @@ onMounted(async () => {
                 lastResultsHash: requestedBlock.lastResultsHash,
                 evidenceHash: requestedBlock.evidenceHash,
                 proposerAddress: requestedBlock.proposerAddress,
-                proposerId,
             },
             abci: {
                 vbRadixHash: requestedBlock.appVbRadixHash,
