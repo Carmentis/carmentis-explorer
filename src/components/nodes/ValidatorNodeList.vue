@@ -11,6 +11,13 @@
         <DataTable
             :value="nodes"
             :loading="loading"
+            :paginator="true"
+            :lazy="true"
+            :rows="pagination.pageSize"
+            :rowsPerPageOptions="pagination.sizeOptions"
+            :first="pagination.first"
+            :totalRecords="pagination.totalRecords"
+            @page="pagination.newPage"
             stripedRows
             showGridlines
             selectionMode="single"
@@ -75,8 +82,10 @@ import Button from 'primevue/button'
 import ProgressSpinner from 'primevue/progressspinner'
 import * as api from "@/indexer-sdk/indexer-api"
 import { useNavigation } from '@/router/navigation'
+import { usePagination } from '@/utils/pagination'
 
 const navigation = useNavigation();
+const pagination = usePagination();
 
 const loading = ref(true)
 const nodes = ref<Node[]>([])
@@ -143,8 +152,12 @@ onMounted(async () => {
     isMounted.value = true;
     try {
         const fetchedNodes = await api.appControllerGetValidatorNodes({
-            is_validator: true
+            is_validator: true,
+            offset: pagination.first,
+            sort: 'votingPower',
+            order: 'DESC',
         });
+        pagination.totalRecords = fetchedNodes.data.totalRecords;
         nodes.value = []
         for (const node of fetchedNodes.data.items) {
             const status = await api.appControllerGetNodeStatus({

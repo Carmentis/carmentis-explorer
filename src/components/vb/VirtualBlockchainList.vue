@@ -13,6 +13,13 @@
         <DataTable
             :value="vbs"
             :loading="loading"
+            :paginator="true"
+            :lazy="true"
+            :rows="pagination.pageSize"
+            :rowsPerPageOptions="pagination.sizeOptions"
+            :first="pagination.first"
+            :totalRecords="pagination.totalRecords"
+            @page="pagination.newPage"
             stripedRows
             showGridlines
             selectionMode="single"
@@ -66,8 +73,10 @@ import { VB_NAME, VirtualBlockchainType } from '@cmts-dev/carmentis-sdk-core'
 import { getTimeAgo } from "@/utils/formatTime"
 import * as api from '@/indexer-sdk/indexer-api'
 import { useNavigation } from '@/router/navigation'
+import { usePagination } from '@/utils/pagination'
 
 const navigation = useNavigation();
+const pagination = usePagination();
 
 const loading = ref(true)
 const vbs = ref<Vb[]>([])
@@ -112,7 +121,9 @@ async function load(type: number) {
         sort: 'modificationTimestamp',
         order: 'DESC',
         ...type !== -1 && { type },
+        offset: pagination.first,
     })
+    pagination.totalRecords = fetchedVbs.data.totalRecords;
     vbs.value = []
     for (const vb of fetchedVbs.data.items) {
         vbs.value.push({

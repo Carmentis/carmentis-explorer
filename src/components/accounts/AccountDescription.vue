@@ -172,7 +172,6 @@ onMounted(async () => {
             limit: 50,
         })
         const entries = fetchedHistory.data.items;
-        entries.sort((a, b) => a.height - b.height);
         for (const entry of fetchedHistory.data.items) {
             const balance = CMTSToken.createAtomic(entry.newBalance);
             balanceChart.labels.push(entry.height);

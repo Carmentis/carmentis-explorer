@@ -8,6 +8,9 @@
 import type { OrganizationDto } from './organizationDto';
 
 export interface OrganizationListResponseDto {
-  items: OrganizationDto[];
+  /** Set to 'true' if more results are available. */
   hasMore: boolean;
+  /** Total number of available records. Returned only when 'offset' is used in the query. */
+  totalRecords?: number;
+  items: OrganizationDto[];
 }

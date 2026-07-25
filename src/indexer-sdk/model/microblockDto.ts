@@ -16,6 +16,6 @@ export interface MicroblockDto {
   gas: number;
   /** Expressed in atomics */
   gasPrice: number;
-  /** Base64 representation of the microblock content. Returned only if include_content was set to true. */
+  /** Base64 representation of the microblock content. Returned only if 'include_content' was set to true. */
   content?: string;
 }

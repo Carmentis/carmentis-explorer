@@ -6,6 +6,7 @@
  * OpenAPI spec version: 1.0
  */
 import type { AppControllerGetValidatorNodesOrder } from './appControllerGetValidatorNodesOrder';
+import type { AppControllerGetValidatorNodesSort } from './appControllerGetValidatorNodesSort';
 
 export type AppControllerGetValidatorNodesParams = {
 /**
@@ -13,9 +14,17 @@ export type AppControllerGetValidatorNodesParams = {
  */
 order?: AppControllerGetValidatorNodesOrder;
 /**
- * Limit number of results
+ * How many results to skip (for pagination)
+ */
+offset?: number;
+/**
+ * Maximum number of results
  */
 limit?: number;
+/**
+ * Field on which the sort is applied
+ */
+sort?: AppControllerGetValidatorNodesSort;
 /**
  * Virtual blockchain ID
  */

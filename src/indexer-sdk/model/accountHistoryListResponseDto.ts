@@ -8,6 +8,9 @@
 import type { AccountHistoryDto } from './accountHistoryDto';
 
 export interface AccountHistoryListResponseDto {
-  items: AccountHistoryDto[];
+  /** Set to 'true' if more results are available. */
   hasMore: boolean;
+  /** Total number of available records. Returned only when 'offset' is used in the query. */
+  totalRecords?: number;
+  items: AccountHistoryDto[];
 }

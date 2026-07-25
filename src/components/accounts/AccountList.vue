@@ -5,6 +5,13 @@
         <DataTable
             :value="accounts"
             :loading="loading"
+            :paginator="true"
+            :lazy="true"
+            :rows="pagination.pageSize"
+            :rowsPerPageOptions="pagination.sizeOptions"
+            :first="pagination.first"
+            :totalRecords="pagination.totalRecords"
+            @page="pagination.newPage"
             stripedRows
             showGridlines
             selectionMode="single"
@@ -47,8 +54,10 @@ import Column from 'primevue/column'
 import ProgressSpinner from 'primevue/progressspinner'
 import * as api from "@/indexer-sdk/indexer-api";
 import { useNavigation } from '@/router/navigation'
+import { usePagination } from '@/utils/pagination'
 
 const navigation = useNavigation();
+const pagination = usePagination();
 
 const loading = ref(true)
 const accounts = ref<Account[]>([])
@@ -68,7 +77,9 @@ onMounted(async () => {
         const fetchedAccounts = await api.appControllerGetAccounts({
             sort: "balance",
             order: "DESC",
+            offset: pagination.first,
         });
+        pagination.totalRecords = fetchedAccounts.data.totalRecords;
         accounts.value = []
         for (const account of fetchedAccounts.data.items) {
             accounts.value.push({

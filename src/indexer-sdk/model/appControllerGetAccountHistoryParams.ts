@@ -14,7 +14,11 @@ export type AppControllerGetAccountHistoryParams = {
  */
 order?: AppControllerGetAccountHistoryOrder;
 /**
- * Limit number of results
+ * How many results to skip (for pagination)
+ */
+offset?: number;
+/**
+ * Maximum number of results
  */
 limit?: number;
 /**

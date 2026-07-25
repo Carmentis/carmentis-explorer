@@ -9,6 +9,13 @@
         <DataTable
             :value="history"
             :loading="loading"
+            :paginator="true"
+            :lazy="true"
+            :rows="pagination.pageSize"
+            :rowsPerPageOptions="pagination.sizeOptions"
+            :first="pagination.first"
+            :totalRecords="pagination.totalRecords"
+            @page="pagination.newPage"
             stripedRows
             showGridlines
             selectionMode="single"
@@ -92,8 +99,10 @@ import {
 import { getTimeAgo } from '@/utils/formatTime'
 import * as api from '@/indexer-sdk/indexer-api.ts'
 import { useNavigation } from '@/router/navigation'
+import { usePagination } from '@/utils/pagination'
 
 const navigation = useNavigation();
+const pagination = usePagination();
 
 const route = useRoute()
 const loading = ref(true)
@@ -121,13 +130,12 @@ onMounted(async () => {
             typeof route.params.accountId === 'string' ? route.params.accountId : undefined
         const fetchedHistory = await api.appControllerGetAccountHistory({
             account_id: accountId,
-            sort: 'timestamp',
+            sort: accountId ? 'height' : 'timestamp',
             order: 'DESC',
+            offset: pagination.first,
         })
+        pagination.totalRecords = fetchedHistory.data.totalRecords;
         history.value = []
-        fetchedHistory.data.items.sort((a, b) =>
-            accountId ? b.height - a.height : b.timestamp - a.timestamp || b.height - a.height
-        )
         for (const entry of fetchedHistory.data.items) {
             const encodedChainRef = Base64.decodeBinary(entry.chainReference, Base64.BASE64);
             const chainRef = BlockchainUtils.decodeChainReference(encodedChainRef);

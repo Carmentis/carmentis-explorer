@@ -5,6 +5,13 @@
         <DataTable
             :value="organizations"
             :loading="loading"
+            :paginator="true"
+            :lazy="true"
+            :rows="pagination.pageSize"
+            :rowsPerPageOptions="pagination.sizeOptions"
+            :first="pagination.first"
+            :totalRecords="pagination.totalRecords"
+            @page="pagination.newPage"
             stripedRows
             showGridlines
             selectionMode="single"
@@ -44,8 +51,10 @@ import Column from 'primevue/column'
 import ProgressSpinner from 'primevue/progressspinner'
 import * as api from "@/indexer-sdk/indexer-api";
 import { useNavigation } from '@/router/navigation'
+import { usePagination } from '@/utils/pagination'
 
 const navigation = useNavigation();
+const pagination = usePagination();
 
 const loading = ref(true)
 const organizations = ref<Organization[]>([])
@@ -63,7 +72,8 @@ const onRowClick = (event: DataTableRowClickEvent) => {
 
 onMounted(async () => {
     try {
-        const fetchedOrgs = await api.appControllerGetOrganizations();
+        const fetchedOrgs = await api.appControllerGetOrganizations({ offset: pagination.first });
+        pagination.totalRecords = fetchedOrgs.data.totalRecords;
         organizations.value = []
         for (const org of fetchedOrgs.data.items) {
             organizations.value.push({

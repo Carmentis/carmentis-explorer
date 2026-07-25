@@ -38,6 +38,7 @@ export * from './appControllerGetOrganizationsOrder';
 export * from './appControllerGetOrganizationsParams';
 export * from './appControllerGetValidatorNodesOrder';
 export * from './appControllerGetValidatorNodesParams';
+export * from './appControllerGetValidatorNodesSort';
 export * from './appControllerGetValidatorStatsParams';
 export * from './appControllerGetVirtualBlockchainsOrder';
 export * from './appControllerGetVirtualBlockchainsParams';

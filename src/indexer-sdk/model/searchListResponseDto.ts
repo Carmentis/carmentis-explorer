@@ -8,6 +8,9 @@
 import type { SearchDto } from './searchDto';
 
 export interface SearchListResponseDto {
-  items: SearchDto[];
+  /** Set to 'true' if more results are available. */
   hasMore: boolean;
+  /** Total number of available records. Returned only when 'offset' is used in the query. */
+  totalRecords?: number;
+  items: SearchDto[];
 }

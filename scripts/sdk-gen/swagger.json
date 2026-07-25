@@ -104,10 +104,20 @@
             }
           },
           {
+            "name": "offset",
+            "required": false,
+            "in": "query",
+            "description": "How many results to skip (for pagination)",
+            "schema": {
+              "example": 10,
+              "type": "number"
+            }
+          },
+          {
             "name": "limit",
             "required": false,
             "in": "query",
-            "description": "Limit number of results",
+            "description": "Maximum number of results",
             "schema": {
               "example": 10,
               "type": "number"
@@ -180,10 +190,20 @@
             }
           },
           {
+            "name": "offset",
+            "required": false,
+            "in": "query",
+            "description": "How many results to skip (for pagination)",
+            "schema": {
+              "example": 10,
+              "type": "number"
+            }
+          },
+          {
             "name": "limit",
             "required": false,
             "in": "query",
-            "description": "Limit number of results",
+            "description": "Maximum number of results",
             "schema": {
               "example": 10,
               "type": "number"
@@ -288,10 +308,20 @@
             }
           },
           {
+            "name": "offset",
+            "required": false,
+            "in": "query",
+            "description": "How many results to skip (for pagination)",
+            "schema": {
+              "example": 10,
+              "type": "number"
+            }
+          },
+          {
             "name": "limit",
             "required": false,
             "in": "query",
-            "description": "Limit number of results",
+            "description": "Maximum number of results",
             "schema": {
               "example": 10,
               "type": "number"
@@ -494,10 +524,20 @@
             }
           },
           {
+            "name": "offset",
+            "required": false,
+            "in": "query",
+            "description": "How many results to skip (for pagination)",
+            "schema": {
+              "example": 10,
+              "type": "number"
+            }
+          },
+          {
             "name": "limit",
             "required": false,
             "in": "query",
-            "description": "Limit number of results",
+            "description": "Maximum number of results",
             "schema": {
               "example": 10,
               "type": "number"
@@ -619,10 +659,20 @@
             }
           },
           {
+            "name": "offset",
+            "required": false,
+            "in": "query",
+            "description": "How many results to skip (for pagination)",
+            "schema": {
+              "example": 10,
+              "type": "number"
+            }
+          },
+          {
             "name": "limit",
             "required": false,
             "in": "query",
-            "description": "Limit number of results",
+            "description": "Maximum number of results",
             "schema": {
               "example": 10,
               "type": "number"
@@ -798,10 +848,20 @@
             }
           },
           {
+            "name": "offset",
+            "required": false,
+            "in": "query",
+            "description": "How many results to skip (for pagination)",
+            "schema": {
+              "example": 10,
+              "type": "number"
+            }
+          },
+          {
             "name": "limit",
             "required": false,
             "in": "query",
-            "description": "Limit number of results",
+            "description": "Maximum number of results",
             "schema": {
               "example": 10,
               "type": "number"
@@ -874,10 +934,20 @@
             }
           },
           {
+            "name": "offset",
+            "required": false,
+            "in": "query",
+            "description": "How many results to skip (for pagination)",
+            "schema": {
+              "example": 10,
+              "type": "number"
+            }
+          },
+          {
             "name": "limit",
             "required": false,
             "in": "query",
-            "description": "Limit number of results",
+            "description": "Maximum number of results",
             "schema": {
               "example": 10,
               "type": "number"
@@ -950,13 +1020,35 @@
             }
           },
           {
-            "name": "limit",
+            "name": "offset",
             "required": false,
             "in": "query",
-            "description": "Limit number of results",
+            "description": "How many results to skip (for pagination)",
             "schema": {
               "example": 10,
               "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "description": "Maximum number of results",
+            "schema": {
+              "example": 10,
+              "type": "number"
+            }
+          },
+          {
+            "name": "sort",
+            "required": false,
+            "in": "query",
+            "description": "Field on which the sort is applied",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "votingPower"
+              ]
             }
           },
           {
@@ -1128,10 +1220,20 @@
             }
           },
           {
+            "name": "offset",
+            "required": false,
+            "in": "query",
+            "description": "How many results to skip (for pagination)",
+            "schema": {
+              "example": 10,
+              "type": "number"
+            }
+          },
+          {
             "name": "limit",
             "required": false,
             "in": "query",
-            "description": "Limit number of results",
+            "description": "Maximum number of results",
             "schema": {
               "example": 10,
               "type": "number"
@@ -1208,10 +1310,20 @@
             }
           },
           {
+            "name": "offset",
+            "required": false,
+            "in": "query",
+            "description": "How many results to skip (for pagination)",
+            "schema": {
+              "example": 10,
+              "type": "number"
+            }
+          },
+          {
             "name": "limit",
             "required": false,
             "in": "query",
-            "description": "Limit number of results",
+            "description": "Maximum number of results",
             "schema": {
               "example": 10,
               "type": "number"
@@ -1452,19 +1564,24 @@
       "SearchListResponseDto": {
         "type": "object",
         "properties": {
+          "hasMore": {
+            "type": "boolean",
+            "description": "Set to 'true' if more results are available."
+          },
+          "totalRecords": {
+            "type": "number",
+            "description": "Total number of available records. Returned only when 'offset' is used in the query."
+          },
           "items": {
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/SearchDto"
             }
-          },
-          "hasMore": {
-            "type": "boolean"
           }
         },
         "required": [
-          "items",
-          "hasMore"
+          "hasMore",
+          "items"
         ]
       },
       "BlockSignatureDto": {
@@ -1607,19 +1724,24 @@
       "BlockListResponseDto": {
         "type": "object",
         "properties": {
+          "hasMore": {
+            "type": "boolean",
+            "description": "Set to 'true' if more results are available."
+          },
+          "totalRecords": {
+            "type": "number",
+            "description": "Total number of available records. Returned only when 'offset' is used in the query."
+          },
           "items": {
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/BlockDto"
             }
-          },
-          "hasMore": {
-            "type": "boolean"
           }
         },
         "required": [
-          "items",
-          "hasMore"
+          "hasMore",
+          "items"
         ]
       },
       "MicroblockDto": {
@@ -1652,7 +1774,7 @@
           },
           "content": {
             "type": "string",
-            "description": "Base64 representation of the microblock content. Returned only if include_content was set to true."
+            "description": "Base64 representation of the microblock content. Returned only if 'include_content' was set to true."
           }
         },
         "required": [
@@ -1669,19 +1791,24 @@
       "MicroblockListResponseDto": {
         "type": "object",
         "properties": {
+          "hasMore": {
+            "type": "boolean",
+            "description": "Set to 'true' if more results are available."
+          },
+          "totalRecords": {
+            "type": "number",
+            "description": "Total number of available records. Returned only when 'offset' is used in the query."
+          },
           "items": {
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/MicroblockDto"
             }
-          },
-          "hasMore": {
-            "type": "boolean"
           }
         },
         "required": [
-          "items",
-          "hasMore"
+          "hasMore",
+          "items"
         ]
       },
       "ProofBlockDto": {
@@ -1978,19 +2105,24 @@
       "AccountListResponseDto": {
         "type": "object",
         "properties": {
+          "hasMore": {
+            "type": "boolean",
+            "description": "Set to 'true' if more results are available."
+          },
+          "totalRecords": {
+            "type": "number",
+            "description": "Total number of available records. Returned only when 'offset' is used in the query."
+          },
           "items": {
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/AccountDto"
             }
-          },
-          "hasMore": {
-            "type": "boolean"
           }
         },
         "required": [
-          "items",
-          "hasMore"
+          "hasMore",
+          "items"
         ]
       },
       "AccountHistoryDto": {
@@ -2044,19 +2176,24 @@
       "AccountHistoryListResponseDto": {
         "type": "object",
         "properties": {
+          "hasMore": {
+            "type": "boolean",
+            "description": "Set to 'true' if more results are available."
+          },
+          "totalRecords": {
+            "type": "number",
+            "description": "Total number of available records. Returned only when 'offset' is used in the query."
+          },
           "items": {
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/AccountHistoryDto"
             }
-          },
-          "hasMore": {
-            "type": "boolean"
           }
         },
         "required": [
-          "items",
-          "hasMore"
+          "hasMore",
+          "items"
         ]
       },
       "AccountProofAccountDto": {
@@ -2145,19 +2282,24 @@
       "OrganizationListResponseDto": {
         "type": "object",
         "properties": {
+          "hasMore": {
+            "type": "boolean",
+            "description": "Set to 'true' if more results are available."
+          },
+          "totalRecords": {
+            "type": "number",
+            "description": "Total number of available records. Returned only when 'offset' is used in the query."
+          },
           "items": {
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/OrganizationDto"
             }
-          },
-          "hasMore": {
-            "type": "boolean"
           }
         },
         "required": [
-          "items",
-          "hasMore"
+          "hasMore",
+          "items"
         ]
       },
       "ApplicationDto": {
@@ -2194,19 +2336,24 @@
       "ApplicationListResponseDto": {
         "type": "object",
         "properties": {
+          "hasMore": {
+            "type": "boolean",
+            "description": "Set to 'true' if more results are available."
+          },
+          "totalRecords": {
+            "type": "number",
+            "description": "Total number of available records. Returned only when 'offset' is used in the query."
+          },
           "items": {
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/ApplicationDto"
             }
-          },
-          "hasMore": {
-            "type": "boolean"
           }
         },
         "required": [
-          "items",
-          "hasMore"
+          "hasMore",
+          "items"
         ]
       },
       "ValidatorNodeDto": {
@@ -2266,19 +2413,24 @@
       "ValidatorNodeListResponseDto": {
         "type": "object",
         "properties": {
+          "hasMore": {
+            "type": "boolean",
+            "description": "Set to 'true' if more results are available."
+          },
+          "totalRecords": {
+            "type": "number",
+            "description": "Total number of available records. Returned only when 'offset' is used in the query."
+          },
           "items": {
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/ValidatorNodeDto"
             }
-          },
-          "hasMore": {
-            "type": "boolean"
           }
         },
         "required": [
-          "items",
-          "hasMore"
+          "hasMore",
+          "items"
         ]
       },
       "ValidatorStatsCountDto": {
@@ -2394,19 +2546,24 @@
       "VirtualBlockchainListResponseDto": {
         "type": "object",
         "properties": {
+          "hasMore": {
+            "type": "boolean",
+            "description": "Set to 'true' if more results are available."
+          },
+          "totalRecords": {
+            "type": "number",
+            "description": "Total number of available records. Returned only when 'offset' is used in the query."
+          },
           "items": {
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/VirtualBlockchainDto"
             }
-          },
-          "hasMore": {
-            "type": "boolean"
           }
         },
         "required": [
-          "items",
-          "hasMore"
+          "hasMore",
+          "items"
         ]
       },
       "VotingPowerDto": {
@@ -2435,19 +2592,24 @@
       "VotingPowerListResponseDto": {
         "type": "object",
         "properties": {
+          "hasMore": {
+            "type": "boolean",
+            "description": "Set to 'true' if more results are available."
+          },
+          "totalRecords": {
+            "type": "number",
+            "description": "Total number of available records. Returned only when 'offset' is used in the query."
+          },
           "items": {
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/VotingPowerDto"
             }
-          },
-          "hasMore": {
-            "type": "boolean"
           }
         },
         "required": [
-          "items",
-          "hasMore"
+          "hasMore",
+          "items"
         ]
       },
       "NodePeriodRewardDto": {

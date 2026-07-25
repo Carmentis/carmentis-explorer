@@ -11,6 +11,13 @@
         <DataTable
             :value="nodes"
             :loading="loading"
+            :paginator="true"
+            :lazy="true"
+            :rows="pagination.pageSize"
+            :rowsPerPageOptions="pagination.sizeOptions"
+            :first="pagination.first"
+            :totalRecords="pagination.totalRecords"
+            @page="pagination.newPage"
             stripedRows
             showGridlines
             selectionMode="single"
@@ -72,8 +79,10 @@ import Button from 'primevue/button'
 import ProgressSpinner from 'primevue/progressspinner'
 import * as api from "@/indexer-sdk/indexer-api";
 import { useNavigation } from '@/router/navigation'
+import { usePagination } from '@/utils/pagination'
 
 const navigation = useNavigation();
+const pagination = usePagination();
 
 const loading = ref(true)
 const nodes = ref<Node[]>([])
@@ -105,13 +114,19 @@ const NodeStatus = {
 
 onMounted(async () => {
     try {
-        const fetchedNodes = await api.appControllerGetValidatorNodes();
+        const fetchedNodes = await api.appControllerGetValidatorNodes({
+            sort: 'votingPower',
+            order: 'DESC',
+            offset: pagination.first,
+        });
+        pagination.totalRecords = fetchedNodes.data.totalRecords;
         nodes.value = []
         for (const node of fetchedNodes.data.items) {
             const isValidator = node.currentVotingPower > 0;
+            const hash = node.virtualBlockchainId;
 
             const nodeObject = {
-                hash: node.virtualBlockchainId,
+                hash,
                 moniker: node.moniker,
                 ownerName: shortenHash(node.organizationId),
                 ownerVbId: node.organizationId,
@@ -121,13 +136,14 @@ onMounted(async () => {
                 votingPower: node.currentVotingPower,
             };
 
-            const index = nodes.value.push(nodeObject) - 1;
+            nodes.value.push(nodeObject);
 
             api.appControllerGetOrganizations({
                 vb_id: node.organizationId
             })
             .then((answer) => {
                 const owner = answer.data.items[0];
+                const index = nodes.value.findIndex((o) => o.hash === hash);
                 nodes.value[index] = {
                     ...nodes.value[index],
                     ownerName: owner.name,
@@ -135,8 +151,9 @@ onMounted(async () => {
             });
 
             if (node.statusTimestamp + NODE_STATUS_LIFESPAN < Date.now()) {
-                api.appControllerGetNodeStatus({ node_id: node.virtualBlockchainId })
+                api.appControllerGetNodeStatus({ node_id: hash })
                 .then((answer) => {
+                    const index = nodes.value.findIndex((o) => o.hash === hash);
                     nodes.value[index] = {
                         ...nodes.value[index],
                         statusIcon: NodeStatus[answer.data.status].icon,
