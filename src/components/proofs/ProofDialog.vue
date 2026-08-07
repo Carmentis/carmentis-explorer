@@ -93,7 +93,6 @@ function getProofAsJson() {
         wrappedProof = wrappedAccountProof;
     } else if (props.type === "microblock") {
         const wrappedMicroblockProof = MicroblockProofWrapper.createEmptyProof(network.value);
-        console.log('wrappedMicroblockProof', wrappedMicroblockProof, wrappedMicroblockProof.addMicroblock);
         wrappedMicroblockProof.addMicroblock(proof.value as MicroblockProofEntry);
         wrappedProof = wrappedMicroblockProof;
     } else {

@@ -44,7 +44,15 @@
                     </div>
                     <div class="detail-section">
                         <h4>Virtual Blockchain ID</h4>
-                        <p class="mono">{{ microblock.header.vbId }}</p>
+                        <p class="mono">
+                            <a
+                                @click.stop="navigation.virtualBlockchain(microblock.header.vbId)"
+                                class="cursor-pointer"
+                                type="button"
+                            >
+                                {{ microblock.header.vbId }}
+                            </a>
+                        </p>
                     </div>
                     <div class="detail-section">
                         <h4>Size</h4>
@@ -60,7 +68,18 @@
                     </div>
                     <div class="detail-section">
                         <h4>Previous Hash</h4>
-                        <p class="mono">{{ microblock.header.previousHash }}</p>
+                        <p class="mono">
+                            <a v-if="microblock.header.height > 1"
+                                @click.stop="navigation.microblock(microblock.header.previousHash)"
+                                class="cursor-pointer"
+                                type="button"
+                            >
+                                {{ microblock.header.previousHash }}
+                            </a>
+                            <div v-else>
+                                {{ microblock.header.previousHash }}
+                            </div>
+                        </p>
                     </div>
                     <div class="detail-section">
                         <h4>Height</h4>

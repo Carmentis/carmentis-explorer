@@ -20,6 +20,7 @@ import type {
   AppControllerGetMicroblocksParams,
   AppControllerGetNodeRewardParams,
   AppControllerGetNodeStatusParams,
+  AppControllerGetOrganizationCertificatesParams,
   AppControllerGetOrganizationsParams,
   AppControllerGetValidatorNodesParams,
   AppControllerGetValidatorStatsParams,
@@ -35,6 +36,7 @@ import type {
   MicroblockStatsResponseDto,
   NodeRewardResponseDto,
   NodeStatusResponseDto,
+  OrganizationCertificateListResponseDto,
   OrganizationListResponseDto,
   RootResponseDto,
   SearchListResponseDto,
@@ -501,6 +503,46 @@ export const getAppControllerGetOrganizationsUrl = (params?: AppControllerGetOrg
 export const appControllerGetOrganizations = async (params?: AppControllerGetOrganizationsParams, options?: RequestInit): Promise<appControllerGetOrganizationsResponse> => {
 
   return customFetch<appControllerGetOrganizationsResponse>(getAppControllerGetOrganizationsUrl(params),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+export type appControllerGetOrganizationCertificatesResponse200 = {
+  data: OrganizationCertificateListResponseDto
+  status: 200
+}
+
+export type appControllerGetOrganizationCertificatesResponseSuccess = (appControllerGetOrganizationCertificatesResponse200) & {
+  headers: Headers;
+};
+;
+
+export type appControllerGetOrganizationCertificatesResponse = (appControllerGetOrganizationCertificatesResponseSuccess)
+
+export const getAppControllerGetOrganizationCertificatesUrl = (params: AppControllerGetOrganizationCertificatesParams,) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value))
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `/api/v1/organization-certificates?${stringifiedParams}` : `/api/v1/organization-certificates`
+}
+
+export const appControllerGetOrganizationCertificates = async (params: AppControllerGetOrganizationCertificatesParams, options?: RequestInit): Promise<appControllerGetOrganizationCertificatesResponse> => {
+
+  return customFetch<appControllerGetOrganizationCertificatesResponse>(getAppControllerGetOrganizationCertificatesUrl(params),
   {
     ...options,
     method: 'GET'

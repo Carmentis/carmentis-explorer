@@ -142,7 +142,6 @@ const router = createRouter({
     ],
     scrollBehavior(to) {
         if (to.hash) {
-            console.log("scrollBehavior scrolling to", to.hash);
             return {
                 el: to.hash,
                 behavior: 'smooth',
@@ -151,7 +150,6 @@ const router = createRouter({
         return { top: 0 }
     },
 })
-
 
 router.afterEach((to) => {
     const title = to.meta.title as string;

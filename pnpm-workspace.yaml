@@ -1,4 +1,5 @@
 minimumReleaseAge: 0
+
 onlyBuiltDependencies:
   - cbor-extract
   - esbuild

@@ -915,6 +915,72 @@
         ]
       }
     },
+    "/api/v1/organization-certificates": {
+      "get": {
+        "operationId": "AppController_getOrganizationCertificates",
+        "parameters": [
+          {
+            "name": "order",
+            "required": false,
+            "in": "query",
+            "description": "Sort order",
+            "schema": {
+              "default": "ASC",
+              "type": "string",
+              "enum": [
+                "ASC",
+                "DESC"
+              ]
+            }
+          },
+          {
+            "name": "offset",
+            "required": false,
+            "in": "query",
+            "description": "How many results to skip (for pagination)",
+            "schema": {
+              "example": 10,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "description": "Maximum number of results",
+            "schema": {
+              "example": 10,
+              "type": "number"
+            }
+          },
+          {
+            "name": "vb_id",
+            "required": true,
+            "in": "query",
+            "description": "Virtual blockchain ID",
+            "schema": {
+              "example": "511d98d94eac50e6bd5df8dad285c90c309c55a57bdf9db8c57d0ec931c7c57a",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrganizationCertificateListResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "App"
+        ]
+      }
+    },
     "/api/v1/applications": {
       "get": {
         "operationId": "AppController_getApplications",
@@ -2294,6 +2360,52 @@
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/OrganizationDto"
+            }
+          }
+        },
+        "required": [
+          "hasMore",
+          "items"
+        ]
+      },
+      "OrganizationCertificateDto": {
+        "type": "object",
+        "properties": {
+          "microblockHash": {
+            "type": "string"
+          },
+          "microblockHeight": {
+            "type": "number"
+          },
+          "sectionIndex": {
+            "type": "number"
+          },
+          "jwt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "microblockHash",
+          "microblockHeight",
+          "sectionIndex",
+          "jwt"
+        ]
+      },
+      "OrganizationCertificateListResponseDto": {
+        "type": "object",
+        "properties": {
+          "hasMore": {
+            "type": "boolean",
+            "description": "Set to 'true' if more results are available."
+          },
+          "totalRecords": {
+            "type": "number",
+            "description": "Total number of available records. Returned only when 'offset' is used in the query."
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OrganizationCertificateDto"
             }
           }
         },

@@ -18,7 +18,7 @@ export function useNavigation() {
         application: (id: string) => nav.route(`/applications/${id}`),
         virtualBlockchain: (id: string) => nav.route(`/vb/${id}`),
         microblock: (id: string) => nav.route(`/vb/mb/${id}`),
-        microblockSection: (id: string, index: string) => nav.route(`/vb/mb/${id}/${index}`),
+        microblockSection: (id: string, index: number) => nav.route(`/vb/mb/${id}/${index}`),
     }
 
     return nav

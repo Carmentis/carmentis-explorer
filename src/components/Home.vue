@@ -294,7 +294,6 @@ async function synchronize() {
             height_gte: knownHeight - STATS_BLOCKS,
         })
         isGasPriceConsistent.value = gasPrice.data.average !== null
-        console.log(gasPrice.data);
         minGasPrice.value = Math.round(gasPrice.data.min)
         maxGasPrice.value = Math.round(gasPrice.data.max)
         avgGasPrice.value = Math.round(gasPrice.data.average)
