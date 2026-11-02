@@ -28,7 +28,7 @@ import Tag from 'primevue/tag'
 import { getApiBaseUrl } from '@/indexer-sdk/http-client/http-client'
 import * as api from "@/indexer-sdk/indexer-api";
 
-const CMTS_PRICE = 0.01;
+const CMTS_PRICE = 0.015;
 
 const connection = ref("")
 const cmtsPrice = ref("")
