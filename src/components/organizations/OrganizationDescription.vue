@@ -139,7 +139,7 @@ onMounted(async () => {
         const accountId = org.accountId;
         const certs = await api.appControllerGetOrganizationCertificates({ vb_id: orgHash });
 
-        for (const certificate of certs.data.items) {
+        for (const certificate of certs?.data?.items ?? []) {
             const sdJwt = new SdJwt(certificate.jwt);
             const issuer = await sdJwt.getIssuer();
             const issuerId = IdentifierParser.parse(issuer);
